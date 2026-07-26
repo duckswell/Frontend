@@ -1,9 +1,10 @@
 ---
-name: "\U0001F389Init - 프로젝트 세팅"
+name: "\U0001F680Init - 프로젝트 세팅"
 about: 프로젝트 세팅 관련 작업 시 해당 이슈템플릿을 사용해주세요.
-title: "\U0001F389Init - "
-labels: ""
-assignees: ""
+title: "\U0001F680 Init - "
+labels: ''
+assignees: ''
+
 ---
 
 ## 📄 About

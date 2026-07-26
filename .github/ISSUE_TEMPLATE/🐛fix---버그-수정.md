@@ -1,9 +1,10 @@
 ---
-name: "\U0001FAB3Fix - 버그 수정"
+name: "\U0001F41BFix - 버그 수정"
 about: 버그가 생겼을 시에는 해당 이슈템플릿을 사용해주세요.
-title: "\U0001FAB3Fix - "
-labels: "\U0001FAB3Fix"
-assignees: ""
+title: "\U0001F41B Fix - "
+labels: ''
+assignees: ''
+
 ---
 
 ## 📄 About
