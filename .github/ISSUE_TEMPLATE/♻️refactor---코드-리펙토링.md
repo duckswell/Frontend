@@ -2,7 +2,7 @@
 name: "♻️Refactor - 코드 리펙토링"
 about: 기존의 코드를 수정 및 개선할 경우에는 해당 이슈템플릿을 사용해주세요.
 title: "♻️ Refactor - "
-labels: "♻ Refactor"
+labels: "\U0001F680 Init, ♻ Refactor"
 assignees: ''
 
 ---
