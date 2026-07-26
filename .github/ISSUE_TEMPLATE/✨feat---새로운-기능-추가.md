@@ -2,7 +2,7 @@
 name: "✨Feat - 새로운 기능 추가"
 about: 새로운 기능 개발 시 해당 이슈템플릿을 사용해주세요.
 title: "✨ Feat - "
-labels: ''
+labels: "✨ Feature"
 assignees: ''
 
 ---
