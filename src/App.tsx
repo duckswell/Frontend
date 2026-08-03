@@ -1,11 +1,28 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useState, useEffect } from "react";
+import reactLogo from "./assets/react.svg";
+import viteLogo from "./assets/vite.svg";
+import heroImg from "./assets/hero.png";
+import "./App.css";
+
+import { requestFcmToken, onForegroundMessage } from "./lib/firebase";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    const initFCM = async () => {
+      const token = await requestFcmToken();
+      if (token) {
+        console.log(
+          "🎉 토큰 발급 완료! 이 값을 복사해서 Firebase 콘솔에 입력하세요:",
+        );
+        console.log(token);
+      }
+    };
+
+    initFCM();
+    onForegroundMessage();
+  }, []);
 
   return (
     <>
@@ -116,7 +133,7 @@ function App() {
       <div className="ticks"></div>
       <section id="spacer"></section>
     </>
-  )
+  );
 }
 
-export default App
+export default App;
