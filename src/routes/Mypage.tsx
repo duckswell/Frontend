@@ -72,7 +72,7 @@ const Mypage: React.FC = () => {
 
         <S.Section>
           <S.SectionTitle>안전 안내</S.SectionTitle>
-          <S.LinkCard onClick={() => alert("이상 증상 안내로 이동")}>
+          <S.LinkCard onClick={() => navigate("/safety")}>
             <div className="left">
               <div>
                 <div className="desc">심한 통증·급격한 악화 시 확인하세요</div>
