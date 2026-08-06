@@ -115,7 +115,6 @@ export const Percent = styled.div`
   display: inline-flex;
   align-items: baseline;
   justify-content: center;
-  margin-right: -5px;
 `;
 
 export const Down = styled.div`
