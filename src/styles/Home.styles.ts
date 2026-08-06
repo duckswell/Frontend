@@ -38,10 +38,10 @@ export const HeroCard = styled.div<{ $isFocus: boolean }>`
   background-position: center;
   background-repeat: no-repeat;
 
-  border-radius: 20px;
+  border-radius: 12px;
   padding: 20px;
   box-sizing: border-box;
-  margin-bottom: 16px;
+  margin-bottom: 30px;
 
   @media (min-width: 768px) {
     padding: 28px;
@@ -67,7 +67,7 @@ export const HeroTitle = styled.h2`
   font-weight: 700;
   color: ${colorPalette.Black};
   line-height: 1.35;
-  margin: 0 0 16px 0;
+  margin: 10px 0 65px 0;
   white-space: pre-line;
 
   @media (min-width: 768px) {
@@ -78,21 +78,22 @@ export const HeroTitle = styled.h2`
 export const StatGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
+  gap: 12px;
   margin-bottom: 16px;
 `;
 
 export const StatItem = styled.div`
   background-color: ${colorPalette.OffWhite};
-  border-radius: 12px;
-  padding: 12px 8px;
-  text-align: center;
+  border-radius: 8px;
+  padding: 12px 0px;
 
   span {
     display: block;
-    font-size: 12px;
+    font-size: 14px;
+    font-weight: 500;
     color: ${colorPalette.Black};
     margin-bottom: 6px;
+    padding-left: 15px;
   }
 
   strong {
@@ -107,29 +108,36 @@ export const StatItem = styled.div`
 `;
 export const Percent = styled.div`
   font-size: 16px;
-  font-weight: 900;
+  font-weight: 1000;
   line-height: 100%;
   display: inline-flex;
   align-items: baseline;
   justify-content: center;
+  margin-right: -5px;
 `;
 
-export const Updown = styled.div`
+export const Down = styled.div`
   font-size: 30px;
   font-weight: 900;
   line-height: 100%;
   color: ${colorPalette.FocusPrimary};
 `;
+export const Up = styled.div`
+  font-size: 30px;
+  font-weight: 900;
+  line-height: 100%;
+  color: red;
+`;
 export const RoutineButton = styled.button<{ $isFocus: boolean }>`
   width: 100%;
-  padding: 14px 0;
+  padding: 17px 0;
   border: none;
   border-radius: 12px;
   background-color: ${({ $isFocus }) =>
     $isFocus ? colorPalette.FocusPrimary : colorPalette.DailyPrimary};
   color: ${colorPalette.OffWhite};
-  font-size: 15px;
-  font-weight: 700;
+  font-size: 16px;
+  font-weight: 600;
   cursor: pointer;
 
   &:hover {
@@ -143,9 +151,9 @@ export const BannerCard = styled.div`
   align-items: center;
   justify-content: space-between;
   background-color: ${colorPalette.OffWhite};
-  border: 1px solid ${colorPalette.grey50};
-  border-radius: 16px;
-  padding: 16px;
+  border: 0.5px solid ${colorPalette.Quaternary};
+  border-radius: 12px;
+  padding: 20px 16px;
   margin-bottom: 12px;
   cursor: pointer;
 
@@ -155,33 +163,33 @@ export const BannerCard = styled.div`
     gap: 12px;
 
     .icon-img {
-      width: 36px;
-      height: 36px;
+      width: 34px;
+      height: 34px;
       border-radius: 50%;
       object-fit: cover;
     }
 
     .desc {
-      font-size: 12px;
+      font-size: 14px;
       color: ${colorPalette.grey400};
       margin-bottom: 2px;
     }
 
     .title {
-      font-size: 15px;
+      font-size: 16px;
       font-weight: 700;
       color: ${colorPalette.Black};
     }
   }
+`;
 
-  .arrow {
-    color: ${colorPalette.grey400};
-    font-size: 18px;
-  }
+export const GoToimg = styled.div`
+  width: 7.5px;
+  height: 7.5px;
 `;
 
 export const SectionHeader = styled.div`
-  margin: 24px 0 12px 0;
+  margin: 34px 0 12px 0;
 
   @media (min-width: 768px) {
     margin: 0 0 16px 0;
@@ -208,8 +216,16 @@ export const TodoCard = styled.div<{ $isChecked: boolean; $isFocus: boolean }>`
   padding: 16px;
   border-radius: 12px;
   margin-bottom: 10px;
-  border: 1px solid
-    ${({ $isChecked }) => ($isChecked ? "transparent" : colorPalette.grey50)};
+  cursor: pointer;
+
+  border: 0.5px solid
+    ${({ $isChecked, $isFocus }) =>
+      $isChecked
+        ? $isFocus
+          ? colorPalette.FocusSecondary
+          : colorPalette.DailySecondary
+        : colorPalette.Quaternary};
+
   background-color: ${({ $isChecked, $isFocus }) =>
     $isChecked
       ? $isFocus
@@ -225,42 +241,79 @@ export const TodoCard = styled.div<{ $isChecked: boolean; $isFocus: boolean }>`
     display: flex;
     align-items: center;
     justify-content: center;
+    box-sizing: border-box;
+
     background-color: ${({ $isChecked, $isFocus }) =>
       $isChecked
         ? $isFocus
           ? colorPalette.FocusPrimary
           : colorPalette.DailyPrimary
         : colorPalette.OffWhite};
-    border: 1px solid
+
+    border: 1.5px solid
       ${({ $isChecked }) => ($isChecked ? "transparent" : colorPalette.grey200)};
-    color: ${colorPalette.OffWhite};
-    font-size: 12px;
-    cursor: pointer;
+
+    color: ${({ $isChecked }) =>
+      $isChecked ? colorPalette.OffWhite : colorPalette.grey200};
+
+    font-size: 15px;
   }
 
   .content {
     h4 {
       font-size: 14px;
       font-weight: 700;
-      margin: 0 0 4px 0;
-      color: ${({ $isChecked, $isFocus }) =>
-        $isChecked
-          ? $isFocus
-            ? colorPalette.FocusPrimary
-            : colorPalette.DailyPrimary
-          : colorPalette.Black};
+      margin: 0 0 6px 0;
+      color: ${({ $isFocus }) =>
+        $isFocus ? colorPalette.FocusPrimary : colorPalette.DailyPrimary};
     }
 
     p {
-      font-size: 12px;
+      font-size: 13px;
+      margin: 0;
+      line-height: 1.4;
       color: ${({ $isChecked, $isFocus }) =>
         $isChecked
           ? $isFocus
             ? colorPalette.FocusPrimary
             : colorPalette.DailyPrimary
           : colorPalette.grey400};
-      margin: 0;
-      line-height: 1.4;
     }
+  }
+`;
+
+export const DailyStatItem = styled.div`
+  background-color: ${colorPalette.OffWhite};
+  border-radius: 12px;
+  padding: 12px 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 72px;
+  box-sizing: border-box;
+
+  .header {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+
+    span {
+      font-size: 13px;
+      font-weight: 600;
+      color: ${colorPalette.Black};
+    }
+
+    img {
+      width: 14px;
+      height: 14px;
+    }
+  }
+
+  .status-text {
+    font-size: 15px;
+    font-weight: 800;
+    color: ${colorPalette.Black};
+    line-height: 1.2;
+    margin: 0;
   }
 `;
