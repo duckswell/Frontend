@@ -53,7 +53,9 @@ export const Badge = styled.div<{ $isFocus: boolean }>`
   display: inline-block;
   padding: 6px 12px;
   border-radius: 999px;
-  border: 0.5px solid ${colorPalette.FocusPrimary};
+  border: 0.5px solid
+    ${({ $isFocus }) =>
+      $isFocus ? colorPalette.FocusPrimary : colorPalette.DailyPrimary};
   background-color: ${colorPalette.OffWhite};
   color: ${({ $isFocus }) =>
     $isFocus ? colorPalette.FocusPrimary : colorPalette.DailyPrimary};
