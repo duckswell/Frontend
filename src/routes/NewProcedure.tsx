@@ -20,6 +20,7 @@ const PROCEDURE_OPTIONS = [
   "기타",
 ];
 const BODY_PARTS = ["얼굴 전체", "T존", "나비존", "턱", "볼"];
+const WEEKDAYS = ["월", "화", "수", "목", "금", "토", "일"];
 
 const NewProcedure: React.FC = () => {
   const [procedures, setProcedures] = useState<ProcedureData[]>([
@@ -35,6 +36,18 @@ const NewProcedure: React.FC = () => {
   ]);
 
   const [openSelectId, setOpenSelectId] = useState<number | null>(null);
+  const [openDatePickerId, setOpenDatePickerId] = useState<number | null>(null);
+
+  const today = new Date();
+  const currentYear = today.getFullYear();
+  const currentMonth = today.getMonth() + 1;
+  const currentDateStr = `${currentYear}.${String(currentMonth).padStart(2, "0")}.${String(today.getDate()).padStart(2, "0")}`;
+
+  const [calendarYear, setCalendarYear] = useState(currentYear);
+  const [calendarMonth, setCalendarMonth] = useState(currentMonth);
+  const [tempSelectedDate, setTempSelectedDate] =
+    useState<string>(currentDateStr);
+
   const [isSaved, setIsSaved] = useState(false);
 
   const updateProcedure = <K extends keyof ProcedureData>(
@@ -85,6 +98,29 @@ const NewProcedure: React.FC = () => {
         selectedParts: [],
       },
     ]);
+  };
+
+  const handlePrevMonth = () => {
+    if (calendarMonth === 1) {
+      setCalendarYear((prev) => prev - 1);
+      setCalendarMonth(12);
+    } else {
+      setCalendarMonth((prev) => prev - 1);
+    }
+  };
+
+  const handleNextMonth = () => {
+    if (calendarMonth === 12) {
+      setCalendarYear((prev) => prev + 1);
+      setCalendarMonth(1);
+    } else {
+      setCalendarMonth((prev) => prev + 1);
+    }
+  };
+
+  const handleConfirmDate = (id: number) => {
+    updateProcedure(id, "date", tempSelectedDate);
+    setOpenDatePickerId(null);
   };
 
   const handleSubmit = () => {
@@ -148,11 +184,12 @@ const NewProcedure: React.FC = () => {
                       <S.SelectBox>
                         <div
                           className={`select-header ${!item.type ? "placeholder" : ""}`}
-                          onClick={() =>
+                          onClick={() => {
                             setOpenSelectId(
                               openSelectId === item.id ? null : item.id,
-                            )
-                          }
+                            );
+                            setOpenDatePickerId(null);
+                          }}
                         >
                           <span>{item.type || "시술 종류를 선택하세요"}</span>
                           <img
@@ -183,15 +220,162 @@ const NewProcedure: React.FC = () => {
 
                     <S.FormGroup>
                       <label>시술날짜</label>
-                      <S.DateInputWrapper>
-                        <input
-                          type="date"
-                          value={item.date}
-                          onChange={(e) =>
-                            updateProcedure(item.id, "date", e.target.value)
-                          }
+                      <S.DateInputWrapper
+                        $hasValue={Boolean(item.date)}
+                        onClick={() => {
+                          setOpenDatePickerId(
+                            openDatePickerId === item.id ? null : item.id,
+                          );
+                          setOpenSelectId(null);
+                        }}
+                      >
+                        <img
+                          src="/assets/Calendar.svg"
+                          alt="달력"
+                          className="calendar-icon"
                         />
+                        <span
+                          className={`date-text ${!item.date ? "placeholder" : ""}`}
+                        >
+                          {item.date || "시술날짜"}
+                        </span>
                       </S.DateInputWrapper>
+                      {openDatePickerId === item.id && (
+                        <S.CustomCalendarCard>
+                          <div className="calendar-header">
+                            <button
+                              type="button"
+                              className="nav-btn"
+                              onClick={handlePrevMonth}
+                            >
+                              <img src="/assets/Back.svg" alt="이전달" />
+                            </button>
+                            <span className="year-month">
+                              {calendarYear}.{" "}
+                              {String(calendarMonth).padStart(2, "0")}
+                            </span>
+                            <button
+                              type="button"
+                              className="nav-btn"
+                              onClick={handleNextMonth}
+                            >
+                              <img
+                                src="/assets/Back.svg"
+                                alt="다음달"
+                                style={{ transform: "rotate(180deg)" }}
+                              />
+                            </button>
+                          </div>
+
+                          <div className="weekdays-grid">
+                            {WEEKDAYS.map((day, idx) => (
+                              <span
+                                key={day}
+                                className={idx === 6 ? "sunday" : ""}
+                              >
+                                {day}
+                              </span>
+                            ))}
+                          </div>
+
+                          <div className="days-grid">
+                            {(() => {
+                              const firstDayIndex =
+                                (new Date(
+                                  calendarYear,
+                                  calendarMonth - 1,
+                                  1,
+                                ).getDay() +
+                                  6) %
+                                7;
+                              const totalDays = new Date(
+                                calendarYear,
+                                calendarMonth,
+                                0,
+                              ).getDate();
+                              const prevMonthTotalDays = new Date(
+                                calendarYear,
+                                calendarMonth - 1,
+                                0,
+                              ).getDate();
+
+                              const cells = [];
+
+                              for (let i = firstDayIndex - 1; i >= 0; i--) {
+                                const dayNum = prevMonthTotalDays - i;
+                                cells.push(
+                                  <S.DayCell
+                                    key={`prev-${dayNum}`}
+                                    type="button"
+                                    $isCurrentMonth={false}
+                                    $isSelected={false}
+                                  >
+                                    {dayNum}
+                                  </S.DayCell>,
+                                );
+                              }
+
+                              for (let d = 1; d <= totalDays; d++) {
+                                const formattedDate = `${calendarYear}.${String(calendarMonth).padStart(2, "0")}.${String(d).padStart(2, "0")}`;
+                                const isSelected =
+                                  tempSelectedDate === formattedDate;
+
+                                cells.push(
+                                  <S.DayCell
+                                    key={`curr-${d}`}
+                                    type="button"
+                                    $isCurrentMonth={true}
+                                    $isSelected={isSelected}
+                                    onClick={() =>
+                                      setTempSelectedDate(formattedDate)
+                                    }
+                                  >
+                                    {d}
+                                  </S.DayCell>,
+                                );
+                              }
+
+                              const remainingCells =
+                                (7 - (cells.length % 7)) % 7;
+                              for (
+                                let nextD = 1;
+                                nextD <= remainingCells;
+                                nextD++
+                              ) {
+                                cells.push(
+                                  <S.DayCell
+                                    key={`next-${nextD}`}
+                                    type="button"
+                                    $isCurrentMonth={false}
+                                    $isSelected={false}
+                                  >
+                                    {nextD}
+                                  </S.DayCell>,
+                                );
+                              }
+
+                              return cells;
+                            })()}
+                          </div>
+
+                          <div className="calendar-footer">
+                            <button
+                              type="button"
+                              className="cancel-btn"
+                              onClick={() => setOpenDatePickerId(null)}
+                            >
+                              취소
+                            </button>
+                            <button
+                              type="button"
+                              className="confirm-btn"
+                              onClick={() => handleConfirmDate(item.id)}
+                            >
+                              확인
+                            </button>
+                          </div>
+                        </S.CustomCalendarCard>
+                      )}
                     </S.FormGroup>
 
                     <S.FormGroup>

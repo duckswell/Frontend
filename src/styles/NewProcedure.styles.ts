@@ -19,11 +19,12 @@ export const FormCardGroup = styled.div`
   background-color: ${colorPalette.OffWhite};
   border-radius: 16px;
   margin-bottom: 24px;
-  overflow: hidden;
+  overflow: visible;
 `;
 
 export const FormCard = styled.div`
   background-color: ${colorPalette.OffWhite};
+  position: relative;
 
   &:not(:last-child) {
     border-bottom: 0.5px solid ${colorPalette.Quaternary};
@@ -70,11 +71,12 @@ export const AccordionHeader = styled.div<{ $isSingle?: boolean }>`
 `;
 
 export const CardBody = styled.div`
-  padding: 10px 20px 28px 20px;
+  padding: 10px 20px 0px 20px;
 `;
 
 export const FormGroup = styled.div`
   margin-bottom: 24px;
+  position: relative;
 
   label {
     display: block;
@@ -141,27 +143,164 @@ export const SelectBox = styled.div`
   }
 `;
 
-export const DateInputWrapper = styled.div`
-  position: relative;
+export const DateInputWrapper = styled.div<{ $hasValue: boolean }>`
+  width: 100%;
+  padding: 14px 16px;
+  border: 0.5px solid ${colorPalette.Quaternary};
+  border-radius: 12px;
+  background-color: ${colorPalette.OffWhite};
   display: flex;
   align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  box-sizing: border-box;
 
-  input[type="date"] {
-    width: 100%;
-    padding: 14px 16px;
-    border: 0.5px solid ${colorPalette.Quaternary};
-    border-radius: 12px;
-    background-color: ${colorPalette.OffWhite};
+  .calendar-icon {
+    width: 20px;
+    height: 20px;
+    opacity: ${({ $hasValue }) => ($hasValue ? 1 : 0.45)};
+    transition: opacity 0.2s ease;
+  }
+
+  .date-text {
     font-size: 14px;
-    font-weight: 600;
+    font-weight: 500;
     color: ${colorPalette.Black};
-    outline: none;
-    box-sizing: border-box;
-    font-family: inherit;
 
-    &::-webkit-calendar-picker-indicator {
-      cursor: pointer;
+    &.placeholder {
+      color: ${colorPalette.grey400};
     }
+  }
+`;
+
+export const CustomCalendarCard = styled.div`
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  width: 100%;
+  background-color: ${colorPalette.OffWhite};
+  border: 0.5px solid ${colorPalette.Quaternary};
+  border-radius: 16px;
+  padding: 24px 20px 20px 20px;
+  box-sizing: border-box;
+  z-index: 100;
+
+  .calendar-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    margin-bottom: 24px;
+
+    .year-month {
+      font-size: 14px;
+      font-weight: 500;
+      color: ${colorPalette.Black};
+    }
+
+    .nav-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      img {
+        width: 15px;
+        height: 15px;
+      }
+    }
+  }
+
+  .weekdays-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    text-align: center;
+    margin-bottom: 16px;
+
+    span {
+      font-size: 14px;
+      font-weight: 700;
+      color: ${colorPalette.Black};
+
+      &.sunday {
+        color: #e53935;
+      }
+    }
+  }
+
+  .days-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    row-gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .calendar-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+
+    .cancel-btn {
+      background: none;
+      border: none;
+      font-size: 14px;
+      font-weight: 700;
+      color: ${colorPalette.Black};
+      cursor: pointer;
+      padding: 10px 16px;
+    }
+
+    .confirm-btn {
+      background-color: ${colorPalette.Black};
+      border: none;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 500;
+      color: ${colorPalette.OffWhite};
+      cursor: pointer;
+      padding: 15px 23px;
+
+      &:hover {
+        opacity: 0.9;
+      }
+    }
+  }
+`;
+
+export const DayCell = styled.button<{
+  $isCurrentMonth: boolean;
+  $isSelected: boolean;
+}>`
+  background: none;
+  border: none;
+  width: 36px;
+  height: 36px;
+  margin: 0 auto;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+
+  color: ${({ $isCurrentMonth, $isSelected }) =>
+    $isSelected
+      ? colorPalette.OffWhite
+      : $isCurrentMonth
+        ? colorPalette.Black
+        : colorPalette.grey200};
+
+  background-color: ${({ $isSelected }) =>
+    $isSelected ? colorPalette.Black : "transparent"};
+
+  &:hover {
+    background-color: ${({ $isSelected }) =>
+      $isSelected ? colorPalette.Black : colorPalette.grey50};
   }
 `;
 
@@ -261,7 +400,7 @@ export const AddButton = styled.button`
   justify-content: center;
   gap: 8px;
   cursor: pointer;
-  margin-bottom: 24px;
+  margin-bottom: 120px;
 
   img {
     width: 18px;
@@ -276,7 +415,6 @@ export const AddButton = styled.button`
 export const SavedNotice = styled.div`
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: 8px;
   padding: 16px;
   background-color: ${colorPalette.OffWhite};
@@ -286,6 +424,7 @@ export const SavedNotice = styled.div`
   font-weight: 700;
   color: ${colorPalette.Black};
   margin-bottom: 16px;
+  margin-top: -70px;
 
   .check-icon {
     width: 20px;
