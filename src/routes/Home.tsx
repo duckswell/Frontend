@@ -3,7 +3,7 @@ import * as S from "../styles/Home.styles";
 import { TabBar, type TabType } from "../components/TabBar";
 
 // 아래를 daily로 바꾸면 데일리케어, focus로 바꾸면 집중케어 UI
-const CURRENT_VERSION: "focus" | "daily" = "daily";
+const CURRENT_VERSION: "focus" | "daily" = "focus";
 
 const Home: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabType>("home");
