@@ -10,9 +10,17 @@ export const GlobalStyle = createGlobalStyle`
 
   * {
     font-family: 'Wanted Sans Variable', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif !important;
+    user-select: none;
+    -webkit-user-select: none;
   }
 
   body, input, button, textarea, select {
     font-family: 'Wanted Sans Variable', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif !important;
   }
+
+  input, textarea {
+    user-select: auto;
+    -webkit-user-select: auto;
+  }
+  
 `;
