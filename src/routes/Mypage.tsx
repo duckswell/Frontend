@@ -18,7 +18,7 @@ const Mypage: React.FC = () => {
           <S.TreatmentCard>
             <div
               className="card-top"
-              onClick={() => alert("시술 설정 클릭")}
+              onClick={() => navigate("/add")}
               role="button"
               tabIndex={0}
             >

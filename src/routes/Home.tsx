@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import * as S from "../styles/Home.styles";
+import { useNavigate } from "react-router-dom";
 import { TabBar, type TabType } from "../components/TabBar";
 import { AITodos } from "../components/Home/AITodos";
 
@@ -14,6 +15,7 @@ interface TodoItem {
 }
 
 const Home: React.FC = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<TabType>("home");
 
   const [todos, setTodos] = useState<TodoItem[]>([
@@ -136,7 +138,7 @@ const Home: React.FC = () => {
             </div>
           </S.BannerCard>
 
-          <S.BannerCard>
+          <S.BannerCard onClick={() => navigate("/add")}>
             <div className="left">
               <img
                 className="icon-img"
