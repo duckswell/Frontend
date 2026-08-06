@@ -5,6 +5,7 @@ import Mypage from "./routes/Mypage";
 import CourseHistories from "./routes/CourseHistories";
 import SafetyGuide from "./routes/SafetyGuide";
 import NewProcedure from "./routes/NewProcedure";
+import Care from "./routes/Care";
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
         <Route path="/history" element={<CourseHistories />} />
         <Route path="/safety" element={<SafetyGuide />} />
         <Route path="/add" element={<NewProcedure />} />
+        <Route path="/care" element={<Care />} />
       </Routes>
     </BrowserRouter>
   );
