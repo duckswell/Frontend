@@ -310,10 +310,11 @@ export const DailyStatItem = styled.div`
   }
 
   .status-text {
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 800;
     color: ${colorPalette.Black};
     line-height: 1.2;
     margin: 0;
+    text-wrap: nowrap;
   }
 `;
