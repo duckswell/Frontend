@@ -4,7 +4,7 @@ import { colorPalette } from "../lib/colorPalette";
 export const Page = styled.div`
   min-height: 100dvh;
   padding-top: 56px;
-  padding-bottom: 92px;
+  padding-bottom: 60px;
   background-color: ${colorPalette.OffWhite};
   color: ${colorPalette.Black};
 
@@ -206,8 +206,8 @@ export const ConsultationButton = styled.button`
   padding: 12px 16px;
   border: 0.5px solid ${colorPalette.Quaternary};
   border-radius: 12px;
-  background-color: ${colorPalette.OffWhite};
   color: ${colorPalette.Black};
+  background-color: ${colorPalette.White};
   font-family: inherit;
   font-size: 14px;
   font-weight: 700;
