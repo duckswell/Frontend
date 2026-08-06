@@ -31,9 +31,10 @@ export const RightColumn = styled.div`
 `;
 
 export const HeroCard = styled.div<{ $isFocus: boolean }>`
-  background-color: ${({ $isFocus }) => ($isFocus ? "#E3F2FD" : "#EDF9DE")};
   background-image: ${({ $isFocus }) =>
-    $isFocus ? `url('/assets/ConcImg.svg')` : `url('/images/DailyImg.svg')`};
+    $isFocus
+      ? `url('/assets/Home_Focus.png')`
+      : `url('/assets/Home_Daily.png')`};
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;

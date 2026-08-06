@@ -1,20 +1,50 @@
 import React, { useState } from "react";
 import * as S from "../styles/Home.styles";
 import { TabBar, type TabType } from "../components/TabBar";
+import { AITodos } from "../components/Home/AITodos";
 
 // 아래를 daily로 바꾸면 데일리케어, focus로 바꾸면 집중케어 UI
 const CURRENT_VERSION: "focus" | "daily" = "focus";
 
+interface TodoItem {
+  id: number;
+  title: string;
+  description: string;
+  isChecked: boolean;
+}
+
 const Home: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabType>("home");
 
-  const [todoChecked1, setTodoChecked1] = useState(false);
-  const [todoChecked2, setTodoChecked2] = useState(false);
+  const [todos, setTodos] = useState<TodoItem[]>([
+    {
+      id: 1,
+      title: "물 자주 마시기",
+      description:
+        "물을 자주 마셔야하는 이유\n하루동안 물을 얼마나 마셔야하는지",
+      isChecked: false,
+    },
+    {
+      id: 2,
+      title: "물 자주 마시기",
+      description:
+        "물을 자주 마셔야하는 이유\n하루동안 물을 얼마나 마셔야하는지",
+      isChecked: false,
+    },
+  ]);
 
   const isFocus = CURRENT_VERSION === "focus";
 
-  const totalTodos = 2;
-  const completedCount = (todoChecked1 ? 1 : 0) + (todoChecked2 ? 1 : 0);
+  const handleToggleTodo = (id: number) => {
+    setTodos((prev) =>
+      prev.map((todo) =>
+        todo.id === id ? { ...todo, isChecked: !todo.isChecked } : todo,
+      ),
+    );
+  };
+
+  const totalTodos = todos.length;
+  const completedCount = todos.filter((todo) => todo.isChecked).length;
 
   return (
     <>
@@ -89,7 +119,7 @@ const Home: React.FC = () => {
             <div className="left">
               <img
                 className="icon-img"
-                src={"/assets/DailyImg.svg"}
+                src={"/assets/Home_Daily.png"}
                 alt="데일리 코스"
               />
               <div>
@@ -102,7 +132,7 @@ const Home: React.FC = () => {
               </div>
             </div>
             <div className="arrow">
-              <img className="Go-toimg" src={"/assets/Goto.svg"} />
+              <img className="Go-toimg" src={"/assets/Goto.svg"} alt="이동" />
             </div>
           </S.BannerCard>
 
@@ -110,7 +140,7 @@ const Home: React.FC = () => {
             <div className="left">
               <img
                 className="icon-img"
-                src={"/assets/ConcImg.svg"}
+                src={"/assets/Home_Focus.png"}
                 alt="집중 코스"
               />
               <div>
@@ -118,49 +148,26 @@ const Home: React.FC = () => {
                 <div className="title">시술 정보 등록하기</div>
               </div>
             </div>
-            <img className="GoToimg" src={"/assets/Goto.svg"} />
+            <img className="GoToimg" src={"/assets/Goto.svg"} alt="이동" />
           </S.BannerCard>
 
           <S.SectionHeader>
             <h3>
-              {isFocus
-                ? `오늘 하루 신경 써야 하는 것 (${completedCount}/${totalTodos})`
-                : "오늘 하루 신경 써야 하는 것"}
+              {`오늘 하루 신경 써야 하는 것 (${completedCount}/${totalTodos})`}
             </h3>
             <p>데이터를 바탕으로 AI가 추천한거라는 안내</p>
           </S.SectionHeader>
 
-          <S.TodoCard
-            $isChecked={todoChecked1}
-            $isFocus={isFocus}
-            onClick={() => setTodoChecked1(!todoChecked1)}
-          >
-            <div className="checkbox"> ✓</div>
-            <div className="content">
-              <h4>물 자주 마시기</h4>
-              <p>
-                물을 자주 마셔야하는 이유
-                <br />
-                하루동안 물을 얼마나 마셔야하는지
-              </p>
-            </div>
-          </S.TodoCard>
-
-          <S.TodoCard
-            $isChecked={todoChecked2}
-            $isFocus={isFocus}
-            onClick={() => setTodoChecked2(!todoChecked2)}
-          >
-            <div className="checkbox"> ✓</div>
-            <div className="content">
-              <h4>물 자주 마시기</h4>
-              <p>
-                물을 자주 마셔야하는 이유
-                <br />
-                하루동안 물을 얼마나 마셔야하는지
-              </p>
-            </div>
-          </S.TodoCard>
+          {todos.map((todo) => (
+            <AITodos
+              key={todo.id}
+              title={todo.title}
+              description={todo.description}
+              isChecked={todo.isChecked}
+              isFocus={isFocus}
+              onToggle={() => handleToggleTodo(todo.id)}
+            />
+          ))}
         </S.RightColumn>
       </S.Container>
 
