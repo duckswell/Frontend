@@ -1,10 +1,12 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import * as S from "../styles/Mypage.styles";
 import { PageName } from "../components/PageName";
 import { TabBar, type TabType } from "../components/TabBar";
 
 const Mypage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabType>("my");
+  const navigate = useNavigate();
 
   return (
     <>
@@ -50,7 +52,7 @@ const Mypage: React.FC = () => {
 
         <S.Section>
           <S.SectionTitle>코스 기록</S.SectionTitle>
-          <S.LinkCard onClick={() => alert("코스 기록으로 이동")}>
+          <S.LinkCard onClick={() => navigate("/history")}>
             <div className="left">
               <img
                 className="icon-img"
