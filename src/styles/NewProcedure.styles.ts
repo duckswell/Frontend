@@ -1,0 +1,456 @@
+import styled from "styled-components";
+import { colorPalette } from "../lib/colorPalette";
+
+export const Container = styled.div`
+  width: 100%;
+  max-width: 430px;
+  margin: 0 auto;
+  min-height: 100vh;
+  padding: 64px 20px 100px 20px;
+  box-sizing: border-box;
+
+  @media (min-width: 768px) {
+    max-width: 680px;
+    padding: 80px 40px 120px 40px;
+  }
+`;
+
+export const FormCardGroup = styled.div`
+  background-color: ${colorPalette.OffWhite};
+  border-radius: 16px;
+  margin-bottom: 24px;
+  overflow: visible;
+`;
+
+export const FormCard = styled.div`
+  background-color: ${colorPalette.OffWhite};
+  position: relative;
+
+  &:not(:last-child) {
+    border-bottom: 0.5px solid ${colorPalette.Quaternary};
+  }
+`;
+
+export const AccordionHeader = styled.div<{ $isSingle?: boolean }>`
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: ${({ $isSingle }) => ($isSingle ? "default" : "pointer")};
+  user-select: none;
+
+  .title {
+    font-size: 16px;
+    font-weight: 700;
+    color: ${colorPalette.Black};
+
+    span.is-editing {
+      color: ${colorPalette.grey400};
+      font-weight: 500;
+      font-size: 14px;
+      margin-left: 4px;
+    }
+
+    span.has-value {
+      color: ${colorPalette.Black};
+      font-weight: 700;
+      font-size: 16px;
+      margin-left: 4px;
+    }
+  }
+
+  .arrow-icon {
+    width: 20px;
+    height: 20px;
+    transition: transform 0.2s ease;
+
+    &.open {
+      transform: rotate(180deg);
+    }
+  }
+`;
+
+export const CardBody = styled.div`
+  padding: 10px 20px 0px 20px;
+`;
+
+export const FormGroup = styled.div`
+  margin-bottom: 24px;
+  position: relative;
+
+  label {
+    display: block;
+    font-size: 14px;
+    font-weight: 700;
+    color: ${colorPalette.Black};
+    margin-bottom: 10px;
+  }
+`;
+
+export const SelectBox = styled.div`
+  position: relative;
+
+  .select-header {
+    width: 100%;
+    padding: 14px 16px;
+    border: 0.5px solid ${colorPalette.Quaternary};
+    border-radius: 12px;
+    background-color: ${colorPalette.OffWhite};
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 14px;
+    color: ${colorPalette.Black};
+    cursor: pointer;
+    box-sizing: border-box;
+
+    &.placeholder {
+      color: ${colorPalette.grey400};
+    }
+
+    .dropdown-icon {
+      width: 18px;
+      height: 18px;
+      transition: transform 0.2s ease;
+
+      &.open {
+        transform: rotate(180deg);
+      }
+    }
+  }
+
+  .options-list {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    width: 100%;
+    background-color: ${colorPalette.OffWhite};
+    border: 0.5px solid ${colorPalette.Quaternary};
+    border-radius: 12px;
+    z-index: 10;
+    overflow: hidden;
+
+    .option-item {
+      padding: 14px 16px;
+      font-size: 14px;
+      color: ${colorPalette.Black};
+      cursor: pointer;
+
+      &:hover {
+        background-color: ${colorPalette.grey50};
+      }
+    }
+  }
+`;
+
+export const DateInputWrapper = styled.div<{ $hasValue: boolean }>`
+  width: 100%;
+  padding: 14px 16px;
+  border: 0.5px solid ${colorPalette.Quaternary};
+  border-radius: 12px;
+  background-color: ${colorPalette.OffWhite};
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  box-sizing: border-box;
+
+  .calendar-icon {
+    width: 20px;
+    height: 20px;
+    opacity: ${({ $hasValue }) => ($hasValue ? 1 : 0.45)};
+    transition: opacity 0.2s ease;
+  }
+
+  .date-text {
+    font-size: 14px;
+    font-weight: 500;
+    color: ${colorPalette.Black};
+
+    &.placeholder {
+      color: ${colorPalette.grey400};
+    }
+  }
+`;
+
+export const CustomCalendarCard = styled.div`
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  width: 100%;
+  background-color: ${colorPalette.OffWhite};
+  border: 0.5px solid ${colorPalette.Quaternary};
+  border-radius: 16px;
+  padding: 24px 20px 20px 20px;
+  box-sizing: border-box;
+  z-index: 100;
+
+  .calendar-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    margin-bottom: 24px;
+
+    .year-month {
+      font-size: 14px;
+      font-weight: 500;
+      color: ${colorPalette.Black};
+    }
+
+    .nav-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      img {
+        width: 15px;
+        height: 15px;
+      }
+    }
+  }
+
+  .weekdays-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    text-align: center;
+    margin-bottom: 16px;
+
+    span {
+      font-size: 14px;
+      font-weight: 700;
+      color: ${colorPalette.Black};
+
+      &.sunday {
+        color: #e53935;
+      }
+    }
+  }
+
+  .days-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    row-gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .calendar-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+
+    .cancel-btn {
+      background: none;
+      border: none;
+      font-size: 14px;
+      font-weight: 700;
+      color: ${colorPalette.Black};
+      cursor: pointer;
+      padding: 10px 16px;
+    }
+
+    .confirm-btn {
+      background-color: ${colorPalette.Black};
+      border: none;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 500;
+      color: ${colorPalette.OffWhite};
+      cursor: pointer;
+      padding: 15px 23px;
+
+      &:hover {
+        opacity: 0.9;
+      }
+    }
+  }
+`;
+
+export const DayCell = styled.button<{
+  $isCurrentMonth: boolean;
+  $isSelected: boolean;
+}>`
+  background: none;
+  border: none;
+  width: 36px;
+  height: 36px;
+  margin: 0 auto;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+
+  color: ${({ $isCurrentMonth, $isSelected }) =>
+    $isSelected
+      ? colorPalette.OffWhite
+      : $isCurrentMonth
+        ? colorPalette.Black
+        : colorPalette.grey200};
+
+  background-color: ${({ $isSelected }) =>
+    $isSelected ? colorPalette.Black : "transparent"};
+
+  &:hover {
+    background-color: ${({ $isSelected }) =>
+      $isSelected ? colorPalette.Black : colorPalette.grey50};
+  }
+`;
+
+export const CountGrid = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 40px;
+
+  .count-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    .label-text {
+      font-size: 14px;
+      font-weight: 700;
+      color: ${colorPalette.Black};
+    }
+  }
+`;
+
+export const InputBoxWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: ${colorPalette.OffWhite};
+  border: 0.5px solid ${colorPalette.Quaternary};
+  border-radius: 12px;
+  padding: 12px 12px 12px 0;
+  width: 40px;
+
+  input {
+    width: 32px;
+    border: none;
+    background: transparent;
+    text-align: right;
+    font-size: 15px;
+    font-weight: 700;
+    color: ${colorPalette.Black};
+    outline: none;
+    padding: 0;
+
+    &::placeholder {
+      color: ${colorPalette.grey400};
+      font-weight: 500;
+    }
+
+    &::-webkit-outer-spin-button,
+    &::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+  }
+
+  .unit {
+    font-size: 14px;
+    font-weight: 600;
+    color: ${colorPalette.Black};
+    margin-left: 4px;
+    margin-right: 11px;
+  }
+`;
+
+export const PartsGrid = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+`;
+
+export const PartChip = styled.button<{ $isSelected: boolean }>`
+  padding: 10px 18px;
+  border-radius: 999px;
+  border: 0.5px solid
+    ${({ $isSelected }) =>
+      $isSelected ? "transparent" : colorPalette.Quaternary};
+  background-color: ${({ $isSelected }) =>
+    $isSelected ? colorPalette.Black : colorPalette.OffWhite};
+  color: ${({ $isSelected }) =>
+    $isSelected ? colorPalette.OffWhite : colorPalette.Black};
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+`;
+
+export const AddButton = styled.button`
+  width: 100%;
+  padding: 16px 0;
+  border: 0.5px solid ${colorPalette.Quaternary};
+  border-radius: 16px;
+  background-color: ${colorPalette.OffWhite};
+  font-size: 15px;
+  font-weight: 700;
+  color: ${colorPalette.Black};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  margin-bottom: 120px;
+
+  img {
+    width: 18px;
+    height: 18px;
+  }
+
+  &:hover {
+    background-color: ${colorPalette.grey50};
+  }
+`;
+
+export const SavedNotice = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px;
+  background-color: ${colorPalette.OffWhite};
+  border: 0.5px solid ${colorPalette.Quaternary};
+  border-radius: 16px;
+  font-size: 14px;
+  font-weight: 700;
+  color: ${colorPalette.Black};
+  margin-bottom: 16px;
+  margin-top: -70px;
+
+  .check-icon {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: ${colorPalette.Black};
+    color: ${colorPalette.OffWhite};
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+  }
+`;
+
+export const SubmitButton = styled.button`
+  width: 100%;
+  padding: 16px 0;
+  background-color: ${colorPalette.FocusPrimary};
+  border: none;
+  border-radius: 12px;
+  color: ${colorPalette.OffWhite};
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+
+  &:hover {
+    background-color: ${colorPalette.FocusSelected};
+  }
+`;
