@@ -1,7 +1,8 @@
 import { NavBar } from "../components/NavBar";
 import { TabBar } from "../components/TabBar";
-import * as S from "../styles/Care.styles";
-
+import CareButton from "../components/CareButton";
+import * as S from "../styles/FocusCare/Care.styles";
+import { useNavigate } from "react-router-dom";
 const COURSE_STEPS = [
   {
     step: "STEP 1",
@@ -21,6 +22,8 @@ const COURSE_STEPS = [
 ];
 
 export default function Care() {
+  const navigate = useNavigate();
+
   const handleMoveToProductRecommendation = () => {
     console.log("추천 성분 제품 페이지로 이동");
   };
@@ -30,7 +33,7 @@ export default function Care() {
   };
 
   const handleStartRoutine = () => {
-    console.log("루틴 시작");
+    navigate("/care/first_focus_care");
   };
 
   return (
@@ -105,9 +108,7 @@ export default function Care() {
       </S.Content>
 
       <S.BottomArea>
-        <S.RoutineStartButton type="button" onClick={handleStartRoutine}>
-          루틴 시작
-        </S.RoutineStartButton>
+        <CareButton onClick={handleStartRoutine}>루틴 시작</CareButton>
       </S.BottomArea>
 
       <TabBar activeTab="care" />
