@@ -1,8 +1,14 @@
 import * as S from "../../styles/FocusCare/SkinConditionSelector.styles";
+
 const SKIN_CONDITION_ROWS = [
   ["붉은기", "열감", "따가움", "건조함"],
   ["각질", "번들거림", "가려움", "붓기"],
 ];
+
+interface SkinConditionSelectorProps {
+  selectedConditions: string[];
+  onToggleCondition: (condition: string) => void;
+}
 
 export default function SkinConditionSelector({
   selectedConditions,
