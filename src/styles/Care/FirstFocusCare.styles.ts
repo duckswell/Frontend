@@ -1,6 +1,6 @@
 import styled from "styled-components";
-import { colorPalette } from "../lib/colorPalette";
-import { typography } from "../lib/typography";
+import { colorPalette } from "../../lib/colorPalette";
+import { typography } from "../../lib/typography";
 
 export const Page = styled.div`
   display: flex;

@@ -1,6 +1,6 @@
 import styled from "styled-components";
-import { colorPalette } from "../lib/colorPalette";
-import { typography } from "../lib/typography";
+import { colorPalette } from "../../lib/colorPalette";
+import { typography } from "../../lib/typography";
 
 export const Page = styled.div`
   min-height: 100dvh;
@@ -18,19 +18,29 @@ export const Content = styled.main`
   display: flex;
   flex-direction: column;
   gap: 36px;
+
   width: 100%;
-  max-width: 430px;
+  max-width: 402px;
+
   margin: 0 auto;
   padding: 12px 16px 0;
+
+  box-sizing: border-box;
 `;
 
 export const StatusCard = styled.section`
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+
+  width: 100%;
+  box-sizing: border-box;
+
   padding: 18px 16px;
+
   border: 1px solid ${colorPalette.blue50};
   border-radius: 6px;
+
   background-image: url("/assets/Home_Focus.png");
   background-repeat: no-repeat;
   background-position: center;
@@ -76,6 +86,8 @@ export const CourseSection = styled.section`
   display: flex;
   flex-direction: column;
   gap: 24px;
+
+  width: 100%;
 `;
 
 export const SectionTitle = styled.h2`
@@ -88,9 +100,15 @@ export const SectionTitle = styled.h2`
 export const CourseCard = styled.div`
   display: flex;
   flex-direction: column;
+
+  width: 100%;
+  box-sizing: border-box;
+
   padding: 24px;
+
   border: 0.5px solid ${colorPalette.Quaternary};
   border-radius: 12px;
+
   background-color: ${colorPalette.OffWhite};
 `;
 
@@ -156,9 +174,15 @@ export const OutlinedButton = styled.button`
 export const WarningCard = styled.section`
   display: flex;
   flex-direction: column;
+
+  width: 100%;
+  box-sizing: border-box;
+
   padding: 20px 16px 16px;
+
   border: 0.5px solid ${colorPalette.Quaternary};
   border-radius: 12px;
+
   background-color: ${colorPalette.White};
 `;
 
@@ -189,17 +213,23 @@ export const WarningDescription = styled.p`
   color: ${colorPalette.Secondary};
   word-break: keep-all;
 `;
-
 export const ConsultationButton = styled.button`
   ${typography.Body1Bold};
 
   width: 100%;
+  max-width: 322px;
+
+  align-self: center;
+
   margin-top: 12px;
   padding: 12px 16px;
+
   border: 0.5px solid ${colorPalette.Quaternary};
   border-radius: 12px;
+
   color: ${colorPalette.Black};
   background-color: ${colorPalette.White};
+
   font-family: inherit;
   cursor: pointer;
 
@@ -210,24 +240,10 @@ export const ConsultationButton = styled.button`
 
 export const BottomArea = styled.div`
   width: 100%;
-  max-width: 430px;
+  max-width: 402px;
+
   margin: 68px auto 0;
   padding: 0 16px 18px;
-`;
 
-export const RoutineStartButton = styled.button`
-  ${typography.H3};
-
-  width: 100%;
-  padding: 16px;
-  border: none;
-  border-radius: 12px;
-  background-color: ${colorPalette.FocusPrimary};
-  color: ${colorPalette.OffWhite};
-  font-family: inherit;
-  cursor: pointer;
-
-  &:active {
-    background-color: ${colorPalette.FocusSelected};
-  }
+  box-sizing: border-box;
 `;

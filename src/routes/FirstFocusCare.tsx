@@ -4,7 +4,7 @@ import AdditionalSymptomInput from "../components/Care/AdditionalSymptomInput";
 import FocusProgress from "../components/Care/FocusProgress";
 import SkinConditionSelector from "../components/Care/SkinConditionSelector";
 import SkinPhotoUploader from "../components/Care/SkinPhotoUploader";
-import * as S from "../styles/FirstFocusCare.styles";
+import * as S from "../styles/Care/FirstFocusCare.styles";
 
 export default function FirstFocusCare() {
   const [selectedConditions, setSelectedConditions] = useState<string[]>([

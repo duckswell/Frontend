@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import * as S from "../../styles/SkinPhotoUploader.styles";
+import * as S from "../../styles/Care/SkinPhotoUploader.styles";
 
 interface SkinPhotoUploaderProps {
   onChangeImage: (file: File | null) => void;
@@ -14,9 +14,7 @@ export default function SkinPhotoUploader({
     fileInputRef.current?.click();
   };
 
-  const handleChangeImage = (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
+  const handleChangeImage = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0] ?? null;
 
     onChangeImage(file);
@@ -32,14 +30,8 @@ export default function SkinPhotoUploader({
         </S.Description>
       </S.TextArea>
 
-      <S.UploadButton
-        type="button"
-        onClick={handleOpenImagePicker}
-      >
-        <S.PlusIcon
-          src="/assets/Plus.svg"
-          alt=""
-        />
+      <S.UploadButton type="button" onClick={handleOpenImagePicker}>
+        <S.PlusIcon src="/assets/Plus.svg" alt="" />
 
         <S.UploadText>사진 추가</S.UploadText>
       </S.UploadButton>

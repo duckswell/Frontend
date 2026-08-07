@@ -19,7 +19,7 @@ function App() {
         <Route path="/safety" element={<SafetyGuide />} />
         <Route path="/add" element={<NewProcedure />} />
         <Route path="/care" element={<Care />} />
-        <Route path="/FirstFocusCare" element={<FirstFocusCare />} />
+        <Route path="/care/first_focus_care" element={<FirstFocusCare />} />
       </Routes>
     </BrowserRouter>
   );
