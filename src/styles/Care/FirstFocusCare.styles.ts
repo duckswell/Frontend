@@ -1,16 +1,17 @@
 import styled from "styled-components";
 import { colorPalette } from "../../lib/colorPalette";
-import { typography } from "../../lib/typography";
 
 export const Page = styled.div`
   display: flex;
   flex-direction: column;
 
-  width: 100%;
-  min-height: 100dvh;
+  min-height: calc(100dvh - 64px);
+  margin-top: 64px;
 
   background-color: ${colorPalette.OffWhite};
   color: ${colorPalette.Black};
+
+  box-sizing: border-box;
 `;
 
 export const Main = styled.main`
@@ -43,26 +44,4 @@ export const BottomArea = styled.div`
   padding: 32px 16px 22px;
 
   box-sizing: border-box;
-`;
-
-export const NextButton = styled.button`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  width: 100%;
-  max-width: 370px;
-  height: 56px;
-
-  padding: 12px;
-
-  border: none;
-  border-radius: 12px;
-
-  background-color: ${colorPalette.FocusPrimary};
-
-  ${typography.H3};
-  color: ${colorPalette.OffWhite};
-
-  cursor: pointer;
 `;

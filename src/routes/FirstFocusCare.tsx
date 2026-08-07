@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { NavBar } from "../components/NavBar";
+import CareButton from "../components/CareButton";
 import AdditionalSymptomInput from "../components/Care/AdditionalSymptomInput";
 import FocusProgress from "../components/Care/FocusProgress";
 import SkinConditionSelector from "../components/Care/SkinConditionSelector";
@@ -66,9 +67,7 @@ export default function FirstFocusCare() {
       </S.Main>
 
       <S.BottomArea>
-        <S.NextButton type="button" onClick={handleMoveToNext}>
-          다음으로
-        </S.NextButton>
+        <CareButton onClick={handleMoveToNext}>다음으로</CareButton>
       </S.BottomArea>
     </S.Page>
   );
