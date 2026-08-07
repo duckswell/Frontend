@@ -1,5 +1,6 @@
 import styled from "styled-components";
 import { colorPalette } from "../lib/colorPalette";
+import { typography } from "../lib/typography";
 
 export const Page = styled.div`
   min-height: 100dvh;
@@ -37,6 +38,8 @@ export const StatusCard = styled.section`
 `;
 
 export const CourseBadge = styled.span`
+  ${typography.Body2Bold};
+
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -46,33 +49,27 @@ export const CourseBadge = styled.span`
   border-radius: 999px;
   background-color: rgb(255 255 255 / 80%);
   color: ${colorPalette.FocusPrimary};
-  font-size: 12px;
-  font-weight: 700;
-  line-height: 1.4;
 `;
 
 export const StatusTitle = styled.h1`
+  ${typography.H2};
+
   margin: 13px 0 0;
   color: ${colorPalette.Black};
-  font-size: 20px;
-  font-weight: 700;
-  line-height: 1.4;
 `;
 
 export const StatusDescription = styled.p`
+  ${typography.Body1};
+
   margin: 7px 0 0;
   color: ${colorPalette.Black};
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 1.5;
 `;
 
 export const StatusNotice = styled.p`
+  ${typography.Body2};
+
   margin: 9px 0 0;
   color: ${colorPalette.FocusSecondary};
-  font-size: 12px;
-  font-weight: 500;
-  line-height: 1.5;
 `;
 
 export const CourseSection = styled.section`
@@ -82,11 +79,10 @@ export const CourseSection = styled.section`
 `;
 
 export const SectionTitle = styled.h2`
+  ${typography.H3};
+
   margin: 0;
   color: ${colorPalette.Black};
-  font-size: 16px;
-  font-weight: 700;
-  line-height: 1.5;
 `;
 
 export const CourseCard = styled.div`
@@ -111,6 +107,8 @@ export const StepItem = styled.div`
 `;
 
 export const StepBadge = styled.span`
+  ${typography.Body2Bold};
+
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -120,29 +118,26 @@ export const StepBadge = styled.span`
   border-radius: 999px;
   background-color: rgb(255 255 255 / 80%);
   color: ${colorPalette.FocusPrimary};
-  font-size: 12px;
-  font-weight: 700;
-  line-height: 1.4;
 `;
 
 export const StepTitle = styled.h3`
+  ${typography.H3};
+
   margin: 13px 0 0;
   color: ${colorPalette.Black};
-  font-size: 16px;
-  font-weight: 700;
-  line-height: 1.5;
 `;
 
 export const StepDescription = styled.p`
+  ${typography.Body1};
+
   margin: 8px 0 0;
   color: ${colorPalette.Black};
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 1.5;
   word-break: keep-all;
 `;
 
 export const OutlinedButton = styled.button`
+  ${typography.Body1Bold};
+
   width: 100%;
   margin-top: 16px;
   padding: 12px 16px;
@@ -151,9 +146,6 @@ export const OutlinedButton = styled.button`
   background-color: ${colorPalette.OffWhite};
   color: ${colorPalette.Black};
   font-family: inherit;
-  font-size: 14px;
-  font-weight: 700;
-  line-height: 1.5;
   cursor: pointer;
 
   &:active {
@@ -184,23 +176,23 @@ export const WarningIcon = styled.img`
 `;
 
 export const WarningTitle = styled.h2`
+  ${typography.H3};
+
   margin: 0;
   color: ${colorPalette.Black};
-  font-size: 16px;
-  font-weight: 700;
-  line-height: 1.5;
 `;
 
 export const WarningDescription = styled.p`
+  ${typography.Body2};
+
   margin: 8px 0 0;
   color: ${colorPalette.Secondary};
-  font-size: 12px;
-  font-weight: 500;
-  line-height: 1.5;
   word-break: keep-all;
 `;
 
 export const ConsultationButton = styled.button`
+  ${typography.Body1Bold};
+
   width: 100%;
   margin-top: 12px;
   padding: 12px 16px;
@@ -209,9 +201,6 @@ export const ConsultationButton = styled.button`
   color: ${colorPalette.Black};
   background-color: ${colorPalette.White};
   font-family: inherit;
-  font-size: 14px;
-  font-weight: 700;
-  line-height: 1.5;
   cursor: pointer;
 
   &:active {
@@ -227,6 +216,8 @@ export const BottomArea = styled.div`
 `;
 
 export const RoutineStartButton = styled.button`
+  ${typography.H3};
+
   width: 100%;
   padding: 16px;
   border: none;
@@ -234,9 +225,6 @@ export const RoutineStartButton = styled.button`
   background-color: ${colorPalette.FocusPrimary};
   color: ${colorPalette.OffWhite};
   font-family: inherit;
-  font-size: 16px;
-  font-weight: 700;
-  line-height: 1.5;
   cursor: pointer;
 
   &:active {
