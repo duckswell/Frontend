@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { NavBar } from "../components/NavBar";
 import CareButton from "../components/CareButton";
-import AdditionalSymptomInput from "../components/Care/AdditionalSymptomInput";
-import FocusProgress from "../components/Care/FocusProgress";
-import SkinConditionSelector from "../components/Care/SkinConditionSelector";
-import SkinPhotoUploader from "../components/Care/SkinPhotoUploader";
-import * as S from "../styles/Care/FirstFocusCare.styles";
+import AdditionalSymptomInput from "../components/FocusCare/AdditionalSymptomInput";
+import FocusProgress from "../components/FocusCare/FocusProgress";
+import SkinConditionSelector from "../components/FocusCare/SkinConditionSelector";
+import SkinPhotoUploader from "../components/FocusCare/SkinPhotoUploader";
+import * as S from "../styles/FocusCare/FirstFocusCare.styles";
 
 export default function FirstFocusCare() {
   const [selectedConditions, setSelectedConditions] = useState<string[]>([

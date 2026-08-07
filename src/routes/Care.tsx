@@ -1,7 +1,7 @@
 import { NavBar } from "../components/NavBar";
 import { TabBar } from "../components/TabBar";
 import CareButton from "../components/CareButton";
-import * as S from "../styles/Care/Care.styles";
+import * as S from "../styles/FocusCare/Care.styles";
 import { useNavigate } from "react-router-dom";
 const COURSE_STEPS = [
   {

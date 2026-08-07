@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import * as S from "../../styles/Care/SkinPhotoUploader.styles";
+import * as S from "../../styles/FocusCare/SkinPhotoUploader.styles";
 
 interface SkinPhotoUploaderProps {
   onChangeImage: (file: File | null) => void;

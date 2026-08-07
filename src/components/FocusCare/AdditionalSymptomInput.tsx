@@ -1,4 +1,4 @@
-import * as S from "../../styles/Care/AdditionalSymptomInput.styles";
+import * as S from "../../styles/FocusCare/AdditionalSymptomInput.styles";
 
 interface AdditionalSymptomInputProps {
   value: string;
