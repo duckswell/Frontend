@@ -1,7 +1,13 @@
 import { useEffect, useState } from "react";
 import * as S from "../../styles/FocusCare/AnalysisLoading.styles";
 
-export default function AnalysisLoading() {
+interface AnalysisLoadingProps {
+  onComplete: () => void;
+}
+
+export default function AnalysisLoading({
+  onComplete,
+}: AnalysisLoadingProps) {
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
@@ -20,6 +26,12 @@ export default function AnalysisLoading() {
       window.clearInterval(interval);
     };
   }, []);
+
+  useEffect(() => {
+    if (progress === 100) {
+      onComplete();
+    }
+  }, [progress, onComplete]);
 
   return (
     <S.Container>

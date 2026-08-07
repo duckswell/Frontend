@@ -19,7 +19,7 @@ export const Container = styled.section`
 
   width: 100%;
 
-  margin: 70px 0 20px;
+  margin: 50px 0 50px;
 `;
 
 export const ProgressCircle = styled.div`

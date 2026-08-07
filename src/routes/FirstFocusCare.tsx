@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { NavBar } from "../components/NavBar";
 import CareButton from "../components/CareButton";
 import AdditionalSymptomInput from "../components/FocusCare/AdditionalSymptomInput";
@@ -8,6 +9,8 @@ import SkinPhotoUploader from "../components/FocusCare/SkinPhotoUploader";
 import * as S from "../styles/FocusCare/FirstFocusCare.styles";
 
 export default function FirstFocusCare() {
+  const navigate = useNavigate();
+
   const [selectedConditions, setSelectedConditions] = useState<string[]>([
     "따가움",
   ]);
@@ -41,9 +44,8 @@ export default function FirstFocusCare() {
       additionalSymptom,
     });
 
-    // TODO: AI 분석 페이지 연결 후 navigate 추가
+    navigate("/care/second_focus_care");
   };
-
   return (
     <S.Page>
       <NavBar title="집중 코스" />
