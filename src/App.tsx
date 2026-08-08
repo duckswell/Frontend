@@ -8,6 +8,7 @@ import NewProcedure from "./routes/NewProcedure";
 import Care from "./routes/Care";
 import FirstFocusCare from "./routes/FirstFocusCare";
 import SecondFocusCare from "./routes/SecondFocusCare";
+import Preview from "./routes/DailycoursePreview";
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
         <Route path="/history" element={<CourseHistories />} />
         <Route path="/safety" element={<SafetyGuide />} />
         <Route path="/add" element={<NewProcedure />} />
+        <Route path="/preview" element={<Preview />} />
         <Route path="/care" element={<Care />} />
         <Route path="/care/first_focus_care" element={<FirstFocusCare />} />
         <Route path="/care/second_focus_care" element={<SecondFocusCare />} />

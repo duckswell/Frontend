@@ -117,20 +117,26 @@ const Home: React.FC = () => {
         </S.LeftColumn>
 
         <S.RightColumn>
-          <S.BannerCard>
+          <S.BannerCard onClick={() => navigate("/preview")}>
             <div className="left">
               <img
                 className="icon-img"
-                src={"/assets/Home_Daily.png"}
+                src={
+                  isFocus
+                    ? "/assets/Home_Daily.png"
+                    : "/assets/Home_Daily_Routine.png"
+                }
                 alt="데일리 코스"
               />
               <div>
                 <div className="desc">
                   {isFocus
-                    ? "집중 코스가 끝나면 데일리로 이어가요"
-                    : "다른 데일리 코스하고싶냐"}
+                    ? "집중 코스가 끝나면 시작돼요"
+                    : "피부 고민에 맞는 루틴을 선택해 보세요"}
                 </div>
-                <div className="title">데일리 코스 살펴보기</div>
+                <div className="title">
+                  {isFocus ? "데일리 코스 미리보기" : "다른 루틴 둘러보기"}
+                </div>
               </div>
             </div>
             <div className="arrow">
