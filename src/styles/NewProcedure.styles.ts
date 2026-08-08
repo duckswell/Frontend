@@ -184,7 +184,7 @@ export const CustomCalendarCard = styled.div`
   background-color: ${colorPalette.OffWhite};
   border: 0.5px solid ${colorPalette.Quaternary};
   border-radius: 16px;
-  padding: 24px 20px 20px 20px;
+  padding: 20px 16px;
   box-sizing: border-box;
   z-index: 100;
 
@@ -193,7 +193,7 @@ export const CustomCalendarCard = styled.div`
     align-items: center;
     justify-content: center;
     gap: 20px;
-    margin-bottom: 24px;
+    margin-bottom: 20px;
 
     .year-month {
       ${applyTypography("Body1")}
@@ -219,8 +219,9 @@ export const CustomCalendarCard = styled.div`
   .weekdays-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
+    justify-items: center;
     text-align: center;
-    margin-bottom: 16px;
+    margin-bottom: 12px;
 
     span {
       ${applyTypography("Body1Bold")}
@@ -235,8 +236,9 @@ export const CustomCalendarCard = styled.div`
   .days-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    row-gap: 12px;
-    margin-bottom: 24px;
+    justify-items: center;
+    row-gap: 8px;
+    margin-bottom: 20px;
   }
 
   .calendar-footer {
@@ -261,7 +263,7 @@ export const CustomCalendarCard = styled.div`
       ${applyTypography("Body1")}
       color: ${colorPalette.OffWhite};
       cursor: pointer;
-      padding: 15px 23px;
+      padding: 12px 20px;
 
       &:hover {
         opacity: 0.9;
@@ -276,8 +278,9 @@ export const DayCell = styled.button<{
 }>`
   background: none;
   border: none;
-  width: 36px;
-  height: 36px;
+  width: 100%;
+  max-width: 36px;
+  aspect-ratio: 1 / 1;
   margin: 0 auto;
   border-radius: 50%;
   display: flex;
@@ -285,6 +288,7 @@ export const DayCell = styled.button<{
   justify-content: center;
   ${applyTypography("Body1")}
   cursor: pointer;
+  padding: 0;
 
   color: ${({ $isCurrentMonth, $isSelected }) =>
     $isSelected
