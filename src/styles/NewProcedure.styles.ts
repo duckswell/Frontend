@@ -1,5 +1,13 @@
-import styled from "styled-components";
+import styled, { css } from "styled-components";
 import { colorPalette } from "../lib/colorPalette";
+import { typography } from "../lib/typography";
+
+const applyTypography = (type: keyof typeof typography) => css`
+  font-size: ${typography[type].fontSize};
+  font-weight: ${typography[type].fontWeight};
+  line-height: ${typography[type].lineHeight};
+  letter-spacing: ${typography[type].letterSpacing};
+`;
 
 export const Container = styled.div`
   width: 100%;
@@ -40,21 +48,18 @@ export const AccordionHeader = styled.div<{ $isSingle?: boolean }>`
   user-select: none;
 
   .title {
-    font-size: 16px;
-    font-weight: 700;
+    ${applyTypography("H3")}
     color: ${colorPalette.Black};
 
     span.is-editing {
+      ${applyTypography("Body1")}
       color: ${colorPalette.grey400};
-      font-weight: 500;
-      font-size: 14px;
       margin-left: 4px;
     }
 
     span.has-value {
+      ${applyTypography("H3")}
       color: ${colorPalette.Black};
-      font-weight: 700;
-      font-size: 16px;
       margin-left: 4px;
     }
   }
@@ -80,8 +85,7 @@ export const FormGroup = styled.div`
 
   label {
     display: block;
-    font-size: 14px;
-    font-weight: 700;
+    ${applyTypography("Body1Bold")}
     color: ${colorPalette.Black};
     margin-bottom: 10px;
   }
@@ -99,7 +103,7 @@ export const SelectBox = styled.div`
     display: flex;
     align-items: center;
     justify-content: space-between;
-    font-size: 14px;
+    ${applyTypography("Body1")}
     color: ${colorPalette.Black};
     cursor: pointer;
     box-sizing: border-box;
@@ -132,7 +136,7 @@ export const SelectBox = styled.div`
 
     .option-item {
       padding: 14px 16px;
-      font-size: 14px;
+      ${applyTypography("Body1")}
       color: ${colorPalette.Black};
       cursor: pointer;
 
@@ -163,8 +167,7 @@ export const DateInputWrapper = styled.div<{ $hasValue: boolean }>`
   }
 
   .date-text {
-    font-size: 14px;
-    font-weight: 500;
+    ${applyTypography("Body1")}
     color: ${colorPalette.Black};
 
     &.placeholder {
@@ -193,8 +196,7 @@ export const CustomCalendarCard = styled.div`
     margin-bottom: 24px;
 
     .year-month {
-      font-size: 14px;
-      font-weight: 500;
+      ${applyTypography("Body1")}
       color: ${colorPalette.Black};
     }
 
@@ -221,8 +223,7 @@ export const CustomCalendarCard = styled.div`
     margin-bottom: 16px;
 
     span {
-      font-size: 14px;
-      font-weight: 700;
+      ${applyTypography("Body1Bold")}
       color: ${colorPalette.Black};
 
       &.sunday {
@@ -247,8 +248,7 @@ export const CustomCalendarCard = styled.div`
     .cancel-btn {
       background: none;
       border: none;
-      font-size: 14px;
-      font-weight: 700;
+      ${applyTypography("Body1Bold")}
       color: ${colorPalette.Black};
       cursor: pointer;
       padding: 10px 16px;
@@ -258,8 +258,7 @@ export const CustomCalendarCard = styled.div`
       background-color: ${colorPalette.Black};
       border: none;
       border-radius: 12px;
-      font-size: 14px;
-      font-weight: 500;
+      ${applyTypography("Body1")}
       color: ${colorPalette.OffWhite};
       cursor: pointer;
       padding: 15px 23px;
@@ -284,8 +283,7 @@ export const DayCell = styled.button<{
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
-  font-weight: 500;
+  ${applyTypography("Body1")}
   cursor: pointer;
 
   color: ${({ $isCurrentMonth, $isSelected }) =>
@@ -315,8 +313,7 @@ export const CountGrid = styled.div`
     gap: 10px;
 
     .label-text {
-      font-size: 14px;
-      font-weight: 700;
+      ${applyTypography("Body1Bold")}
       color: ${colorPalette.Black};
     }
   }
@@ -339,6 +336,8 @@ export const InputBoxWrapper = styled.div`
     text-align: right;
     font-size: 15px;
     font-weight: 700;
+    line-height: 150%;
+    letter-spacing: 0;
     color: ${colorPalette.Black};
     outline: none;
     padding: 0;
@@ -356,8 +355,7 @@ export const InputBoxWrapper = styled.div`
   }
 
   .unit {
-    font-size: 14px;
-    font-weight: 600;
+    ${applyTypography("Body1Bold")}
     color: ${colorPalette.Black};
     margin-left: 4px;
     margin-right: 11px;
@@ -380,8 +378,8 @@ export const PartChip = styled.button<{ $isSelected: boolean }>`
     $isSelected ? colorPalette.Black : colorPalette.OffWhite};
   color: ${({ $isSelected }) =>
     $isSelected ? colorPalette.OffWhite : colorPalette.Black};
+  ${applyTypography("Body1Bold")}
   font-size: 13px;
-  font-weight: 600;
   cursor: pointer;
   transition: all 0.15s ease;
 `;
@@ -392,8 +390,8 @@ export const AddButton = styled.button`
   border: 0.5px solid ${colorPalette.Quaternary};
   border-radius: 16px;
   background-color: ${colorPalette.OffWhite};
+  ${applyTypography("Body1Bold")}
   font-size: 15px;
-  font-weight: 700;
   color: ${colorPalette.Black};
   display: flex;
   align-items: center;
@@ -420,8 +418,7 @@ export const SavedNotice = styled.div`
   background-color: ${colorPalette.OffWhite};
   border: 0.5px solid ${colorPalette.Quaternary};
   border-radius: 16px;
-  font-size: 14px;
-  font-weight: 700;
+  ${applyTypography("Body1Bold")}
   color: ${colorPalette.Black};
   margin-bottom: 16px;
   margin-top: -70px;
@@ -435,7 +432,7 @@ export const SavedNotice = styled.div`
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 12px;
+    ${applyTypography("Body2Bold")}
   }
 `;
 
@@ -446,8 +443,7 @@ export const SubmitButton = styled.button`
   border: none;
   border-radius: 12px;
   color: ${colorPalette.OffWhite};
-  font-size: 16px;
-  font-weight: 700;
+  ${applyTypography("H3")}
   cursor: pointer;
 
   &:hover {

@@ -1,5 +1,13 @@
-import styled from "styled-components";
+import styled, { css } from "styled-components";
 import { colorPalette } from "../lib/colorPalette";
+import { typography } from "../lib/typography";
+
+const applyTypography = (type: keyof typeof typography) => css`
+  font-size: ${typography[type].fontSize};
+  font-weight: ${typography[type].fontWeight};
+  line-height: ${typography[type].lineHeight};
+  letter-spacing: ${typography[type].letterSpacing};
+`;
 
 export const Container = styled.div`
   width: 100%;
@@ -20,8 +28,7 @@ export const Section = styled.section`
 `;
 
 export const SectionTitle = styled.h3`
-  font-size: 16px;
-  font-weight: 700;
+  ${applyTypography("H3")}
   color: ${colorPalette.Black};
   margin: 0 0 12px 0;
 `;
@@ -43,16 +50,14 @@ export const TreatmentCard = styled.div`
 
     .info {
       h4 {
-        font-size: 16px;
-        font-weight: 700;
-        color: 1F2937;
+        ${applyTypography("H3")}
+        color: #1f2937;
         margin: 0 0 6px 0;
       }
 
       p {
-        font-size: 12px;
-        font-weight: 500;
-        color: 1F2937;
+        ${applyTypography("Body2")}
+        color: #1f2937;
         margin: 0;
       }
     }
@@ -89,15 +94,13 @@ export const TreatmentCard = styled.div`
       }
 
       span {
-        font-size: 12px;
-        color: 1F2937;
-        font-weight: 500;
+        ${applyTypography("Body2")}
+        color: #1f2937;
       }
 
       strong {
-        font-size: 14px;
-        font-weight: 700;
-        color: 1F2937;
+        ${applyTypography("Body1Bold")}
+        color: #1f2937;
         margin-left: 6px;
       }
     }
@@ -127,14 +130,13 @@ export const LinkCard = styled.div`
     }
 
     .desc {
-      font-size: 14px;
+      ${applyTypography("Body1")}
       color: ${colorPalette.Secondary};
       margin-bottom: 4px;
     }
 
     .title {
-      font-size: 16px;
-      font-weight: 700;
+      ${applyTypography("H3")}
       color: ${colorPalette.Black};
     }
   }

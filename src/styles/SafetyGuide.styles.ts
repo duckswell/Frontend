@@ -1,5 +1,13 @@
-import styled from "styled-components";
+import styled, { css } from "styled-components";
 import { colorPalette } from "../lib/colorPalette";
+import { typography } from "../lib/typography";
+
+const applyTypography = (type: keyof typeof typography) => css`
+  font-size: ${typography[type].fontSize};
+  font-weight: ${typography[type].fontWeight};
+  line-height: ${typography[type].lineHeight};
+  letter-spacing: ${typography[type].letterSpacing};
+`;
 
 export const Container = styled.div`
   width: 100%;
@@ -33,23 +41,19 @@ export const Section = styled.section`
 `;
 
 export const Title = styled.h2`
-  font-size: 16px;
-  font-weight: 700;
+  ${applyTypography("H3")}
   color: ${colorPalette.Black};
   margin: 0 0 8px 0;
 `;
 
 export const SubDesc = styled.p`
-  font-size: 14px;
+  ${applyTypography("Body1")}
   color: ${colorPalette.Black};
-  font-weight: 500;
-  line-height: 1.5;
   margin: 0;
 `;
 
 export const SectionTitle = styled.h3`
-  font-size: 16px;
-  font-weight: 700;
+  ${applyTypography("H3")}
   color: ${colorPalette.Black};
   margin: 0 0 12px 0;
 `;
@@ -59,8 +63,7 @@ export const GuideCard = styled.div`
   border: 0.5px solid ${colorPalette.Quaternary};
   border-radius: 6px;
   padding: 16px;
-  font-size: 14px;
-  font-weight: 600;
+  ${applyTypography("Body1Bold")}
   color: ${colorPalette.Black};
   margin-bottom: 10px;
 `;
@@ -76,18 +79,17 @@ export const InfoNoticeCard = styled.div`
     display: flex;
     align-items: center;
     gap: 6px;
-    font-size: 16px;
-    font-weight: 700;
+    ${applyTypography("H3")}
     color: ${colorPalette.Black};
     margin-bottom: 12px;
   }
 
   .notice-desc {
-    font-size: 12px;
+    ${applyTypography("Body2")}
     color: ${colorPalette.Secondary};
-    line-height: 1.5;
     margin: 0;
   }
+
   img {
     width: 16px;
     height: 16px;
@@ -101,14 +103,13 @@ export const ContactCard = styled.div`
   padding: 20px 16px;
 
   .title {
-    font-size: 16px;
-    font-weight: 700;
+    ${applyTypography("H3")}
     color: ${colorPalette.Black};
     margin-bottom: 8px;
   }
 
   .time {
-    font-size: 12px;
+    ${applyTypography("Body2")}
     color: ${colorPalette.Secondary};
     margin-bottom: 16px;
   }
@@ -121,8 +122,8 @@ export const CallButton = styled.a`
   background-color: ${colorPalette.White};
   border: 0.5px solid ${colorPalette.Quaternary};
   border-radius: 12px;
+  ${applyTypography("Body1Bold")}
   font-size: 15px;
-  font-weight: 700;
   color: ${colorPalette.Black};
   text-align: center;
   text-decoration: none;
@@ -135,7 +136,6 @@ export const CallButton = styled.a`
 
 export const OperatingTime = styled.span`
   color: ${colorPalette.Secondary};
-  font-size: 12px;
-  font-weight: 700;
+  ${applyTypography("Body2Bold")}
   margin-right: 10px;
 `;

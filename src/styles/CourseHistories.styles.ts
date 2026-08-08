@@ -1,5 +1,13 @@
-import styled from "styled-components";
+import styled, { css } from "styled-components";
 import { colorPalette } from "../lib/colorPalette";
+import { typography } from "../lib/typography";
+
+const applyTypography = (type: keyof typeof typography) => css`
+  font-size: ${typography[type].fontSize};
+  font-weight: ${typography[type].fontWeight};
+  line-height: ${typography[type].lineHeight};
+  letter-spacing: ${typography[type].letterSpacing};
+`;
 
 export const Container = styled.div`
   width: 100%;
@@ -20,8 +28,7 @@ export const Section = styled.section`
 `;
 
 export const SectionTitle = styled.h3`
-  font-size: 16px;
-  font-weight: 700;
+  ${applyTypography("H3")}
   color: ${colorPalette.Black};
   margin: 0 0 12px 0;
 `;
@@ -46,14 +53,13 @@ export const CourseCard = styled.div`
 
   .content {
     .desc {
-      font-size: 14px;
+      ${applyTypography("Body1")}
       color: ${colorPalette.Secondary};
       margin-bottom: 4px;
     }
 
     .title {
-      font-size: 16px;
-      font-weight: 700;
+      ${applyTypography("H3")}
       color: ${colorPalette.Black};
     }
   }
@@ -69,18 +75,17 @@ export const InfoNoticeCard = styled.div`
     display: flex;
     align-items: center;
     gap: 6px;
-    font-size: 16px;
-    font-weight: 700;
+    ${applyTypography("H3")}
     color: ${colorPalette.Black};
     margin-bottom: 12px;
   }
 
   .notice-desc {
-    font-size: 12px;
+    ${applyTypography("Body2")}
     color: ${colorPalette.Secondary};
-    line-height: 1.5;
     margin: 0 0 16px 0;
   }
+
   img {
     width: 16px;
     height: 16px;
@@ -92,8 +97,7 @@ export const InfoNoticeCard = styled.div`
     background-color: ${colorPalette.White};
     border: 0.5px solid ${colorPalette.Quaternary};
     border-radius: 12px;
-    font-size: 14px;
-    font-weight: 700;
+    ${applyTypography("Body1Bold")}
     color: ${colorPalette.Black};
     cursor: pointer;
 

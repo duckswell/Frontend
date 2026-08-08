@@ -1,5 +1,13 @@
-import styled from "styled-components";
+import styled, { css } from "styled-components";
 import { colorPalette } from "../lib/colorPalette";
+import { typography } from "../lib/typography";
+
+const applyTypography = (type: keyof typeof typography) => css`
+  font-size: ${typography[type].fontSize};
+  font-weight: ${typography[type].fontWeight};
+  line-height: ${typography[type].lineHeight};
+  letter-spacing: ${typography[type].letterSpacing};
+`;
 
 export const Container = styled.div`
   width: 100%;
@@ -60,21 +68,18 @@ export const Badge = styled.div<{ $isFocus: boolean }>`
   background-color: ${colorPalette.OffWhite};
   color: ${({ $isFocus }) =>
     $isFocus ? colorPalette.FocusPrimary : colorPalette.DailyPrimary};
-  font-size: 12px;
-  font-weight: 700;
+  ${applyTypography("Body2Bold")}
   margin-bottom: 12px;
 `;
 
 export const HeroTitle = styled.h2`
-  font-size: 20px;
-  font-weight: 700;
+  ${applyTypography("H2")}
   color: ${colorPalette.Black};
-  line-height: 1.35;
   margin: 10px 0 65px 0;
   white-space: pre-line;
 
   @media (min-width: 768px) {
-    font-size: 24px;
+    ${applyTypography("H1")}
   }
 `;
 
@@ -92,8 +97,7 @@ export const StatItem = styled.div`
 
   span {
     display: block;
-    font-size: 14px;
-    font-weight: 500;
+    ${applyTypography("Body1")}
     color: ${colorPalette.Black};
     margin-bottom: 6px;
     padding-left: 15px;
@@ -102,6 +106,8 @@ export const StatItem = styled.div`
   strong {
     font-size: 32px;
     font-weight: 500;
+    line-height: 150%;
+    letter-spacing: 0;
     color: ${colorPalette.Black};
     display: flex;
     align-items: baseline;
@@ -109,10 +115,9 @@ export const StatItem = styled.div`
     gap: 2px;
   }
 `;
+
 export const Percent = styled.div`
-  font-size: 16px;
-  font-weight: 1000;
-  line-height: 100%;
+  ${applyTypography("H3")}
   display: inline-flex;
   align-items: baseline;
   justify-content: center;
@@ -120,16 +125,20 @@ export const Percent = styled.div`
 
 export const Down = styled.div`
   font-size: 30px;
-  font-weight: 900;
-  line-height: 100%;
+  font-weight: 700;
+  line-height: 150%;
+  letter-spacing: 0;
   color: ${colorPalette.FocusPrimary};
 `;
+
 export const Up = styled.div`
   font-size: 30px;
-  font-weight: 900;
-  line-height: 100%;
-  color: red;
+  font-weight: 700;
+  line-height: 150%;
+  letter-spacing: 0;
+  color: ${colorPalette.Red};
 `;
+
 export const RoutineButton = styled.button<{ $isFocus: boolean }>`
   width: 100%;
   padding: 17px 0;
@@ -138,8 +147,7 @@ export const RoutineButton = styled.button<{ $isFocus: boolean }>`
   background-color: ${({ $isFocus }) =>
     $isFocus ? colorPalette.FocusPrimary : colorPalette.DailyPrimary};
   color: ${colorPalette.OffWhite};
-  font-size: 16px;
-  font-weight: 600;
+  ${applyTypography("H3")}
   cursor: pointer;
 
   &:hover {
@@ -172,14 +180,13 @@ export const BannerCard = styled.div`
     }
 
     .desc {
-      font-size: 14px;
+      ${applyTypography("Body1")}
       color: ${colorPalette.grey400};
       margin-bottom: 2px;
     }
 
     .title {
-      font-size: 16px;
-      font-weight: 700;
+      ${applyTypography("H3")}
       color: ${colorPalette.Black};
     }
   }
@@ -198,14 +205,13 @@ export const SectionHeader = styled.div`
   }
 
   h3 {
-    font-size: 16px;
-    font-weight: 700;
+    ${applyTypography("H3")}
     color: ${colorPalette.Black};
     margin: 0 0 4px 0;
   }
 
   p {
-    font-size: 12px;
+    ${applyTypography("Body2")}
     color: ${colorPalette.grey400};
     margin: 0;
   }
@@ -263,17 +269,16 @@ export const TodoCard = styled.div<{ $isChecked: boolean; $isFocus: boolean }>`
 
   .content {
     h4 {
-      font-size: 14px;
-      font-weight: 700;
+      ${applyTypography("Body1Bold")}
       margin: 0 0 6px 0;
       color: ${({ $isFocus }) =>
         $isFocus ? colorPalette.FocusPrimary : colorPalette.DailyPrimary};
     }
 
     p {
+      ${applyTypography("Body1")}
       font-size: 13px;
       margin: 0;
-      line-height: 1.4;
       color: ${({ $isChecked, $isFocus }) =>
         $isChecked
           ? $isFocus
@@ -300,8 +305,8 @@ export const DailyStatItem = styled.div`
     gap: 4px;
 
     span {
+      ${applyTypography("Body2Bold")}
       font-size: 13px;
-      font-weight: 600;
       color: ${colorPalette.Black};
     }
 
@@ -312,10 +317,8 @@ export const DailyStatItem = styled.div`
   }
 
   .status-text {
-    font-size: 14px;
-    font-weight: 800;
+    ${applyTypography("Body1Bold")}
     color: ${colorPalette.Black};
-    line-height: 1.2;
     margin: 0;
     text-wrap: nowrap;
   }
