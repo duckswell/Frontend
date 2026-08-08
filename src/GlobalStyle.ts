@@ -18,6 +18,9 @@ export const GlobalStyle = createGlobalStyle`
     font-family: 'Wanted Sans Variable', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif !important;
   }
 
+  html {
+    scrollbar-gutter: stable;
+  }
   input, textarea {
     user-select: auto;
     -webkit-user-select: auto;
