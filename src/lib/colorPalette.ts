@@ -53,4 +53,7 @@ export const colorPalette = {
   green800: "#468205",
   green900: "#376802",
   green950: "#284D00",
+
+  Red: "#E01A1A",
+  GreySelected: "#F2F2F2",
 } as const;

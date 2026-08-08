@@ -136,7 +136,7 @@ export const Up = styled.div`
   font-weight: 700;
   line-height: 150%;
   letter-spacing: 0;
-  color: red;
+  color: ${colorPalette.Red};
 `;
 
 export const RoutineButton = styled.button<{ $isFocus: boolean }>`
