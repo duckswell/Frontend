@@ -1,5 +1,13 @@
-import styled from "styled-components";
+import styled, { css } from "styled-components";
 import { colorPalette } from "../lib/colorPalette";
+import { typography } from "../lib/typography";
+
+const applyTypography = (type: keyof typeof typography) => css`
+  font-size: ${typography[type].fontSize};
+  font-weight: ${typography[type].fontWeight};
+  line-height: ${typography[type].lineHeight};
+  letter-spacing: ${typography[type].letterSpacing};
+`;
 
 export const Container = styled.nav`
   position: fixed;
@@ -39,8 +47,8 @@ export const TabItem = styled.button<{ $isActive: boolean }>`
   cursor: pointer;
   color: ${({ $isActive }) =>
     $isActive ? colorPalette.Black : colorPalette.grey300};
-  font-weight: ${({ $isActive }) => ($isActive ? "700" : "400")};
-  font-size: 12px;
+  ${({ $isActive }) =>
+    $isActive ? applyTypography("Body2Bold") : applyTypography("Body2")};
   transition: color 0.2s ease;
 
   &:hover {

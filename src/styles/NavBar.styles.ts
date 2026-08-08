@@ -1,5 +1,13 @@
-import styled from "styled-components";
+import styled, { css } from "styled-components";
 import { colorPalette } from "../lib/colorPalette";
+import { typography } from "../lib/typography";
+
+const applyTypography = (type: keyof typeof typography) => css`
+  font-size: ${typography[type].fontSize};
+  font-weight: ${typography[type].fontWeight};
+  line-height: ${typography[type].lineHeight};
+  letter-spacing: ${typography[type].letterSpacing};
+`;
 
 export const Container = styled.header`
   position: fixed;
@@ -39,8 +47,7 @@ export const IconButton = styled.button`
 `;
 
 export const Title = styled.h1`
-  font-size: 16px;
-  font-weight: 700;
+  ${applyTypography("H3")}
   color: ${colorPalette.Black};
   margin: 0;
   position: absolute;
