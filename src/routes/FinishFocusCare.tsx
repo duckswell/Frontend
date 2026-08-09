@@ -40,28 +40,28 @@ const ROUTINE_OPTIONS: RoutineOption[] = [
     title: "쿨다운 루틴",
     description: "쉽게 붉어지고 예민해지는 피부를 진정",
     tags: ["센텔라", "판테놀", "알로에"],
-    iconSrc: "/assets/cooldown-routine.png",
+    iconSrc: "/assets/Daily_cooldown.png",
   },
   {
     id: "clear",
     title: "클리어업 루틴",
     description: "칙칙한 피부톤과 눈에 띄는 피부 흔적에 집중",
     tags: ["나이아신아마이드", "비타민C"],
-    iconSrc: "/assets/clearup-routine.png",
+    iconSrc: "/assets/Daily_clearup.png",
   },
   {
     id: "sebum",
     title: "피지컨트롤 루틴",
     description: "과도한 피지가 고민인 피부를 산뜻하고 깨끗하게",
     tags: ["나이아신아마이드", "징크 PCA"],
-    iconSrc: "/assets/sebum-control-routine.png",
+    iconSrc: "/assets/Daily_pore.png",
   },
   {
     id: "moisture",
     title: "수분충전 루틴",
     description: "건조하거나 당기는 피부에 수분을 채워 촉촉하게",
     tags: ["히알루론산", "세라마이드", "판테놀"],
-    iconSrc: "/assets/moisture-routine.png",
+    iconSrc: "/assets/Daily_barrier.png",
   },
 ];
 
@@ -81,6 +81,7 @@ export default function FinishFocusCare() {
 
   const touchStartY = useRef<number | null>(null);
   const isWheelLocked = useRef(false);
+  const routineScreenRef = useRef<HTMLElement | null>(null);
 
   const selectedConcernList = SKIN_CONCERNS.filter((concern) =>
     selectedConcerns.has(concern)
@@ -194,18 +195,43 @@ export default function FinishFocusCare() {
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, [currentStep]);
-
   useEffect(() => {
     function handleWheel(event: WheelEvent) {
       if (event.ctrlKey || event.metaKey) {
         return;
       }
 
-      if (isWheelLocked.current) {
+      if (Math.abs(event.deltaY) < 15) {
         return;
       }
 
-      if (Math.abs(event.deltaY) < 15) {
+      if (currentStep === "routine") {
+        const routineScreen = routineScreenRef.current;
+
+        if (!routineScreen) {
+          return;
+        }
+
+        const isAtTop = routineScreen.scrollTop <= 0;
+
+        if (event.deltaY < 0 && isAtTop) {
+          if (isWheelLocked.current) {
+            return;
+          }
+
+          isWheelLocked.current = true;
+
+          handleMoveToPreviousStep();
+
+          window.setTimeout(() => {
+            isWheelLocked.current = false;
+          }, 700);
+        }
+
+        return;
+      }
+
+      if (isWheelLocked.current) {
         return;
       }
 
@@ -230,7 +256,6 @@ export default function FinishFocusCare() {
       window.removeEventListener("wheel", handleWheel);
     };
   }, [currentStep]);
-
   useEffect(() => {
     if (currentStep !== "indicator" || !shouldAutoAdvanceIndicator) {
       return;
@@ -240,7 +265,7 @@ export default function FinishFocusCare() {
       setCurrentStep("concern");
 
       setShouldAutoAdvanceIndicator(false);
-    }, 2100);
+    }, 1900);
 
     return () => {
       window.clearTimeout(timer);
@@ -324,7 +349,7 @@ export default function FinishFocusCare() {
       )}
 
       {currentStep === "routine" && (
-        <S.RoutineScreen>
+        <S.RoutineScreen ref={routineScreenRef}>
           <S.RoutineContent>
             <S.RoutineHeader>
               <S.SectionTitle>어떤 관리에 집중하고 싶으세요?</S.SectionTitle>
