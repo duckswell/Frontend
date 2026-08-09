@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLottie } from "lottie-react";
 
@@ -13,16 +14,25 @@ import * as S from "../styles/FocusCare/FinishRoutine.styles";
 export default function FinishRoutine() {
   const navigate = useNavigate();
 
+  const [isLeftConfettiVisible, setIsLeftConfettiVisible] = useState(true);
+  const [isRightConfettiVisible, setIsRightConfettiVisible] = useState(true);
+
   const leftConfettiOptions = {
     animationData: confettiAnimation,
     loop: false,
     autoplay: true,
+    onComplete: () => {
+      setIsLeftConfettiVisible(false);
+    },
   };
 
   const rightConfettiOptions = {
     animationData: confettiAnimation,
     loop: false,
     autoplay: true,
+    onComplete: () => {
+      setIsRightConfettiVisible(false);
+    },
   };
 
   const { View: leftConfetti } = useLottie(leftConfettiOptions);
@@ -36,9 +46,9 @@ export default function FinishRoutine() {
     <S.Page>
       <S.Content>
         <S.CompletionSection>
-          <S.LeftConfetti aria-hidden="true">
-            {leftConfetti}
-          </S.LeftConfetti>
+          {isLeftConfettiVisible && (
+            <S.LeftConfetti aria-hidden="true">{leftConfetti}</S.LeftConfetti>
+          )}
 
           <S.CompletionTitle>
             오늘의 루틴을
@@ -46,21 +56,18 @@ export default function FinishRoutine() {
             모두 마쳤어요!
           </S.CompletionTitle>
 
-          <S.RightConfetti aria-hidden="true">
-            {rightConfetti}
-          </S.RightConfetti>
+          {isRightConfettiVisible && (
+            <S.RightConfetti aria-hidden="true">
+              {rightConfetti}
+            </S.RightConfetti>
+          )}
         </S.CompletionSection>
 
         <S.InformationSection>
           <RoutineRecordCard
             symptoms="붉은기와 건조함, 각질"
             routineName="진정·장벽 루틴"
-            ingredients={[
-              "판테놀",
-              "센텔라",
-              "히알루론산",
-              "세라마이드",
-            ]}
+            ingredients={["판테놀", "센텔라", "히알루론산", "세라마이드"]}
           />
 
           <S.DailyCard type="button">
@@ -75,16 +82,10 @@ export default function FinishRoutine() {
                 집중 코스가 끝나면 데일리로 이어가요
               </S.DailyDescription>
 
-              <S.DailyTitle>
-                데일리 코스 살펴보기
-              </S.DailyTitle>
+              <S.DailyTitle>데일리 코스 살펴보기</S.DailyTitle>
             </S.DailyTextArea>
 
-            <S.GotoIcon
-              src="/assets/Goto.svg"
-              alt=""
-              aria-hidden="true"
-            />
+            <S.GotoIcon src="/assets/Goto.svg" alt="" aria-hidden="true" />
           </S.DailyCard>
         </S.InformationSection>
 

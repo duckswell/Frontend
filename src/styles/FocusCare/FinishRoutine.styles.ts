@@ -32,7 +32,7 @@ export const CompletionSection = styled.section`
   justify-content: center;
 
   width: 100%;
-  height: 380px;
+  height: 420px;
 `;
 
 export const CompletionTitle = styled.h1`
@@ -50,12 +50,12 @@ export const CompletionTitle = styled.h1`
 export const LeftConfetti = styled.div`
   position: absolute;
   top: 50%;
-  left: -90px;
+  left: -140px;
 
   z-index: 1;
 
-  width: 240px;
-  height: 320px;
+  width: 340px;
+  height: 420px;
 
   transform: translateY(-50%);
 
@@ -70,12 +70,12 @@ export const LeftConfetti = styled.div`
 export const RightConfetti = styled.div`
   position: absolute;
   top: 50%;
-  right: -90px;
+  right: -140px;
 
   z-index: 1;
 
-  width: 240px;
-  height: 320px;
+  width: 340px;
+  height: 420px;
 
   transform: translateY(-50%) scaleX(-1);
 
