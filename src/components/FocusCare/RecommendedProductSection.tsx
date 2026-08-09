@@ -7,7 +7,12 @@ interface Product {
   categories: string[];
 }
 
-const PRODUCTS: Product[] = [
+interface RecommendedProductSectionProps {
+  title?: string;
+  products?: Product[];
+}
+
+const DEFAULT_PRODUCTS: Product[] = [
   {
     id: 1,
     brand: "Pith",
@@ -28,11 +33,14 @@ const PRODUCTS: Product[] = [
   },
 ];
 
-export default function RecommendedProductSection() {
+export default function RecommendedProductSection({
+  title = "오늘의 추천 성분 제품",
+  products = DEFAULT_PRODUCTS,
+}: RecommendedProductSectionProps) {
   return (
     <S.Section>
       <S.Header>
-        <S.Title>오늘의 추천 성분 제품</S.Title>
+        <S.Title>{title}</S.Title>
 
         <S.MoreButton type="button">
           <S.MoreText>더보기</S.MoreText>
@@ -41,7 +49,7 @@ export default function RecommendedProductSection() {
       </S.Header>
 
       <S.ProductScroll>
-        {PRODUCTS.map((product) => (
+        {products.map((product) => (
           <S.ProductCard key={product.id}>
             <S.ProductImagePlaceholder />
 

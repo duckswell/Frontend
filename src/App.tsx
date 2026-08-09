@@ -12,7 +12,7 @@ import Preview from "./routes/DailycoursePreview";
 import ThirdFocusCare from "./routes/ThirdFocusCare";
 import FinishRoutine from "./routes/FinishRutine";
 import FinishFocusCare from "./routes/FinishFocusCare";
-
+import FinishSelectRoutine from "./routes/FinishSelectRoutine";
 function App() {
   return (
     <BrowserRouter>
@@ -30,6 +30,8 @@ function App() {
         <Route path="/care/third_focus_care" element={<ThirdFocusCare />} />
         <Route path="/care/finish_routine" element={<FinishRoutine />} />
         <Route path="/care/finish_focus_care" element={<FinishFocusCare />} />
+        <Route path="/care/finish_select_routine" element={<FinishSelectRoutine />} />
+
       </Routes>
     </BrowserRouter>
   );
