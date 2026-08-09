@@ -24,12 +24,20 @@ const dotFadeIn = keyframes`
     transform: translateY(0) scale(1);
   }
 `;
+const slideUpFadeIn = keyframes`
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
 
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+`;
 export const Page = styled.div`
   width: 100%;
-  height: 100dvh;
-
-  overflow: hidden;
+  min-height: 100dvh;
 
   background-color: ${colorPalette.OffWhite};
 `;
@@ -126,9 +134,7 @@ export const IndicatorContainer = styled.div<{
   transform: ${({ $isVisible }) =>
     $isVisible ? "translateY(0)" : "translateY(12px)"};
 
-  transition:
-    opacity 0.35s ease,
-    transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: opacity 0.35s ease, transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
 
   pointer-events: none;
 `;
@@ -155,8 +161,7 @@ export const IndicatorDot = styled.span<{
     return colorPalette.FocusPrimary;
   }};
 
-  animation: ${dotFadeIn} 0.45s
-    cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: ${dotFadeIn} 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 
   &:nth-child(1) {
     animation-delay: 0.2s;
@@ -181,8 +186,9 @@ export const ConcernContent = styled.div`
 
   width: 100%;
   max-width: 370px;
-`;
 
+  animation: ${slideUpFadeIn} 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+`;
 export const SectionTitle = styled.h2`
   ${typography.H3};
 
@@ -278,20 +284,13 @@ export const ConcernButton = styled.button<{
 export const RoutineScreen = styled.section`
   box-sizing: border-box;
 
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
   width: 100%;
   height: 100dvh;
 
-  overflow: hidden;
+  overflow-y: auto;
 
   background-color: ${colorPalette.OffWhite};
-
-  animation: ${fadeIn} 0.35s ease;
 `;
-
 export const RoutineContent = styled.div`
   box-sizing: border-box;
 
@@ -302,7 +301,9 @@ export const RoutineContent = styled.div`
   max-width: 402px;
 
   margin: 0 auto;
-  padding: 0 16px;
+  padding: 80px 16px 40px;
+
+  animation: ${slideUpFadeIn} 0.6s cubic-bezier(0.22, 1, 0.36, 1);
 `;
 
 export const RoutineHeader = styled.div`

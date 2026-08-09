@@ -14,7 +14,7 @@ export default function SkinConditionSelector({
   selectedConditions,
   onToggleCondition,
 }: SkinConditionSelectorProps) {
-  return (
+  return ( 
     <S.Container>
       <S.TextArea>
         <S.Title>오늘 피부 상태는 어떤가요?</S.Title>
