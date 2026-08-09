@@ -1,4 +1,5 @@
 import { NavBar } from "../components/NavBar";
+import { useNavigate } from "react-router-dom";
 import CareButton from "../components/CareButton";
 import FocusProgress from "../components/FocusCare/FocusProgress";
 import RoutineStepCard from "../components/FocusCare/RoutineStepCard";
@@ -7,8 +8,9 @@ import { colorPalette } from "../lib/colorPalette";
 import * as S from "../styles/FocusCare/ThirdFocusCare.styles";
 
 export default function ThirdFocusCare() {
+  const navigate = useNavigate();
   function handleCompleteFocusCareRoutine() {
-    // TODO: 루틴 완료 후 이동할 페이지 연결
+    navigate("/care/finish_routine");
   }
 
   return (
