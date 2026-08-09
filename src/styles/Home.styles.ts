@@ -14,7 +14,7 @@ export const Container = styled.div`
   max-width: 430px;
   margin: 0 auto;
   min-height: 100vh;
-  padding: 30px 20px 80px 20px;
+  padding: 76px 20px 80px 20px;
   box-sizing: border-box;
 
   @media (min-width: 768px) {
@@ -305,8 +305,7 @@ export const DailyStatItem = styled.div`
     gap: 4px;
 
     span {
-      ${applyTypography("Body2Bold")}
-      font-size: 13px;
+      ${applyTypography("Body2")}
       color: ${colorPalette.Black};
     }
 

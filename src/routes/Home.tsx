@@ -3,9 +3,7 @@ import * as S from "../styles/Home.styles";
 import { useNavigate } from "react-router-dom";
 import { TabBar, type TabType } from "../components/TabBar";
 import { AITodos } from "../components/Home/AITodos";
-
-// 아래를 daily로 바꾸면 데일리케어, focus로 바꾸면 집중케어 UI
-const CURRENT_VERSION: "focus" | "daily" = "focus";
+import { Header } from "../components/Home/Header";
 
 interface TodoItem {
   id: number;
@@ -17,6 +15,10 @@ interface TodoItem {
 const Home: React.FC = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<TabType>("home");
+
+  const [currentVersion, setCurrentVersion] = useState<"focus" | "daily">(
+    "focus",
+  );
 
   const [todos, setTodos] = useState<TodoItem[]>([
     {
@@ -35,7 +37,12 @@ const Home: React.FC = () => {
     },
   ]);
 
-  const isFocus = CURRENT_VERSION === "focus";
+  const isFocus = currentVersion === "focus";
+
+  const handleToggleVersion = () => {
+    setCurrentVersion((prev) => (prev === "focus" ? "daily" : "focus"));
+    setTodos((prev) => prev.map((todo) => ({ ...todo, isChecked: false })));
+  };
 
   const handleToggleTodo = (id: number) => {
     setTodos((prev) =>
@@ -50,6 +57,10 @@ const Home: React.FC = () => {
 
   return (
     <>
+      <Header
+        currentVersion={currentVersion}
+        onToggleVersion={handleToggleVersion}
+      />
       <S.Container>
         <S.LeftColumn>
           <S.HeroCard $isFocus={isFocus}>
@@ -117,7 +128,7 @@ const Home: React.FC = () => {
         </S.LeftColumn>
 
         <S.RightColumn>
-          <S.BannerCard>
+          <S.BannerCard onClick={() => navigate("/preview")}>
             <div className="left">
               <img
                 className="icon-img"
@@ -127,10 +138,12 @@ const Home: React.FC = () => {
               <div>
                 <div className="desc">
                   {isFocus
-                    ? "집중 코스가 끝나면 데일리로 이어가요"
-                    : "다른 데일리 코스하고싶냐"}
+                    ? "집중 코스가 끝나면 시작돼요"
+                    : "피부 고민에 맞는 루틴을 선택해 보세요"}
                 </div>
-                <div className="title">데일리 코스 살펴보기</div>
+                <div className="title">
+                  {isFocus ? "데일리 코스 미리보기" : "다른 루틴 둘러보기"}
+                </div>
               </div>
             </div>
             <div className="arrow">
