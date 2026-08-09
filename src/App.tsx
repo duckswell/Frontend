@@ -11,6 +11,8 @@ import SecondFocusCare from "./routes/SecondFocusCare";
 import Preview from "./routes/DailycoursePreview";
 import ThirdFocusCare from "./routes/ThirdFocusCare";
 import FinishRoutine from "./routes/FinishRutine";
+import FinishFocusCare from "./routes/FinishFocusCare";
+
 function App() {
   return (
     <BrowserRouter>
@@ -27,6 +29,7 @@ function App() {
         <Route path="/care/second_focus_care" element={<SecondFocusCare />} />
         <Route path="/care/third_focus_care" element={<ThirdFocusCare />} />
         <Route path="/care/finish_routine" element={<FinishRoutine />} />
+        <Route path="/care/finish_focus_care" element={<FinishFocusCare />} />
       </Routes>
     </BrowserRouter>
   );
