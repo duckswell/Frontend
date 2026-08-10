@@ -19,6 +19,7 @@ import FirstDaliyCare from "./routes/FirstDaliyCare";
 import SecondDailyCare from "./routes/SecondDailyCare";
 import ThirdDailyCare from "./routes/ThirdDailyCare";
 import TodayRoutineSummary from "./routes/TodayRoutineSummary";
+import RecommendProduct from "./routes/RecommendProduct";
 function App() {
   return (
     <BrowserRouter>
@@ -49,6 +50,7 @@ function App() {
           path="/care/today_routine_summary"
           element={<TodayRoutineSummary />}
         />
+        <Route path="/recommend" element={<RecommendProduct />} />
       </Routes>
     </BrowserRouter>
   );

@@ -1,5 +1,6 @@
 import { NavBar } from "../components/NavBar";
 import { useNavigate } from "react-router-dom";
+
 import CareButton from "../components/CareButton";
 import FocusProgress from "../components/FocusCare/FocusProgress";
 import RoutineStepCard from "../components/FocusCare/RoutineStepCard";
@@ -9,8 +10,13 @@ import * as S from "../styles/FocusCare/ThirdFocusCare.styles";
 
 export default function ThirdFocusCare() {
   const navigate = useNavigate();
+
   function handleCompleteFocusCareRoutine() {
     navigate("/care/finish_routine");
+  }
+
+  function handleMoveToRecommendedProduct() {
+    navigate("/recommend?from=care");
   }
 
   return (
@@ -37,6 +43,7 @@ export default function ThirdFocusCare() {
               title="클렌징"
               product="순한 약산성 클렌저"
               method="미온수로 충분히 적신 뒤 손끝으로 부드럽게 세안"
+              onProductButtonClick={handleMoveToRecommendedProduct}
             />
 
             <RoutineStepCard
@@ -45,6 +52,7 @@ export default function ThirdFocusCare() {
               product="히알루론산·판테놀 성분의 토너"
               method="화장솜 대신 손바닥으로 가볍게 눌러 흡수"
               alternative="두 성분이 모두 없다면 OOO 성분도 좋아요"
+              onProductButtonClick={handleMoveToRecommendedProduct}
             />
 
             <RoutineStepCard
@@ -53,6 +61,7 @@ export default function ThirdFocusCare() {
               product="센텔라·판테놀 성분의 세럼"
               method="붉은 부위를 문지르지 말고 부드럽게 눌러 흡수"
               alternative="두 성분 모두 없다면 센텔라를 우선 사용해요"
+              onProductButtonClick={handleMoveToRecommendedProduct}
             />
 
             <RoutineStepCard
@@ -61,6 +70,7 @@ export default function ThirdFocusCare() {
               product="세라마이드·판테놀 성분의 크림"
               method="건조함과 각질이 느껴지는 부위에 덧발라요"
               alternative="세라마이드가 없다면 판테놀을 우선 사용해요"
+              onProductButtonClick={handleMoveToRecommendedProduct}
             />
           </S.CardList>
 

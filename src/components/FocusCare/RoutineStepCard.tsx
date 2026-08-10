@@ -10,6 +10,7 @@ interface RoutineStepCardProps {
   alternative?: ReactNode;
   variant?: "focus" | "daily";
   productButtonText?: string;
+  onProductButtonClick?: () => void;
 }
 
 export default function RoutineStepCard({
@@ -20,6 +21,7 @@ export default function RoutineStepCard({
   alternative,
   variant = "focus",
   productButtonText = "추천 제품 보기",
+  onProductButtonClick,
 }: RoutineStepCardProps) {
   return (
     <S.Card $variant={variant}>
@@ -59,7 +61,12 @@ export default function RoutineStepCard({
         )}
       </S.InfoList>
 
-      <S.ProductButton type="button">{productButtonText}</S.ProductButton>
+      <S.ProductButton
+        type="button"
+        onClick={onProductButtonClick}
+      >
+        {productButtonText}
+      </S.ProductButton>
     </S.Card>
   );
 }
