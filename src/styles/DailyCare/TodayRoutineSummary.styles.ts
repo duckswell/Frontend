@@ -22,42 +22,33 @@ export const Content = styled.main`
   min-height: 100dvh;
 
   margin: 0 auto;
-  padding: 140px 16px 16px;
+  padding: 0 16px 16px;
+
+  overflow: hidden;
 `;
 
-export const ConfettiArea = styled.div`
+export const CompletionSection = styled.section`
   position: relative;
 
   display: flex;
+  align-items: center;
   justify-content: center;
 
-  width: 100%;
-
-  overflow: visible;
-`;
-
-export const TitleArea = styled.div`
-  position: relative;
-  z-index: 2;
-
-  display: flex;
-  justify-content: center;
+  flex-shrink: 0;
 
   width: 100%;
-
-  text-align: center;
+  height: 420px;
 `;
 
 export const Title = styled.h1`
+  ${typography.H1};
+
+  position: relative;
+  z-index: 2;
+
   margin: 0;
 
   color: #1f2937;
-
-  font-size: ${typography.H1.fontSize};
-  font-weight: ${typography.H1.fontWeight};
-  line-height: ${typography.H1.lineHeight};
-  letter-spacing: ${typography.H1.letterSpacing};
-
   text-align: center;
 `;
 
@@ -67,7 +58,6 @@ export const RoutineRecordCard = styled.section`
   width: 100%;
   max-width: 370px;
 
-  margin-top: 124px;
   padding: 16px;
 
   border: 0.5px solid ${colorPalette.Quaternary};
@@ -77,25 +67,18 @@ export const RoutineRecordCard = styled.section`
 `;
 
 export const RecordTitle = styled.h2`
+  ${typography.H3};
+
   margin: 0;
-
   color: ${colorPalette.Black};
-
-  font-size: ${typography.H3.fontSize};
-  font-weight: ${typography.H3.fontWeight};
-  line-height: ${typography.H3.lineHeight};
-  letter-spacing: ${typography.H3.letterSpacing};
 `;
 
 export const RecordDescription = styled.p`
+  ${typography.Body1};
+
   margin: 10px 0 0;
 
   color: ${colorPalette.Black};
-
-  font-size: ${typography.Body1.fontSize};
-  font-weight: ${typography.Body1.fontWeight};
-  line-height: ${typography.Body1.lineHeight};
-  letter-spacing: ${typography.Body1.letterSpacing};
 
   word-break: keep-all;
 `;

@@ -38,17 +38,15 @@ export default function TodayRoutineSummary() {
   return (
     <S.Page>
       <S.Content>
-        <S.ConfettiArea>
+        <S.CompletionSection>
           <FocusConfetti />
 
-          <S.TitleArea>
-            <S.Title>
-              오늘의 클리어업 루틴을
-              <br />
-              모두 마쳤어요!
-            </S.Title>
-          </S.TitleArea>
-        </S.ConfettiArea>
+          <S.Title>
+            오늘의 클리어업 루틴을
+            <br />
+            모두 마쳤어요!
+          </S.Title>
+        </S.CompletionSection>
 
         <S.RoutineRecordCard>
           <S.RecordTitle>오늘의 루틴 기록</S.RecordTitle>
