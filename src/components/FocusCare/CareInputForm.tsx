@@ -33,7 +33,6 @@ export default function CareInputForm({
 
     onChangeImage(file);
   };
-
   return (
     <>
       <S.Section>

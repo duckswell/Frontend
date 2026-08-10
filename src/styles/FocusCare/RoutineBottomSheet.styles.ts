@@ -39,8 +39,7 @@ export const BottomSheet = styled.section<BottomSheetProps>`
 
   box-sizing: border-box;
 
-  border: 0.5px solid ${colorPalette.grey300};
-  border-bottom: none;
+  border-top: 0.5px solid ${colorPalette.grey300};
 
   border-radius: 24px 24px 0 0;
 

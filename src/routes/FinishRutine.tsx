@@ -1,42 +1,15 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useLottie } from "lottie-react";
 
 import CareButton from "../components/CareButton";
+import FocusConfetti from "../components/FocusCare/FocusConfetti";
 import RoutineRecordCard from "../components/FocusCare/RoutineRecordCard";
 import RecommendedProductSection from "../components/FocusCare/RecommendedProductSection";
-
-import confettiAnimation from "../assets/confetti.json";
 
 import { colorPalette } from "../lib/colorPalette";
 import * as S from "../styles/FocusCare/FinishRoutine.styles";
 
 export default function FinishRoutine() {
   const navigate = useNavigate();
-
-  const [isLeftConfettiVisible, setIsLeftConfettiVisible] = useState(true);
-  const [isRightConfettiVisible, setIsRightConfettiVisible] = useState(true);
-
-  const leftConfettiOptions = {
-    animationData: confettiAnimation,
-    loop: false,
-    autoplay: true,
-    onComplete: () => {
-      setIsLeftConfettiVisible(false);
-    },
-  };
-
-  const rightConfettiOptions = {
-    animationData: confettiAnimation,
-    loop: false,
-    autoplay: true,
-    onComplete: () => {
-      setIsRightConfettiVisible(false);
-    },
-  };
-
-  const { View: leftConfetti } = useLottie(leftConfettiOptions);
-  const { View: rightConfetti } = useLottie(rightConfettiOptions);
 
   function handleMoveToHome() {
     navigate("/");
@@ -46,21 +19,13 @@ export default function FinishRoutine() {
     <S.Page>
       <S.Content>
         <S.CompletionSection>
-          {isLeftConfettiVisible && (
-            <S.LeftConfetti aria-hidden="true">{leftConfetti}</S.LeftConfetti>
-          )}
+          <FocusConfetti />
 
           <S.CompletionTitle>
             오늘의 루틴을
             <br />
             모두 마쳤어요!
           </S.CompletionTitle>
-
-          {isRightConfettiVisible && (
-            <S.RightConfetti aria-hidden="true">
-              {rightConfetti}
-            </S.RightConfetti>
-          )}
         </S.CompletionSection>
 
         <S.InformationSection>
@@ -85,7 +50,11 @@ export default function FinishRoutine() {
               <S.DailyTitle>데일리 코스 살펴보기</S.DailyTitle>
             </S.DailyTextArea>
 
-            <S.GotoIcon src="/assets/Goto.svg" alt="" aria-hidden="true" />
+            <S.GotoIcon
+              src="/assets/Goto.svg"
+              alt=""
+              aria-hidden="true"
+            />
           </S.DailyCard>
         </S.InformationSection>
 
