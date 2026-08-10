@@ -1,10 +1,15 @@
 import styled from "styled-components";
+
 import { colorPalette } from "../../lib/colorPalette";
 import { typography } from "../../lib/typography";
 
 interface SelectedProps {
   $selected: boolean;
+  $variant: "focus" | "daily";
 }
+
+const getPrimaryColor = (variant: "focus" | "daily") =>
+  variant === "daily" ? colorPalette.DailyPrimary : colorPalette.FocusPrimary;
 
 export const Card = styled.button<SelectedProps>`
   display: flex;
@@ -18,11 +23,27 @@ export const Card = styled.button<SelectedProps>`
 
   box-sizing: border-box;
 
-  border: 0.5px solid ${colorPalette.FocusPrimary};
+  border: ${({ $selected, $variant }) => {
+    if ($selected) {
+      return "0.5px solid transparent";
+    }
+
+    return $variant === "daily"
+      ? `0.5px solid ${colorPalette.DailySecondary}`
+      : `0.5px solid ${colorPalette.FocusPrimary}`;
+  }};
+
   border-radius: 6px;
 
-  background-color: ${({ $selected }) =>
-    $selected ? colorPalette.FocusTertiary : colorPalette.OffWhite};
+  background-color: ${({ $selected, $variant }) => {
+    if (!$selected) {
+      return colorPalette.OffWhite;
+    }
+
+    return $variant === "daily"
+      ? colorPalette.DailyTertiary
+      : colorPalette.FocusTertiary;
+  }};
 
   text-align: left;
 
@@ -44,8 +65,7 @@ export const RoutineTitle = styled.span<SelectedProps>`
   font-weight: 700;
   line-height: 150%;
 
-  color: ${({ $selected }) =>
-    $selected ? colorPalette.FocusPrimary : colorPalette.FocusPrimary};
+  color: ${({ $variant }) => getPrimaryColor($variant)};
 `;
 
 export const TimeArea = styled.div<SelectedProps>`
@@ -53,8 +73,8 @@ export const TimeArea = styled.div<SelectedProps>`
   align-items: center;
   gap: 4px;
 
-  color: ${({ $selected }) =>
-    $selected ? colorPalette.FocusPrimary : colorPalette.Tertiary};
+  color: ${({ $selected, $variant }) =>
+    $selected ? getPrimaryColor($variant) : colorPalette.Tertiary};
 `;
 
 export const ClockIcon = styled.img`

@@ -15,6 +15,9 @@ import FinishFocusCare from "./routes/FinishFocusCare";
 import FinishSelectRoutine from "./routes/FinishSelectRoutine";
 import DailyCare from "./routes/DailyCare";
 import RoutineChange from "./routes/RoutineChange";
+import FirstDaliyCare from "./routes/FirstDaliyCare";
+import SecondDailyCare from "./routes/SecondDailyCare";
+
 function App() {
   return (
     <BrowserRouter>
@@ -38,6 +41,8 @@ function App() {
         />
         <Route path="/care/daily_care" element={<DailyCare />} />
         <Route path="/care/routine_change" element={<RoutineChange />} />
+        <Route path="/care/first_daily_care" element={<FirstDaliyCare />} />
+        <Route path="/care/second_daily_care" element={<SecondDailyCare />} />
       </Routes>
     </BrowserRouter>
   );

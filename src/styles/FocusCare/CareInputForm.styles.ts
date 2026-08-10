@@ -3,6 +3,8 @@ import styled from "styled-components";
 import { colorPalette } from "../../lib/colorPalette";
 import { typography } from "../../lib/typography";
 
+type CareVariant = "focus" | "daily";
+
 export const Section = styled.section`
   display: flex;
   flex-direction: column;
@@ -22,11 +24,17 @@ export const Title = styled.h2`
   color: ${colorPalette.Black};
 `;
 
-export const OptionalText = styled.span`
+export const OptionalText = styled.span<{
+  $variant: CareVariant;
+}>`
   font-size: 16px;
   font-weight: 600;
   line-height: 150%;
-  color: ${colorPalette.FocusPrimary};
+
+  color: ${({ $variant }) =>
+    $variant === "daily"
+      ? colorPalette.DailyPrimary
+      : colorPalette.FocusPrimary};
 `;
 
 export const Description = styled.p`
@@ -99,7 +107,9 @@ export const HiddenInput = styled.input`
   display: none;
 `;
 
-export const SymptomTextarea = styled.textarea`
+export const SymptomTextarea = styled.textarea<{
+  $variant: CareVariant;
+}>`
   box-sizing: border-box;
 
   width: 100%;
@@ -125,7 +135,11 @@ export const SymptomTextarea = styled.textarea`
 
   &:focus {
     outline: none;
-    border-color: ${colorPalette.FocusPrimary};
+
+    border-color: ${({ $variant }) =>
+      $variant === "daily"
+        ? colorPalette.DailyPrimary
+        : colorPalette.FocusPrimary};
   }
 `;
 

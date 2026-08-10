@@ -1,12 +1,15 @@
 import { useEffect, useState } from "react";
+
 import * as S from "../../styles/FocusCare/AnalysisLoading.styles";
 
 interface AnalysisLoadingProps {
   onComplete: () => void;
+  variant?: "focus" | "daily";
 }
 
 export default function AnalysisLoading({
   onComplete,
+  variant = "focus",
 }: AnalysisLoadingProps) {
   const [progress, setProgress] = useState(0);
 
@@ -15,6 +18,7 @@ export default function AnalysisLoading({
       setProgress((previousProgress) => {
         if (previousProgress >= 99) {
           window.clearInterval(interval);
+
           return 100;
         }
 
@@ -41,28 +45,46 @@ export default function AnalysisLoading({
             <defs>
               <linearGradient
                 id="spinnerGradient"
-                x1="0%"
-                y1="0%"
-                x2="100%"
-                y2="100%"
+                x1="27"
+                y1="92"
+                x2="62"
+                y2="124"
+                gradientUnits="userSpaceOnUse"
               >
                 <stop offset="15%" stopColor="#90D9FF" />
                 <stop offset="36%" stopColor="#B6F3FF" />
                 <stop offset="100%" stopColor="#F5FCFF" />
+              </linearGradient>
+
+              <linearGradient
+                id="dailySpinnerGradient"
+                x1="27"
+                y1="92"
+                x2="62"
+                y2="124"
+                gradientUnits="userSpaceOnUse"
+              >
+                <stop offset="15%" stopColor="#CAE981" />
+                <stop offset="52%" stopColor="#F7F9B2" />
+                <stop offset="100%" stopColor="#F8FBEA" />
               </linearGradient>
             </defs>
 
             <path
               d="M 27 92 A 55 55 0 0 0 62 124"
               fill="none"
-              stroke="url(#spinnerGradient)"
+              stroke={
+                variant === "daily"
+                  ? "url(#dailySpinnerGradient)"
+                  : "url(#spinnerGradient)"
+              }
               strokeWidth="11"
               strokeLinecap="round"
             />
           </S.Spinner>
         )}
 
-        <S.ProgressText>
+        <S.ProgressText $variant={variant}>
           <S.ProgressNumber>{progress}</S.ProgressNumber>
           <S.ProgressUnit>%</S.ProgressUnit>
         </S.ProgressText>

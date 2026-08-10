@@ -1,4 +1,5 @@
 import styled, { css, keyframes } from "styled-components";
+
 import { colorPalette } from "../../lib/colorPalette";
 
 const fillProgress = keyframes`
@@ -15,16 +16,21 @@ const fillProgress = keyframes`
   }
 `;
 
-export const Container = styled.div`
-  display: flex;
-  gap: 8px;
-  width: 100%;
-`;
-
 interface ProgressBarProps {
   $completed: boolean;
   $current: boolean;
+  $variant: "focus" | "daily";
 }
+
+const getProgressColor = (variant: "focus" | "daily") =>
+  variant === "daily" ? colorPalette.DailyPrimary : colorPalette.FocusPrimary;
+
+export const Container = styled.div`
+  display: flex;
+  gap: 8px;
+
+  width: 100%;
+`;
 
 export const ProgressBar = styled.div<ProgressBarProps>`
   position: relative;
@@ -36,6 +42,7 @@ export const ProgressBar = styled.div<ProgressBarProps>`
   overflow: hidden;
 
   border-radius: 9999px;
+
   background-color: ${colorPalette.White};
 
   &::after {
@@ -48,7 +55,8 @@ export const ProgressBar = styled.div<ProgressBarProps>`
     height: 100%;
 
     border-radius: inherit;
-    background-color: ${colorPalette.FocusPrimary};
+
+    background-color: ${({ $variant }) => getProgressColor($variant)};
 
     ${({ $completed, $current }) => {
       if ($completed) {
