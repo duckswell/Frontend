@@ -39,7 +39,7 @@ export default function DailyCare() {
   };
 
   const handleStartRoutine = () => {
-    navigate("/care/first_daily_care");
+    navigate("/care/routine_change");
   };
 
   return (

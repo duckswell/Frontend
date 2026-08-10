@@ -14,7 +14,7 @@ import FinishRoutine from "./routes/FinishRutine";
 import FinishFocusCare from "./routes/FinishFocusCare";
 import FinishSelectRoutine from "./routes/FinishSelectRoutine";
 import DailyCare from "./routes/DailyCare";
-
+import RoutineChange from "./routes/RoutineChange";
 function App() {
   return (
     <BrowserRouter>
@@ -37,6 +37,7 @@ function App() {
           element={<FinishSelectRoutine />}
         />
         <Route path="/care/daily_care" element={<DailyCare />} />
+        <Route path="/care/routine_change" element={<RoutineChange />} />
       </Routes>
     </BrowserRouter>
   );
