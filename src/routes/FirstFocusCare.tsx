@@ -2,10 +2,9 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { NavBar } from "../components/NavBar";
 import CareButton from "../components/CareButton";
-import AdditionalSymptomInput from "../components/FocusCare/AdditionalSymptomInput";
+import CareInputForm from "../components/FocusCare/CareInputForm";
 import FocusProgress from "../components/FocusCare/FocusProgress";
-import SkinConditionSelector from "../components/FocusCare/SkinConditionSelector";
-import SkinPhotoUploader from "../components/FocusCare/SkinPhotoUploader";
+
 import * as S from "../styles/FocusCare/FirstFocusCare.styles";
 
 export default function FirstFocusCare() {
@@ -46,24 +45,20 @@ export default function FirstFocusCare() {
 
     navigate("/care/second_focus_care");
   };
+
   return (
     <S.Page>
       <NavBar title="집중 코스" />
-
       <S.Main>
         <FocusProgress currentStep={1} />
 
         <S.Content>
-          <SkinConditionSelector
+          <CareInputForm
             selectedConditions={selectedConditions}
             onToggleCondition={handleToggleCondition}
-          />
-
-          <SkinPhotoUploader onChangeImage={handleChangeImage} />
-
-          <AdditionalSymptomInput
-            value={additionalSymptom}
-            onChange={handleChangeAdditionalSymptom}
+            onChangeImage={handleChangeImage}
+            additionalSymptom={additionalSymptom}
+            onChangeAdditionalSymptom={handleChangeAdditionalSymptom}
           />
         </S.Content>
       </S.Main>
