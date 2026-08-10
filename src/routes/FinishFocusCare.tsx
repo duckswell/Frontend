@@ -166,7 +166,7 @@ export default function FinishFocusCare() {
   }
 
   function handleStartDailyCourse() {
-    navigate("/care");
+    navigate("/care/finish_select_routine");
   }
 
   useEffect(() => {
