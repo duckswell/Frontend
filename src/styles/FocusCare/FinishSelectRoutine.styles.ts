@@ -22,26 +22,22 @@ export const Content = styled.main`
   min-height: 100dvh;
 
   margin: 0 auto;
-  padding: 150px 16px 16px;
+  padding: 0 16px 16px;
+
+  overflow: hidden;
 `;
 
-export const IntroSection = styled.section`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-
-  width: 100%;
-`;
-
-export const ConfettiArea = styled.div`
+export const CompletionSection = styled.section`
   position: relative;
 
   display: flex;
+  align-items: center;
   justify-content: center;
 
-  width: 100%;
+  flex-shrink: 0;
 
-  overflow: visible;
+  width: 100%;
+  height: 420px;
 `;
 
 export const IntroTextArea = styled.div`
@@ -63,6 +59,8 @@ export const Title = styled.h1`
   font-size: 24px;
   font-weight: 600;
   line-height: 1.35;
+
+  text-align: center;
 `;
 
 export const Description = styled.p`
@@ -73,6 +71,16 @@ export const Description = styled.p`
   font-size: 14px;
   font-weight: 400;
   line-height: 1.4;
+
+  text-align: center;
+`;
+
+export const IntroSection = styled.section`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  width: 100%;
 `;
 
 export const RoutineCard = styled.div`
@@ -84,7 +92,6 @@ export const RoutineCard = styled.div`
 
   width: 208px;
 
-  margin-top: 38px;
   padding: 16px;
 
   border: 0.5px solid ${colorPalette.Quaternary};

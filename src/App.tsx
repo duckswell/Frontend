@@ -17,7 +17,8 @@ import DailyCare from "./routes/DailyCare";
 import RoutineChange from "./routes/RoutineChange";
 import FirstDaliyCare from "./routes/FirstDaliyCare";
 import SecondDailyCare from "./routes/SecondDailyCare";
-
+import ThirdDailyCare from "./routes/ThirdDailyCare";
+import TodayRoutineSummary from "./routes/TodayRoutineSummary";
 function App() {
   return (
     <BrowserRouter>
@@ -43,6 +44,11 @@ function App() {
         <Route path="/care/routine_change" element={<RoutineChange />} />
         <Route path="/care/first_daily_care" element={<FirstDaliyCare />} />
         <Route path="/care/second_daily_care" element={<SecondDailyCare />} />
+        <Route path="/care/third_daily_care" element={<ThirdDailyCare />} />
+        <Route
+          path="/care/today_routine_summary"
+          element={<TodayRoutineSummary />}
+        />
       </Routes>
     </BrowserRouter>
   );

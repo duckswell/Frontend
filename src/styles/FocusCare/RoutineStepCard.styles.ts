@@ -1,36 +1,54 @@
 import styled from "styled-components";
+
 import { colorPalette } from "../../lib/colorPalette";
 import { typography } from "../../lib/typography";
 
-export const Card = styled.section`
+interface VariantProps {
+  $variant: "focus" | "daily";
+}
+
+function getPrimaryColor(variant: "focus" | "daily") {
+  return variant === "daily"
+    ? colorPalette.DailyPrimary
+    : colorPalette.FocusPrimary;
+}
+
+function getSecondaryColor(variant: "focus" | "daily") {
+  return variant === "daily"
+    ? colorPalette.DailySecondary
+    : colorPalette.FocusSecondary;
+}
+
+export const Card = styled.section<VariantProps>`
   width: 100%;
   max-width: 370px;
   padding: 16px;
 
   box-sizing: border-box;
 
-  border: 0.5px solid ${colorPalette.FocusSecondary};
+  border: 0.5px solid ${({ $variant }) => getSecondaryColor($variant)};
   border-radius: 12px;
 
   background-color: ${colorPalette.OffWhite};
 `;
+
 export const CardHeader = styled.div`
   display: flex;
   align-items: center;
   gap: 12px;
 `;
 
-export const StepBadge = styled.span`
+export const StepBadge = styled.span<VariantProps>`
   display: inline-flex;
   align-items: center;
   justify-content: center;
 
   padding: 6px 12px;
 
-  border: 1px solid ${colorPalette.FocusPrimary};
+  border: 1px solid ${({ $variant }) => getPrimaryColor($variant)};
   border-radius: 999px;
 
-  color: ${colorPalette.FocusPrimary};
+  color: ${({ $variant }) => getPrimaryColor($variant)};
 
   font-size: ${typography.Body2Bold.fontSize};
   font-weight: ${typography.Body2Bold.fontWeight};
@@ -40,10 +58,10 @@ export const StepBadge = styled.span`
   white-space: nowrap;
 `;
 
-export const Title = styled.h3`
+export const Title = styled.h3<VariantProps>`
   margin: 0;
 
-  color: ${colorPalette.FocusPrimary};
+  color: ${({ $variant }) => getPrimaryColor($variant)};
 
   font-size: ${typography.H3.fontSize};
   font-weight: ${typography.H3.fontWeight};
