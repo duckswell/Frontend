@@ -1,11 +1,15 @@
+import type { ReactNode } from "react";
+
 import * as S from "../../styles/FocusCare/RoutineStepCard.styles";
 
 interface RoutineStepCardProps {
   step: 1 | 2 | 3 | 4;
   title: string;
   product: string;
-  method: string;
-  alternative?: string;
+  method: ReactNode;
+  alternative?: ReactNode;
+  variant?: "focus" | "daily";
+  productButtonText?: string;
 }
 
 export default function RoutineStepCard({
@@ -14,12 +18,14 @@ export default function RoutineStepCard({
   product,
   method,
   alternative,
+  variant = "focus",
+  productButtonText = "추천 제품 보기",
 }: RoutineStepCardProps) {
   return (
-    <S.Card>
+    <S.Card $variant={variant}>
       <S.CardHeader>
-        <S.StepBadge>STEP {step}</S.StepBadge>
-        <S.Title>{title}</S.Title>
+        <S.StepBadge $variant={variant}>STEP {step}</S.StepBadge>
+        <S.Title $variant={variant}>{title}</S.Title>
       </S.CardHeader>
 
       <S.InfoList>
@@ -53,7 +59,7 @@ export default function RoutineStepCard({
         )}
       </S.InfoList>
 
-      <S.ProductButton type="button">추천 제품 보기</S.ProductButton>
+      <S.ProductButton type="button">{productButtonText}</S.ProductButton>
     </S.Card>
   );
 }

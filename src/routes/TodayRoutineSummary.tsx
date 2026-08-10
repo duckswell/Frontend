@@ -1,36 +1,34 @@
 import { useNavigate } from "react-router-dom";
 
+import CareButton from "../components/CareButton";
 import FocusConfetti from "../components/FocusCare/FocusConfetti";
 import RecommendedProductSection from "../components/FocusCare/RecommendedProductSection";
-import CareButton from "../components/CareButton";
 
 import { colorPalette } from "../lib/colorPalette";
-import * as S from "../styles/FocusCare/FinishSelectRoutine.styles";
-
-const ROUTINE_CATEGORIES = ["센텔라", "판테놀", "알로에"];
+import * as S from "../styles/DailyCare/TodayRoutineSummary.styles";
 
 const RECOMMENDED_PRODUCTS = [
   {
     id: 1,
     brand: "Pith",
     name: "베리어 크림",
-    categories: ["센텔라"],
+    categories: ["히알루론산"],
   },
   {
     id: 2,
     brand: "Pith",
     name: "베리어 크림",
-    categories: ["판테놀"],
+    categories: ["히알루론산"],
   },
   {
     id: 3,
     brand: "Pith",
     name: "베리어 크림",
-    categories: ["알로에"],
+    categories: ["히알루론산"],
   },
 ];
 
-export default function FinishSelectRoutine() {
+export default function TodayRoutineSummary() {
   const navigate = useNavigate();
 
   function handleMoveToHome() {
@@ -43,37 +41,30 @@ export default function FinishSelectRoutine() {
         <S.CompletionSection>
           <FocusConfetti />
 
-          <S.IntroTextArea>
-            <S.Title>
-              내일부터 쿨다운 루틴으로
-              <br />
-              매일 함께해요!
-            </S.Title>
-
-            <S.Description>데일리 코스 루틴 선택을 완료했어요</S.Description>
-          </S.IntroTextArea>
+          <S.Title>
+            오늘의 클리어업 루틴을
+            <br />
+            모두 마쳤어요!
+          </S.Title>
         </S.CompletionSection>
 
-        <S.IntroSection>
-          <S.RoutineCard>
-            <S.RoutineImage
-              src="/assets/Daily_cooldown.png"
-              alt="쿨다운 루틴"
-            />
+        <S.RoutineRecordCard>
+          <S.RecordTitle>오늘의 루틴 기록</S.RecordTitle>
 
-            <S.RoutineName>쿨다운</S.RoutineName>
+          <S.RecordDescription>
+            오늘도 칙칙함과 피부 흔적을 관리하는 루틴을 실천했어요.
+            <br />
+            꾸준히 이어가며 피부 변화를 기록해 보세요.
+          </S.RecordDescription>
 
-            <S.CategoryList>
-              {ROUTINE_CATEGORIES.map((category) => (
-                <S.Category key={category}>{category}</S.Category>
-              ))}
-            </S.CategoryList>
-          </S.RoutineCard>
-        </S.IntroSection>
+          <S.RecordNotice>
+            * 이 안내는 관리 목적 참고 정보이며 의료 진단을 대체하지 않아요
+          </S.RecordNotice>
+        </S.RoutineRecordCard>
 
         <S.ProductSection>
           <RecommendedProductSection
-            title="이 제품들과 함께하면 좋아요"
+            title="클리어업 루틴 추천 제품"
             products={RECOMMENDED_PRODUCTS}
           />
         </S.ProductSection>

@@ -1,4 +1,5 @@
 import styled, { keyframes } from "styled-components";
+
 import { colorPalette } from "../../lib/colorPalette";
 import { typography } from "../../lib/typography";
 
@@ -11,6 +12,10 @@ const rotateSpinner = keyframes`
     transform: rotate(360deg);
   }
 `;
+
+interface ProgressTextProps {
+  $variant: "focus" | "daily";
+}
 
 export const Container = styled.section`
   display: flex;
@@ -43,7 +48,8 @@ export const Spinner = styled.svg`
   transform-origin: center;
   animation: ${rotateSpinner} 1.1s linear infinite;
 `;
-export const ProgressText = styled.div`
+
+export const ProgressText = styled.div<ProgressTextProps>`
   position: relative;
   z-index: 1;
 
@@ -51,7 +57,10 @@ export const ProgressText = styled.div`
   align-items: baseline;
   justify-content: center;
 
-  color: ${colorPalette.FocusPrimary};
+  color: ${({ $variant }) =>
+    $variant === "daily"
+      ? colorPalette.DailyPrimary
+      : colorPalette.FocusPrimary};
 `;
 
 export const ProgressNumber = styled.span`
@@ -81,6 +90,7 @@ export const Title = styled.h2`
   ${typography.H3};
 
   margin: 0;
+
   color: ${colorPalette.Black};
 `;
 
@@ -90,5 +100,6 @@ export const Description = styled.p`
   margin: 0;
 
   color: ${colorPalette.Secondary};
+
   text-align: center;
 `;

@@ -13,6 +13,12 @@ import ThirdFocusCare from "./routes/ThirdFocusCare";
 import FinishRoutine from "./routes/FinishRutine";
 import FinishFocusCare from "./routes/FinishFocusCare";
 import FinishSelectRoutine from "./routes/FinishSelectRoutine";
+import DailyCare from "./routes/DailyCare";
+import RoutineChange from "./routes/RoutineChange";
+import FirstDaliyCare from "./routes/FirstDaliyCare";
+import SecondDailyCare from "./routes/SecondDailyCare";
+import ThirdDailyCare from "./routes/ThirdDailyCare";
+import TodayRoutineSummary from "./routes/TodayRoutineSummary";
 function App() {
   return (
     <BrowserRouter>
@@ -30,8 +36,19 @@ function App() {
         <Route path="/care/third_focus_care" element={<ThirdFocusCare />} />
         <Route path="/care/finish_routine" element={<FinishRoutine />} />
         <Route path="/care/finish_focus_care" element={<FinishFocusCare />} />
-        <Route path="/care/finish_select_routine" element={<FinishSelectRoutine />} />
-
+        <Route
+          path="/care/finish_select_routine"
+          element={<FinishSelectRoutine />}
+        />
+        <Route path="/care/daily_care" element={<DailyCare />} />
+        <Route path="/care/routine_change" element={<RoutineChange />} />
+        <Route path="/care/first_daily_care" element={<FirstDaliyCare />} />
+        <Route path="/care/second_daily_care" element={<SecondDailyCare />} />
+        <Route path="/care/third_daily_care" element={<ThirdDailyCare />} />
+        <Route
+          path="/care/today_routine_summary"
+          element={<TodayRoutineSummary />}
+        />
       </Routes>
     </BrowserRouter>
   );

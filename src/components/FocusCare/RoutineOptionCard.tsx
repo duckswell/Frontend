@@ -6,6 +6,7 @@ interface RoutineOptionCardProps {
   description: string;
   steps: string;
   selected: boolean;
+  variant?: "focus" | "daily";
   onClick: () => void;
 }
 
@@ -15,16 +16,32 @@ export default function RoutineOptionCard({
   description,
   steps,
   selected,
+  variant = "focus",
   onClick,
 }: RoutineOptionCardProps) {
-  return (
-    <S.Card type="button" $selected={selected} onClick={onClick}>
-      <S.TopRow>
-        <S.RoutineTitle $selected={selected}>{title}</S.RoutineTitle>
+  const isDaily = variant === "daily";
 
-        <S.TimeArea $selected={selected}>
+  return (
+    <S.Card
+      type="button"
+      $selected={selected}
+      $variant={variant}
+      onClick={onClick}
+    >
+      <S.TopRow>
+        <S.RoutineTitle $selected={selected} $variant={variant}>
+          {title}
+        </S.RoutineTitle>
+
+        <S.TimeArea $selected={selected} $variant={variant}>
           <S.ClockIcon
-            src={selected ? "/assets/BlueClock.svg" : "/assets/GrayClock.svg"}
+            src={
+              selected
+                ? isDaily
+                  ? "/assets/GreenClock.svg"
+                  : "/assets/BlueClock.svg"
+                : "/assets/GrayClock.svg"
+            }
             alt=""
             aria-hidden="true"
           />
