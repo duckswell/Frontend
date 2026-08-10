@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+
 import { NavBar } from "../components/NavBar";
 import CareButton from "../components/CareButton";
 import FocusProgress from "../components/FocusCare/FocusProgress";
@@ -14,9 +15,14 @@ export default function ThirdDailyCare() {
     navigate("/care/today_routine_summary");
   }
 
+  function handleMoveToRecommendedProduct() {
+    navigate("/recommend?from=care");
+  }
+
   return (
     <S.Page>
       <NavBar title="데일리 코스" />
+
       <S.Main>
         <FocusProgress currentStep={3} variant="daily" />
 
@@ -38,6 +44,7 @@ export default function ThirdDailyCare() {
               product="순한 약산성 클렌저"
               method="미지근한 물로 거품을 충분히 내어 부드럽게 세안"
               variant="daily"
+              onProductButtonClick={handleMoveToRecommendedProduct}
             />
 
             <RoutineStepCard
@@ -53,6 +60,7 @@ export default function ThirdDailyCare() {
               }
               alternative="센텔라 성분 제품을 사용해도 좋아요"
               variant="daily"
+              onProductButtonClick={handleMoveToRecommendedProduct}
             />
 
             <RoutineStepCard
@@ -75,6 +83,7 @@ export default function ThirdDailyCare() {
               }
               variant="daily"
               productButtonText="추천 성분이 포함된 제품"
+              onProductButtonClick={handleMoveToRecommendedProduct}
             />
           </S.CardList>
 

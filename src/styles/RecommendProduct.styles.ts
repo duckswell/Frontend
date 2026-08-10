@@ -21,8 +21,6 @@ export const Page = styled.div<PageProps>`
   overflow-x: hidden;
   overflow-y: auto;
 
-  background-color: ${colorPalette.White};
-
   scrollbar-width: none;
 
   &::-webkit-scrollbar {
