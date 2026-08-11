@@ -13,11 +13,10 @@ interface ProcedureData {
 }
 
 const PROCEDURE_OPTIONS = [
-  "여드름 압출",
-  "레이저 토닝",
-  "피코 토닝",
-  "필링 케어",
-  "기타",
+  "스케일링",
+  "피지파괴술",
+  "압출/염증주사",
+  "레이저토닝",
 ];
 const BODY_PARTS = ["얼굴 전체", "T존", "나비존", "턱", "볼"];
 const WEEKDAYS = ["월", "화", "수", "목", "금", "토", "일"];

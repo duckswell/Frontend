@@ -40,7 +40,7 @@ export const FormCard = styled.div`
 `;
 
 export const AccordionHeader = styled.div<{ $isSingle?: boolean }>`
-  padding: 18px 20px;
+  padding: 18px 0px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -76,7 +76,7 @@ export const AccordionHeader = styled.div<{ $isSingle?: boolean }>`
 `;
 
 export const CardBody = styled.div`
-  padding: 10px 20px 0px 20px;
+  padding-top: 10px;
 `;
 
 export const FormGroup = styled.div`
