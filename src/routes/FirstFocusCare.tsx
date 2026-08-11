@@ -65,6 +65,7 @@ export default function FirstFocusCare() {
 
         <S.Content>
           <CareInputForm
+            variant="focus"
             selectedConditions={selectedConditions}
             onToggleCondition={handleToggleCondition}
             skinImages={skinImages}
