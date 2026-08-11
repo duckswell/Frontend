@@ -107,6 +107,13 @@ export const SelectBox = styled.div`
     color: ${colorPalette.Black};
     cursor: pointer;
     box-sizing: border-box;
+    transition: border-color 0.15s ease;
+
+    -webkit-tap-highlight-color: transparent;
+
+    &.focused {
+      border: 0.5px solid ${colorPalette.Black};
+    }
 
     &.placeholder {
       color: ${colorPalette.grey400};
@@ -140,17 +147,33 @@ export const SelectBox = styled.div`
       color: ${colorPalette.Black};
       cursor: pointer;
 
-      &:hover {
+      &:not(:last-child) {
+        border-bottom: 0.5px solid ${colorPalette.Quaternary};
+      }
+
+      @media (hover: hover) {
+        &:hover {
+          background-color: ${colorPalette.grey50};
+        }
+      }
+
+      &:active {
         background-color: ${colorPalette.grey50};
       }
     }
   }
 `;
 
-export const DateInputWrapper = styled.div<{ $hasValue: boolean }>`
+export const DateInputWrapper = styled.div<{
+  $hasValue: boolean;
+  $isFocused: boolean;
+}>`
   width: 100%;
   padding: 14px 16px;
-  border: 0.5px solid ${colorPalette.Quaternary};
+  border: ${({ $isFocused }) =>
+    $isFocused
+      ? `0.5px solid ${colorPalette.Black}`
+      : `0.5px solid ${colorPalette.Quaternary}`};
   border-radius: 12px;
   background-color: ${colorPalette.OffWhite};
   display: flex;
@@ -158,11 +181,15 @@ export const DateInputWrapper = styled.div<{ $hasValue: boolean }>`
   gap: 10px;
   cursor: pointer;
   box-sizing: border-box;
+  transition: border-color 0.15s ease;
+
+  -webkit-tap-highlight-color: transparent;
 
   .calendar-icon {
     width: 20px;
     height: 20px;
-    opacity: ${({ $hasValue }) => ($hasValue ? 1 : 0.45)};
+    opacity: ${({ $hasValue, $isFocused }) =>
+      $hasValue || $isFocused ? 1 : 0.45};
     transition: opacity 0.2s ease;
   }
 
@@ -187,6 +214,7 @@ export const CustomCalendarCard = styled.div`
   padding: 20px 16px;
   box-sizing: border-box;
   z-index: 100;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
 
   .calendar-header {
     display: flex;
@@ -265,7 +293,13 @@ export const CustomCalendarCard = styled.div`
       cursor: pointer;
       padding: 12px 20px;
 
-      &:hover {
+      @media (hover: hover) {
+        &:hover {
+          opacity: 0.9;
+        }
+      }
+
+      &:active {
         opacity: 0.9;
       }
     }
@@ -290,6 +324,8 @@ export const DayCell = styled.button<{
   cursor: pointer;
   padding: 0;
 
+  -webkit-tap-highlight-color: transparent;
+
   color: ${({ $isCurrentMonth, $isSelected }) =>
     $isSelected
       ? colorPalette.OffWhite
@@ -300,7 +336,14 @@ export const DayCell = styled.button<{
   background-color: ${({ $isSelected }) =>
     $isSelected ? colorPalette.Black : "transparent"};
 
-  &:hover {
+  @media (hover: hover) {
+    &:hover {
+      background-color: ${({ $isSelected }) =>
+        $isSelected ? colorPalette.Black : colorPalette.grey50};
+    }
+  }
+
+  &:active {
     background-color: ${({ $isSelected }) =>
       $isSelected ? colorPalette.Black : colorPalette.grey50};
   }
@@ -332,6 +375,11 @@ export const InputBoxWrapper = styled.div`
   border-radius: 12px;
   padding: 12px 12px 12px 0;
   width: 40px;
+  transition: border-color 0.15s ease;
+
+  &:focus-within {
+    border: 0.5px solid ${colorPalette.Black};
+  }
 
   input {
     width: 32px;
@@ -386,6 +434,8 @@ export const PartChip = styled.button<{ $isSelected: boolean }>`
   font-size: 13px;
   cursor: pointer;
   transition: all 0.15s ease;
+
+  -webkit-tap-highlight-color: transparent;
 `;
 
 export const AddButton = styled.button`
@@ -404,18 +454,21 @@ export const AddButton = styled.button`
   cursor: pointer;
   margin-bottom: 120px;
 
+  -webkit-tap-highlight-color: transparent;
+
   img {
     width: 18px;
     height: 18px;
   }
+
   @media (hover: hover) {
     &:hover {
-      background-color: ${colorPalette.grey50};
+      background-color: ${colorPalette.White};
     }
   }
 
   &:active {
-    background-color: ${colorPalette.grey50};
+    background-color: ${colorPalette.White};
   }
 `;
 
@@ -454,6 +507,8 @@ export const SubmitButton = styled.button`
   color: ${colorPalette.OffWhite};
   ${applyTypography("H3")}
   cursor: pointer;
+
+  -webkit-tap-highlight-color: transparent;
 
   @media (hover: hover) {
     &:hover {

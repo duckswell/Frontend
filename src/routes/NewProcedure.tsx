@@ -37,15 +37,14 @@ const NewProcedure: React.FC = () => {
   const [openSelectId, setOpenSelectId] = useState<number | null>(null);
   const [openDatePickerId, setOpenDatePickerId] = useState<number | null>(null);
 
+  const [initialDate, setInitialDate] = useState<string>("");
+
   const today = new Date();
   const currentYear = today.getFullYear();
   const currentMonth = today.getMonth() + 1;
-  const currentDateStr = `${currentYear}.${String(currentMonth).padStart(2, "0")}.${String(today.getDate()).padStart(2, "0")}`;
 
   const [calendarYear, setCalendarYear] = useState(currentYear);
   const [calendarMonth, setCalendarMonth] = useState(currentMonth);
-  const [tempSelectedDate, setTempSelectedDate] =
-    useState<string>(currentDateStr);
 
   const [isSaved, setIsSaved] = useState(false);
 
@@ -117,11 +116,6 @@ const NewProcedure: React.FC = () => {
     }
   };
 
-  const handleConfirmDate = (id: number) => {
-    updateProcedure(id, "date", tempSelectedDate);
-    setOpenDatePickerId(null);
-  };
-
   const handleSubmit = () => {
     setIsSaved(true);
     setTimeout(() => {
@@ -141,6 +135,9 @@ const NewProcedure: React.FC = () => {
             const subTitleText = item.isOpen
               ? "작성 중"
               : item.type || "작성 중";
+
+            const isSelectOpen = openSelectId === item.id;
+            const isDatePickerOpen = openDatePickerId === item.id;
 
             return (
               <S.FormCard key={item.id}>
@@ -182,23 +179,21 @@ const NewProcedure: React.FC = () => {
                       <label>시술종류</label>
                       <S.SelectBox>
                         <div
-                          className={`select-header ${!item.type ? "placeholder" : ""}`}
+                          className={`select-header ${!item.type ? "placeholder" : ""} ${isSelectOpen ? "focused" : ""}`}
                           onClick={() => {
-                            setOpenSelectId(
-                              openSelectId === item.id ? null : item.id,
-                            );
+                            setOpenSelectId(isSelectOpen ? null : item.id);
                             setOpenDatePickerId(null);
                           }}
                         >
                           <span>{item.type || "시술 종류를 선택하세요"}</span>
                           <img
-                            className={`dropdown-icon ${openSelectId === item.id ? "open" : ""}`}
+                            className={`dropdown-icon ${isSelectOpen ? "open" : ""}`}
                             src="/assets/ChevronDown.svg"
                             alt="선택"
                           />
                         </div>
 
-                        {openSelectId === item.id && (
+                        {isSelectOpen && (
                           <div className="options-list">
                             {PROCEDURE_OPTIONS.map((opt) => (
                               <div
@@ -221,9 +216,13 @@ const NewProcedure: React.FC = () => {
                       <label>시술날짜</label>
                       <S.DateInputWrapper
                         $hasValue={Boolean(item.date)}
+                        $isFocused={isDatePickerOpen}
                         onClick={() => {
+                          if (!isDatePickerOpen) {
+                            setInitialDate(item.date);
+                          }
                           setOpenDatePickerId(
-                            openDatePickerId === item.id ? null : item.id,
+                            isDatePickerOpen ? null : item.id,
                           );
                           setOpenSelectId(null);
                         }}
@@ -239,7 +238,8 @@ const NewProcedure: React.FC = () => {
                           {item.date || "시술날짜"}
                         </span>
                       </S.DateInputWrapper>
-                      {openDatePickerId === item.id && (
+
+                      {isDatePickerOpen && (
                         <S.CustomCalendarCard>
                           <div className="calendar-header">
                             <button
@@ -316,8 +316,7 @@ const NewProcedure: React.FC = () => {
 
                               for (let d = 1; d <= totalDays; d++) {
                                 const formattedDate = `${calendarYear}.${String(calendarMonth).padStart(2, "0")}.${String(d).padStart(2, "0")}`;
-                                const isSelected =
-                                  tempSelectedDate === formattedDate;
+                                const isSelected = item.date === formattedDate;
 
                                 cells.push(
                                   <S.DayCell
@@ -325,9 +324,13 @@ const NewProcedure: React.FC = () => {
                                     type="button"
                                     $isCurrentMonth={true}
                                     $isSelected={isSelected}
-                                    onClick={() =>
-                                      setTempSelectedDate(formattedDate)
-                                    }
+                                    onClick={() => {
+                                      updateProcedure(
+                                        item.id,
+                                        "date",
+                                        formattedDate,
+                                      );
+                                    }}
                                   >
                                     {d}
                                   </S.DayCell>,
@@ -361,14 +364,17 @@ const NewProcedure: React.FC = () => {
                             <button
                               type="button"
                               className="cancel-btn"
-                              onClick={() => setOpenDatePickerId(null)}
+                              onClick={() => {
+                                updateProcedure(item.id, "date", initialDate);
+                                setOpenDatePickerId(null);
+                              }}
                             >
                               취소
                             </button>
                             <button
                               type="button"
                               className="confirm-btn"
-                              onClick={() => handleConfirmDate(item.id)}
+                              onClick={() => setOpenDatePickerId(null)}
                             >
                               확인
                             </button>
