@@ -101,6 +101,7 @@ export const ContactCard = styled.div`
   border: 0.5px solid ${colorPalette.Quaternary};
   border-radius: 12px;
   padding: 20px 16px;
+  white-space: nowrap;
 
   .title {
     ${applyTypography("H3")}
@@ -137,5 +138,8 @@ export const CallButton = styled.a`
 export const OperatingTime = styled.span`
   color: ${colorPalette.Secondary};
   ${applyTypography("Body2Bold")}
-  margin-right: 10px;
+
+  @media (min-width: 361px) {
+    margin-right: 10px;
+  }
 `;
