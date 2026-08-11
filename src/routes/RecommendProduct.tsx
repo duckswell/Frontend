@@ -167,6 +167,25 @@ export default function RecommendProduct() {
   );
   const selectedProduct =
     products.find((product) => product.id === selectedProductId) ?? null;
+
+  useEffect(() => {
+    const page = pageRef.current;
+
+    if (!page) {
+      return;
+    }
+
+    if (selectedProduct) {
+      page.style.overflowY = "hidden";
+    } else {
+      page.style.overflowY = "auto";
+    }
+
+    return () => {
+      page.style.overflowY = "auto";
+    };
+  }, [selectedProduct]);
+
   useEffect(() => {
     const container = ingredientScrollRef.current;
 
@@ -412,7 +431,7 @@ export default function RecommendProduct() {
           </S.ProductModalOverlay>,
           document.body
         )}
-      {showScrollTopButton && (
+      {showScrollTopButton && !selectedProduct && (
         <S.ScrollTopButton
           type="button"
           $hasTabBar={!fromCare}
