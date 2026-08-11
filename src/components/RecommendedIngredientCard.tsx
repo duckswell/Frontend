@@ -1,7 +1,7 @@
 import * as S from "../styles/RecommendedIngredientCard.styles";
 
 interface RecommendedIngredientCardProps {
-  category: string;
+  category: string | string[];
   ingredient: string;
   description: string;
   image: string;
@@ -13,12 +13,18 @@ export default function RecommendedIngredientCard({
   description,
   image,
 }: RecommendedIngredientCardProps) {
+  const categories = Array.isArray(category) ? category : [category];
+
   return (
     <S.Card>
       <S.BackgroundImage src={image} alt="" aria-hidden="true" />
 
       <S.Content>
-        <S.Category>{category}</S.Category>
+        <S.CategoryList>
+          {categories.map((item, index) => (
+            <S.Category key={`${item}-${index}`}>{item}</S.Category>
+          ))}
+        </S.CategoryList>
 
         <S.IngredientInfo>
           <S.IngredientName>{ingredient}</S.IngredientName>

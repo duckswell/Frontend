@@ -9,16 +9,25 @@ export interface Product {
 
 interface ProductCardProps {
   product: Product;
+  onClick: () => void;
 }
 
-export default function ProductCard({ product }: ProductCardProps) {
+export default function ProductCard({ product, onClick }: ProductCardProps) {
   return (
     <S.Card>
-      <S.ProductImagePlaceholder />
+      <S.ProductImageButton
+        type="button"
+        onClick={onClick}
+        aria-label={`${product.name} 상세보기`}
+      >
+        <S.ProductImagePlaceholder />
+      </S.ProductImageButton>
 
       <S.ProductInfo>
-        <S.Brand>{product.brand}</S.Brand>
-        <S.ProductName>{product.name}</S.ProductName>
+        <S.ProductTextButton type="button" onClick={onClick}>
+          <S.Brand>{product.brand}</S.Brand>
+          <S.ProductName>{product.name}</S.ProductName>
+        </S.ProductTextButton>
 
         <S.CategoryList>
           {product.categories.map((category) => (
