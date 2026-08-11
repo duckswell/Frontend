@@ -14,7 +14,9 @@ export default function FinishRoutine() {
   function handleMoveToHome() {
     navigate("/");
   }
-
+  function handleMoveToDaily() {
+    navigate("/care/finish_focus_care");
+  }
   return (
     <S.Page>
       <S.Content>
@@ -42,7 +44,7 @@ export default function FinishRoutine() {
               aria-hidden="true"
             />
 
-            <S.DailyTextArea>
+            <S.DailyTextArea onClick={handleMoveToDaily}>
               <S.DailyDescription>
                 집중 코스가 끝나면 데일리로 이어가요
               </S.DailyDescription>
@@ -50,11 +52,7 @@ export default function FinishRoutine() {
               <S.DailyTitle>데일리 코스 살펴보기</S.DailyTitle>
             </S.DailyTextArea>
 
-            <S.GotoIcon
-              src="/assets/Goto.svg"
-              alt=""
-              aria-hidden="true"
-            />
+            <S.GotoIcon src="/assets/Goto.svg" alt="" aria-hidden="true" />
           </S.DailyCard>
         </S.InformationSection>
 
