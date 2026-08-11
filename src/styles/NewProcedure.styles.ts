@@ -214,7 +214,6 @@ export const CustomCalendarCard = styled.div`
   padding: 20px 16px;
   box-sizing: border-box;
   z-index: 100;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
 
   .calendar-header {
     display: flex;
