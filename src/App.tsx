@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { GlobalStyle } from "./GlobalStyle";
+import { ScrollToTop } from "./components/ScrollToTop";
 import Home from "./routes/Home";
 import Mypage from "./routes/Mypage";
 import CourseHistories from "./routes/CourseHistories";
@@ -23,6 +24,7 @@ import RecommendProduct from "./routes/RecommendProduct";
 function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <GlobalStyle />
       <Routes>
         <Route path="/" element={<Home />} />
