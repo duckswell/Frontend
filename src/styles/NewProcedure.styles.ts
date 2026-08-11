@@ -463,12 +463,12 @@ export const AddButton = styled.button`
 
   @media (hover: hover) {
     &:hover {
-      background-color: ${colorPalette.grey50};
+      background-color: ${colorPalette.White};
     }
   }
 
   &:active {
-    background-color: ${colorPalette.grey50};
+    background-color: ${colorPalette.White};
   }
 `;
 

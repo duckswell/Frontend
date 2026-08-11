@@ -195,10 +195,15 @@ export const SubmitButton = styled.button`
     cursor: not-allowed;
   }
 
-  &:not(:disabled):hover {
-    opacity: 0.85;
+  @media (hover: hover) {
+    &:not(:disabled):hover {
+      background-color: ${colorPalette.BlackSelected};
+    }
   }
 
+  &:not(:disabled):active {
+    background-color: ${colorPalette.BlackSelected};
+  }
   @media (min-width: 768px) {
     padding: 18px 0;
   }
