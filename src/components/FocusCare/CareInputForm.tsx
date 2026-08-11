@@ -11,7 +11,10 @@ interface CareInputFormProps {
   variant?: "focus" | "daily";
   selectedConditions: string[];
   onToggleCondition: (condition: string) => void;
-  onChangeImage: (file: File | null) => void;
+
+  skinImages: File[];
+  onChangeImages: (files: File[]) => void;
+
   additionalSymptom: string;
   onChangeAdditionalSymptom: (value: string) => void;
 }
@@ -20,22 +23,37 @@ export default function CareInputForm({
   variant = "focus",
   selectedConditions,
   onToggleCondition,
-  onChangeImage,
+  skinImages,
+  onChangeImages,
   additionalSymptom,
   onChangeAdditionalSymptom,
 }: CareInputFormProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const isDaily = variant === "daily";
+  const hasImages = skinImages.length > 0;
 
   const handleOpenImagePicker = () => {
     fileInputRef.current?.click();
   };
 
   const handleChangeImage = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0] ?? null;
+    const selectedFiles = Array.from(event.target.files ?? []);
 
-    onChangeImage(file);
+    if (selectedFiles.length === 0) {
+      return;
+    }
+
+    onChangeImages([...skinImages, ...selectedFiles]);
+
+    // 같은 사진을 다시 선택할 수 있도록 초기화
+    event.target.value = "";
+  };
+
+  const handleRemoveImage = (indexToRemove: number) => {
+    const nextImages = skinImages.filter((_, index) => index !== indexToRemove);
+
+    onChangeImages(nextImages);
   };
 
   return (
@@ -88,16 +106,45 @@ export default function CareInputForm({
           </S.Description>
         </S.TextArea>
 
+        {hasImages && (
+          <S.ImagePreviewList>
+            {skinImages.map((file, index) => {
+              const imageUrl = URL.createObjectURL(file);
+
+              return (
+                <S.ImagePreviewItem
+                  key={`${file.name}-${file.lastModified}-${index}`}
+                >
+                  <S.PreviewImage
+                    src={imageUrl}
+                    alt={`피부 사진 ${index + 1}`}
+                    onLoad={() => URL.revokeObjectURL(imageUrl)}
+                  />
+
+                  <S.RemoveImageButton
+                    type="button"
+                    aria-label={`${index + 1}번째 사진 삭제`}
+                    onClick={() => handleRemoveImage(index)}
+                  >
+                    <img src="/assets/X.svg" alt="" aria-hidden="true" />
+                  </S.RemoveImageButton>
+                </S.ImagePreviewItem>
+              );
+            })}
+          </S.ImagePreviewList>
+        )}
+
         <S.UploadButton type="button" onClick={handleOpenImagePicker}>
           <S.PlusIcon src="/assets/Plus.svg" alt="" aria-hidden="true" />
 
-          <S.UploadText>사진 추가</S.UploadText>
+          <S.UploadText>{hasImages ? "사진 변경" : "사진 추가"}</S.UploadText>
         </S.UploadButton>
 
         <S.HiddenInput
           ref={fileInputRef}
           type="file"
           accept="image/*"
+          multiple
           onChange={handleChangeImage}
         />
       </S.Section>
@@ -120,7 +167,6 @@ export default function CareInputForm({
 
         <S.SymptomTextarea
           value={additionalSymptom}
-          $variant={variant}
           placeholder={
             isDaily
               ? "예) 트러블 흔적이 신경 쓰여요"
@@ -134,6 +180,18 @@ export default function CareInputForm({
             ? "* 입력한 정보는 피부 상태 분석에만 사용되며 의료 진단을 대신하지 않아요"
             : "* 입력한 정보는 루틴 추천에만 사용되며 의료 진단을 대신하지 않아요"}
         </S.Notice>
+
+        {hasImages && (
+          <S.UploadCompleteBox>
+            <S.CheckIcon
+              src="/assets/CheckIcon.svg"
+              alt=""
+              aria-hidden="true"
+            />
+
+            <S.UploadCompleteText>사진을 등록했어요</S.UploadCompleteText>
+          </S.UploadCompleteBox>
+        )}
       </S.Section>
     </>
   );

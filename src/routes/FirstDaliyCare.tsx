@@ -17,8 +17,12 @@ export default function FirstDaliyCare() {
     "따가움",
     "건조함",
   ]);
-  const [skinImage, setSkinImage] = useState<File | null>(null);
+
+  const [skinImages, setSkinImages] = useState<File[]>([]);
+
   const [additionalSymptom, setAdditionalSymptom] = useState("");
+
+  const isNextEnabled = selectedConditions.length > 0 && skinImages.length > 0;
 
   const handleToggleCondition = (condition: string) => {
     setSelectedConditions((previousConditions) => {
@@ -32,8 +36,8 @@ export default function FirstDaliyCare() {
     });
   };
 
-  const handleChangeImage = (file: File | null) => {
-    setSkinImage(file);
+  const handleChangeImages = (files: File[]) => {
+    setSkinImages(files);
   };
 
   const handleChangeAdditionalSymptom = (value: string) => {
@@ -41,9 +45,13 @@ export default function FirstDaliyCare() {
   };
 
   const handleMoveToNext = () => {
+    if (!isNextEnabled) {
+      return;
+    }
+
     console.log({
       selectedConditions,
-      skinImage,
+      skinImages,
       additionalSymptom,
     });
 
@@ -62,7 +70,8 @@ export default function FirstDaliyCare() {
             variant="daily"
             selectedConditions={selectedConditions}
             onToggleCondition={handleToggleCondition}
-            onChangeImage={handleChangeImage}
+            skinImages={skinImages}
+            onChangeImages={handleChangeImages}
             additionalSymptom={additionalSymptom}
             onChangeAdditionalSymptom={handleChangeAdditionalSymptom}
           />
@@ -71,7 +80,11 @@ export default function FirstDaliyCare() {
 
       <S.BottomArea>
         <CareButton
-          backgroundColor={colorPalette.DailyPrimary}
+          disabled={!isNextEnabled}
+          backgroundColor={
+            isNextEnabled ? colorPalette.DailyPrimary : colorPalette.White
+          }
+          textColor={isNextEnabled ? colorPalette.White : colorPalette.Tertiary}
           onClick={handleMoveToNext}
         >
           다음으로

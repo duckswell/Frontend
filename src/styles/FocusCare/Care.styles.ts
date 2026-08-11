@@ -8,7 +8,10 @@ export const Page = styled.div`
   padding-bottom: 60px;
   background-color: ${colorPalette.OffWhite};
   color: ${colorPalette.Black};
-
+  > header > button:first-child {
+    visibility: hidden;
+    pointer-events: none;
+  }
   @media (min-width: 768px) {
     padding-top: 64px;
   }

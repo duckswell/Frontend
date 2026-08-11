@@ -48,7 +48,7 @@ export default function RoutineBottomSheet({
   const [selectedRoutine, setSelectedRoutine] = useState<RoutineLevel | null>(
     null
   );
-
+  const isRoutineSelected = selectedRoutine !== null;
   const [dragOffset, setDragOffset] = useState(0);
 
   const startYRef = useRef<number | null>(null);
@@ -139,10 +139,16 @@ export default function RoutineBottomSheet({
 
         <S.ButtonArea>
           <CareButton
+            disabled={!isRoutineSelected}
             backgroundColor={
-              variant === "daily"
-                ? colorPalette.DailyPrimary
-                : colorPalette.FocusPrimary
+              isRoutineSelected
+                ? variant === "daily"
+                  ? colorPalette.DailyPrimary
+                  : colorPalette.FocusPrimary
+                : colorPalette.White
+            }
+            textColor={
+              isRoutineSelected ? colorPalette.White : colorPalette.Tertiary
             }
             onClick={handleMoveToNextCare}
           >

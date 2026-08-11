@@ -11,7 +11,16 @@ import * as S from "../styles/FocusCare/FinishFocusCare.styles";
 
 type PageStep = "intro" | "indicator" | "concern" | "routine";
 
-type SkinConcern = "홍조" | "붓기" | "건조" | "각질" | "피지" | "트러블";
+type SkinConcern =
+  | "따가움"
+  | "건조함"
+  | "번들거림"
+  | "각질"
+  | "붓기"
+  | "트러블"
+  | "가려움"
+  | "붉은기"
+  | "열감";
 
 type RoutineId = "calm" | "clear" | "sebum" | "moisture";
 
@@ -26,12 +35,12 @@ interface RoutineOption {
 const PAGE_STEPS: PageStep[] = ["intro", "indicator", "concern", "routine"];
 
 const SKIN_CONCERNS: SkinConcern[] = [
-  "홍조",
-  "붓기",
-  "건조",
+  "따가움",
+  "건조함",
+  "번들거림",
+  "가려움",
   "각질",
-  "피지",
-  "트러블",
+  "붓기",
 ];
 
 const ROUTINE_OPTIONS: RoutineOption[] = [
@@ -70,26 +79,22 @@ export default function FinishFocusCare() {
 
   const [currentStep, setCurrentStep] = useState<PageStep>("intro");
 
-  const [selectedConcerns, setSelectedConcerns] = useState<Set<SkinConcern>>(
-    new Set(["홍조", "붓기"])
+  const PRIMARY_CONCERNS: SkinConcern[] = ["붉은기", "열감"];
+
+  const SECONDARY_CONCERNS = SKIN_CONCERNS.filter(
+    (concern) => !PRIMARY_CONCERNS.includes(concern)
   );
 
-  const [selectedRoutine, setSelectedRoutine] = useState<RoutineId>("calm");
-
+  const [selectedRoutine, setSelectedRoutine] = useState<RoutineId | null>(
+    null
+  );
+  const isRoutineSelected = selectedRoutine !== null;
   const [shouldAutoAdvanceIndicator, setShouldAutoAdvanceIndicator] =
     useState(false);
 
   const touchStartY = useRef<number | null>(null);
   const isWheelLocked = useRef(false);
   const routineScreenRef = useRef<HTMLElement | null>(null);
-
-  const selectedConcernList = SKIN_CONCERNS.filter((concern) =>
-    selectedConcerns.has(concern)
-  );
-
-  const unselectedConcernList = SKIN_CONCERNS.filter(
-    (concern) => !selectedConcerns.has(concern)
-  );
 
   function handleMoveToNextStep() {
     const currentIndex = PAGE_STEPS.indexOf(currentStep);
@@ -147,25 +152,14 @@ export default function FinishFocusCare() {
     touchStartY.current = null;
   }
 
-  function handleSelectConcern(concern: SkinConcern) {
-    setSelectedConcerns((previousConcerns) => {
-      const nextConcerns = new Set(previousConcerns);
-
-      if (nextConcerns.has(concern)) {
-        nextConcerns.delete(concern);
-      } else {
-        nextConcerns.add(concern);
-      }
-
-      return nextConcerns;
-    });
-  }
-
   function handleSelectRoutine(routineId: RoutineId) {
     setSelectedRoutine(routineId);
   }
-
   function handleStartDailyCourse() {
+    if (!selectedRoutine) {
+      return;
+    }
+
     navigate("/care/finish_select_routine");
   }
 
@@ -310,39 +304,26 @@ export default function FinishFocusCare() {
             </S.SectionTitle>
 
             <S.SectionDescription>
-              데일리 코스에서 홍조와 붓기를 좀 더 케어해볼까요?
+              데일리 코스에서 {PRIMARY_CONCERNS[0]}와 {PRIMARY_CONCERNS[1]}를 좀
+              더 케어해볼까요?
             </S.SectionDescription>
 
             <S.ConcernArea>
-              {selectedConcernList.length > 0 && (
-                <S.SelectedConcernList>
-                  {selectedConcernList.map((concern) => (
-                    <S.ConcernButton
-                      key={concern}
-                      type="button"
-                      $isSelected
-                      onClick={() => handleSelectConcern(concern)}
-                    >
-                      {concern}
-                    </S.ConcernButton>
-                  ))}
-                </S.SelectedConcernList>
-              )}
+              <S.PrimaryConcernList>
+                {PRIMARY_CONCERNS.map((concern) => (
+                  <S.PrimaryConcernChip key={concern}>
+                    {concern}
+                  </S.PrimaryConcernChip>
+                ))}
+              </S.PrimaryConcernList>
 
-              {unselectedConcernList.length > 0 && (
-                <S.UnselectedConcernList>
-                  {unselectedConcernList.map((concern) => (
-                    <S.ConcernButton
-                      key={concern}
-                      type="button"
-                      $isSelected={false}
-                      onClick={() => handleSelectConcern(concern)}
-                    >
-                      {concern}
-                    </S.ConcernButton>
-                  ))}
-                </S.UnselectedConcernList>
-              )}
+              <S.SecondaryConcernList>
+                {SECONDARY_CONCERNS.map((concern) => (
+                  <S.SecondaryConcernChip key={concern}>
+                    {concern}
+                  </S.SecondaryConcernChip>
+                ))}
+              </S.SecondaryConcernList>
             </S.ConcernArea>
           </S.ConcernContent>
         </S.FullScreenSection>
@@ -378,8 +359,15 @@ export default function FinishFocusCare() {
 
             <S.ButtonWrapper>
               <CareButton
-                backgroundColor={colorPalette.BlackSelected}
-                textColor={colorPalette.White}
+                disabled={!isRoutineSelected}
+                backgroundColor={
+                  isRoutineSelected
+                    ? colorPalette.BlackSelected
+                    : colorPalette.White
+                }
+                textColor={
+                  isRoutineSelected ? colorPalette.White : colorPalette.Tertiary
+                }
                 onClick={handleStartDailyCourse}
               >
                 나의 데일리 코스 시작하기

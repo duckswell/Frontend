@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+
 import { NavBar } from "../components/NavBar";
 import CareButton from "../components/CareButton";
 import CareInputForm from "../components/FocusCare/CareInputForm";
 import FocusProgress from "../components/FocusCare/FocusProgress";
 
+import { colorPalette } from "../lib/colorPalette";
 import * as S from "../styles/FocusCare/FirstFocusCare.styles";
 
 export default function FirstFocusCare() {
@@ -13,8 +15,12 @@ export default function FirstFocusCare() {
   const [selectedConditions, setSelectedConditions] = useState<string[]>([
     "따가움",
   ]);
-  const [skinImage, setSkinImage] = useState<File | null>(null);
+
+  const [skinImages, setSkinImages] = useState<File[]>([]);
+
   const [additionalSymptom, setAdditionalSymptom] = useState("");
+
+  const isNextEnabled = selectedConditions.length > 0 && skinImages.length > 0;
 
   const handleToggleCondition = (condition: string) => {
     setSelectedConditions((previousConditions) => {
@@ -28,8 +34,8 @@ export default function FirstFocusCare() {
     });
   };
 
-  const handleChangeImage = (file: File | null) => {
-    setSkinImage(file);
+  const handleChangeImages = (files: File[]) => {
+    setSkinImages(files);
   };
 
   const handleChangeAdditionalSymptom = (value: string) => {
@@ -37,9 +43,13 @@ export default function FirstFocusCare() {
   };
 
   const handleMoveToNext = () => {
+    if (!isNextEnabled) {
+      return;
+    }
+
     console.log({
       selectedConditions,
-      skinImage,
+      skinImages,
       additionalSymptom,
     });
 
@@ -49,6 +59,7 @@ export default function FirstFocusCare() {
   return (
     <S.Page>
       <NavBar title="집중 코스" />
+
       <S.Main>
         <FocusProgress currentStep={1} />
 
@@ -56,7 +67,8 @@ export default function FirstFocusCare() {
           <CareInputForm
             selectedConditions={selectedConditions}
             onToggleCondition={handleToggleCondition}
-            onChangeImage={handleChangeImage}
+            skinImages={skinImages}
+            onChangeImages={handleChangeImages}
             additionalSymptom={additionalSymptom}
             onChangeAdditionalSymptom={handleChangeAdditionalSymptom}
           />
@@ -64,7 +76,16 @@ export default function FirstFocusCare() {
       </S.Main>
 
       <S.BottomArea>
-        <CareButton onClick={handleMoveToNext}>다음으로</CareButton>
+        <CareButton
+          disabled={!isNextEnabled}
+          backgroundColor={
+            isNextEnabled ? colorPalette.FocusPrimary : colorPalette.White
+          }
+          textColor={isNextEnabled ? colorPalette.White : colorPalette.Tertiary}
+          onClick={handleMoveToNext}
+        >
+          다음으로
+        </CareButton>
       </S.BottomArea>
     </S.Page>
   );

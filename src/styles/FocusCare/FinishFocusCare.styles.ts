@@ -1,4 +1,4 @@
-import styled, { css, keyframes } from "styled-components";
+import styled, { keyframes } from "styled-components";
 
 import { colorPalette } from "../../lib/colorPalette";
 import { typography } from "../../lib/typography";
@@ -204,77 +204,77 @@ export const SectionDescription = styled.p`
 
   color: ${colorPalette.Black};
 `;
-
 export const ConcernArea = styled.div`
   display: flex;
   flex-direction: column;
-
-  gap: 16px;
+  gap: 20px;
 
   width: 100%;
 
-  margin-top: 36px;
+  margin-top: 44px;
 `;
 
-export const SelectedConcernList = styled.div`
+export const PrimaryConcernList = styled.div`
   display: flex;
-  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+
+  gap: 14px;
+
+  width: 100%;
+`;
+
+export const PrimaryConcernChip = styled.div`
+  display: flex;
   align-items: center;
   justify-content: center;
 
-  gap: 14px 16px;
+  padding: 8px 17px;
 
-  width: 100%;
-`;
+  box-sizing: border-box;
 
-export const UnselectedConcernList = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-
-  gap: 14px 16px;
-
-  width: 100%;
-`;
-
-export const ConcernButton = styled.button<{
-  $isSelected: boolean;
-}>`
-  flex-shrink: 0;
-
+  border: 1px solid ${colorPalette.FocusPrimary};
   border-radius: 999px;
 
-  font-family: inherit;
+  background-color: ${colorPalette.OffWhite};
 
-  cursor: pointer;
+  color: ${colorPalette.FocusPrimary};
 
-  ${({ $isSelected }) =>
-    $isSelected
-      ? css`
-          padding: 8px 17px;
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 150%;
+`;
 
-          border: 0.7px solid ${colorPalette.FocusPrimary};
+export const SecondaryConcernList = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
 
-          background-color: rgba(255, 255, 255, 0.8);
+  gap: 14px 12px;
 
-          color: ${colorPalette.FocusPrimary};
+  width: 100%;
+`;
 
-          font-size: 17px;
-          font-weight: 700;
-        `
-      : css`
-          padding: 7px 14px;
+export const SecondaryConcernChip = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
-          border: 0.6px solid ${colorPalette.Quaternary};
+  padding: 7px 14px;
 
-          background-color: transparent;
+  box-sizing: border-box;
 
-          color: ${colorPalette.Quaternary};
+  border: 0.6px solid ${colorPalette.Quaternary};
+  border-radius: 999px;
 
-          font-size: 14px;
-          font-weight: 700;
-        `}
+  background-color: transparent;
+
+  color: ${colorPalette.Quaternary};
+
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 150%;
 `;
 
 /* =========================
