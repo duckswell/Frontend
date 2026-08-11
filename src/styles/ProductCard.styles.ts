@@ -67,3 +67,35 @@ export const Category = styled.span`
 
   white-space: nowrap;
 `;
+export const ProductImageButton = styled.button`
+  display: block;
+
+  width: 177px;
+
+  padding: 0;
+
+  border: none;
+
+  background-color: transparent;
+
+  cursor: pointer;
+`;
+
+export const ProductTextButton = styled.button`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+
+  width: fit-content;
+
+  padding: 0;
+
+  border: none;
+
+  background-color: transparent;
+
+  font-family: inherit;
+  text-align: left;
+
+  cursor: pointer;
+`;

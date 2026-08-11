@@ -202,3 +202,79 @@ export const ScrollTopIcon = styled.img`
 
   object-fit: contain;
 `;
+export const ProductModalContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+
+  width: 370px;
+
+  max-width: calc(100vw - 32px);
+`;
+
+export const ProductModalOverlay = styled.div<PageProps>`
+  position: fixed;
+  z-index: 999;
+
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: ${({ $hasTabBar }) => ($hasTabBar ? "64px" : "0")};
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background-color: rgba(0, 0, 0, 0.2);
+
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+
+  @media (min-width: 768px) {
+    bottom: ${({ $hasTabBar }) => ($hasTabBar ? "72px" : "0")};
+  }
+`;
+export const ProductModalHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+
+  width: 100%;
+`;
+
+export const ProductModalCloseButton = styled.button`
+  ${typography.Body2};
+
+  box-sizing: border-box;
+
+  padding: 12px;
+
+  border: none;
+
+  background-color: transparent;
+  color: ${colorPalette.OffWhite};
+
+  font-family: inherit;
+
+  cursor: pointer;
+`;
+
+export const ExternalWebsiteArea = styled.div`
+  box-sizing: border-box;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 370px;
+  height: 657px;
+
+  max-width: 100%;
+  max-height: calc(100dvh - 120px);
+
+  overflow: hidden;
+
+  background-color: ${colorPalette.White};
+  color: ${colorPalette.Black};
+
+  ${typography.Body2};
+`;

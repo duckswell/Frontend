@@ -5,7 +5,7 @@ import { NavBar } from "../components/NavBar";
 import { TabBar } from "../components/TabBar";
 import ProductCard from "../components/ProductCard";
 import RecommendedIngredientCard from "../components/RecommendedIngredientCard";
-
+import { createPortal } from "react-dom";
 import * as S from "../styles/RecommendProduct.styles";
 
 const INGREDIENTS = [
@@ -14,26 +14,27 @@ const INGREDIENTS = [
     category: "진정",
     ingredient: "히알루론산",
     description: "히알루론산이 어디에 어떻게 좋은지에 대한 설명",
-    image: "/assets/Daily_barrier.png",
+    image: "/assets/Ingridient_herb.png",
   },
   {
     id: "panthenol",
-    category: "진정",
+    category: ["진정", "진정"],
     ingredient: "판테놀",
     description: "판테놀이 어디에 어떻게 좋은지에 대한 설명",
-    image: "/assets/Daily_barrier.png",
+    image: "/assets/Ingridient_moisture.png",
   },
   {
     id: "ceramide",
     category: "장벽",
     ingredient: "세라마이드",
     description: "세라마이드가 어디에 어떻게 좋은지에 대한 설명",
-    image: "/assets/Daily_barrier.png",
+    image: "/assets/Ingridient_vitamin.png",
   },
 ];
 
 const PRODUCT_CATEGORIES = [
-  "전체",
+  "전체보기",
+  "클렌저",
   "스킨/토너",
   "앰플/세럼/에센스",
   "크림",
@@ -151,7 +152,7 @@ export default function RecommendProduct() {
   );
 
   const [selectedProductCategory, setSelectedProductCategory] =
-    useState("미스트/오일");
+    useState("전체보기");
 
   const [showScrollTopButton, setShowScrollTopButton] = useState(false);
 
@@ -161,7 +162,11 @@ export default function RecommendProduct() {
     PRODUCTS_BY_INGREDIENT[
       selectedIngredientId as keyof typeof PRODUCTS_BY_INGREDIENT
     ] ?? [];
-
+  const [selectedProductId, setSelectedProductId] = useState<number | null>(
+    null
+  );
+  const selectedProduct =
+    products.find((product) => product.id === selectedProductId) ?? null;
   useEffect(() => {
     const container = ingredientScrollRef.current;
 
@@ -373,12 +378,40 @@ export default function RecommendProduct() {
 
           <S.ProductGrid>
             {products.map((product) => (
-              <ProductCard key={product.id} product={product} />
+              <ProductCard
+                key={product.id}
+                product={product}
+                onClick={() => setSelectedProductId(product.id)}
+              />
             ))}
           </S.ProductGrid>
         </S.ProductSection>
       </S.Content>
+      {selectedProduct &&
+        createPortal(
+          <S.ProductModalOverlay
+            $hasTabBar={!fromCare}
+            onClick={() => setSelectedProductId(null)}
+          >
+            <S.ProductModalContainer
+              onClick={(event) => event.stopPropagation()}
+            >
+              <S.ProductModalHeader>
+                <S.ProductModalCloseButton
+                  type="button"
+                  onClick={() => setSelectedProductId(null)}
+                >
+                  닫기
+                </S.ProductModalCloseButton>
+              </S.ProductModalHeader>
 
+              <S.ExternalWebsiteArea>
+                나중에 외부 웹사이트를 띄울 공간
+              </S.ExternalWebsiteArea>
+            </S.ProductModalContainer>
+          </S.ProductModalOverlay>,
+          document.body
+        )}
       {showScrollTopButton && (
         <S.ScrollTopButton
           type="button"

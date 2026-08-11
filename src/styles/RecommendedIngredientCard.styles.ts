@@ -45,7 +45,13 @@ export const Content = styled.div`
   width: 100%;
   height: 100%;
 `;
+export const CategoryList = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 4px;
 
+  width: fit-content;
+`;
 export const Category = styled.span`
   ${typography.Body2};
 
@@ -64,8 +70,7 @@ export const Category = styled.span`
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
 
-  box-shadow:
-    inset 1px 1px 2px rgba(255, 255, 255, 0.8),
+  box-shadow: inset 1px 1px 2px rgba(255, 255, 255, 0.8),
     inset -1px -1px 2px rgba(255, 255, 255, 0.18);
 `;
 
@@ -85,8 +90,7 @@ export const IngredientInfo = styled.div`
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
 
-  box-shadow:
-    inset 1px 1px 3px rgba(255, 255, 255, 0.8),
+  box-shadow: inset 1px 1px 3px rgba(255, 255, 255, 0.8),
     inset -1px -1px 3px rgba(255, 255, 255, 0.18);
 `;
 

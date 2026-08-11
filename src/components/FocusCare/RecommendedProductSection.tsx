@@ -1,3 +1,5 @@
+import { useNavigate } from "react-router-dom";
+
 import * as S from "../../styles/FocusCare/RecommendedProductSection.styles";
 
 interface Product {
@@ -37,12 +39,18 @@ export default function RecommendedProductSection({
   title = "오늘의 추천 성분 제품",
   products = DEFAULT_PRODUCTS,
 }: RecommendedProductSectionProps) {
+  const navigate = useNavigate();
+
+  function handleMoveToRecommend() {
+    navigate("/recommend");
+  }
+
   return (
     <S.Section>
       <S.Header>
         <S.Title>{title}</S.Title>
 
-        <S.MoreButton type="button">
+        <S.MoreButton type="button" onClick={handleMoveToRecommend}>
           <S.MoreText>더보기</S.MoreText>
           <S.MoreIcon src="/assets/GotoGray.svg" alt="" aria-hidden="true" />
         </S.MoreButton>
