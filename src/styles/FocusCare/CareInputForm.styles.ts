@@ -1,5 +1,4 @@
 import styled from "styled-components";
-
 import { colorPalette } from "../../lib/colorPalette";
 import { typography } from "../../lib/typography";
 
@@ -55,22 +54,96 @@ export const ConditionRow = styled.div`
   gap: 12px;
 `;
 
-export const ConditionButton = styled.button<{ $selected: boolean }>`
+export const ConditionButton = styled.button<{
+  $selected: boolean;
+}>`
   padding: 6px 12px;
 
   border: 1px solid
     ${({ $selected }) =>
       $selected ? colorPalette.Black : colorPalette.Quaternary};
+
   border-radius: 999px;
 
   background-color: ${({ $selected }) =>
     $selected ? colorPalette.Black : colorPalette.OffWhite};
 
   ${typography.Body1};
+
   color: ${({ $selected }) =>
     $selected ? colorPalette.OffWhite : colorPalette.Black};
 
   cursor: pointer;
+`;
+
+/* =========================
+   이미지 미리보기
+========================= */
+export const ImagePreviewList = styled.div`
+  display: flex;
+  gap: 6px;
+
+  width: 100%;
+
+  overflow-x: auto;
+
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+`;
+export const ImagePreviewItem = styled.div`
+  position: relative;
+
+  flex-shrink: 0;
+
+  width: 127px;
+  height: 127px;
+
+  padding-top: 7px;
+  padding-right: 7px;
+
+  box-sizing: border-box;
+`;
+
+export const PreviewImage = styled.img`
+  display: block;
+
+  width: 120px;
+  height: 120px;
+
+  box-sizing: border-box;
+
+  border: 0.5px solid ${colorPalette.Quaternary};
+  border-radius: 4px;
+
+  object-fit: cover;
+`;
+
+export const RemoveImageButton = styled.button`
+  position: absolute;
+  top: 0;
+  right: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 19px;
+  height: 19px;
+
+  padding: 0;
+  border: none;
+
+  background: transparent;
+
+  cursor: pointer;
+
+  img {
+    width: 19px;
+    height: 19px;
+  }
 `;
 
 export const UploadButton = styled.button`
@@ -107,9 +180,7 @@ export const HiddenInput = styled.input`
   display: none;
 `;
 
-export const SymptomTextarea = styled.textarea<{
-  $variant: CareVariant;
-}>`
+export const SymptomTextarea = styled.textarea`
   box-sizing: border-box;
 
   width: 100%;
@@ -135,11 +206,7 @@ export const SymptomTextarea = styled.textarea<{
 
   &:focus {
     outline: none;
-
-    border-color: ${({ $variant }) =>
-      $variant === "daily"
-        ? colorPalette.DailyPrimary
-        : colorPalette.FocusPrimary};
+    border-color: ${colorPalette.Black};
   }
 `;
 
@@ -152,4 +219,38 @@ export const Notice = styled.p`
   line-height: 150%;
 
   color: ${colorPalette.Tertiary};
+`;
+
+/* =========================
+   사진 등록 완료
+========================= */
+
+export const UploadCompleteBox = styled.div`
+  box-sizing: border-box;
+
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  width: 100%;
+  max-width: 370px;
+
+  padding: 16px;
+
+  border: 1px solid ${colorPalette.Quaternary};
+  border-radius: 12px;
+
+  background-color: ${colorPalette.OffWhite};
+`;
+
+export const CheckIcon = styled.img`
+  flex-shrink: 0;
+
+  width: 19px;
+  height: 19px;
+`;
+
+export const UploadCompleteText = styled.span`
+  ${typography.Body1Bold};
+  color: ${colorPalette.Black};
 `;

@@ -25,10 +25,10 @@ export const Button = styled.button<ButtonStyleProps>`
   color: ${({ $textColor }) => $textColor ?? colorPalette.OffWhite};
 
   font-family: inherit;
+
   cursor: pointer;
 
   &:disabled {
     cursor: not-allowed;
-    opacity: 0.5;
   }
 `;
