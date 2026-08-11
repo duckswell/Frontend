@@ -12,6 +12,7 @@ export const GlobalStyle = createGlobalStyle`
     font-family: 'Wanted Sans Variable', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif !important;
     user-select: none;
     -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
   }
 
   body, input, button, textarea, select {
