@@ -150,7 +150,14 @@ export const RoutineButton = styled.button<{ $isFocus: boolean }>`
   ${applyTypography("H3")}
   cursor: pointer;
 
-  &:hover {
+  @media (hover: hover) {
+    &:hover {
+      background-color: ${({ $isFocus }) =>
+        $isFocus ? colorPalette.FocusSelected : colorPalette.DailySelected};
+    }
+  }
+
+  &:active {
     background-color: ${({ $isFocus }) =>
       $isFocus ? colorPalette.FocusSelected : colorPalette.DailySelected};
   }

@@ -408,8 +408,13 @@ export const AddButton = styled.button`
     width: 18px;
     height: 18px;
   }
+  @media (hover: hover) {
+    &:hover {
+      background-color: ${colorPalette.grey50};
+    }
+  }
 
-  &:hover {
+  &:active {
     background-color: ${colorPalette.grey50};
   }
 `;
@@ -450,7 +455,13 @@ export const SubmitButton = styled.button`
   ${applyTypography("H3")}
   cursor: pointer;
 
-  &:hover {
+  @media (hover: hover) {
+    &:hover {
+      background-color: ${colorPalette.FocusSelected};
+    }
+  }
+
+  &:active {
     background-color: ${colorPalette.FocusSelected};
   }
 `;

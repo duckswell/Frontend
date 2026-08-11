@@ -130,7 +130,13 @@ export const CallButton = styled.a`
   text-decoration: none;
   box-sizing: border-box;
 
-  &:hover {
+  @media (hover: hover) {
+    &:hover {
+      background-color: ${colorPalette.grey50};
+    }
+  }
+
+  &:active {
     background-color: ${colorPalette.grey50};
   }
 `;
