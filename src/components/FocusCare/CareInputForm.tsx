@@ -1,6 +1,10 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
+
+import AnalysisLoading from "./AnalysisLoading";
+import ImageUploadErrorModal from "./ImageUploadErrorModal";
 
 import * as S from "../../styles/FocusCare/CareInputForm.styles";
+import * as ModalS from "../../styles/FocusCare/ImageAnalysisModal.styles";
 
 const SKIN_CONDITION_ROWS = [
   ["붉은기", "열감", "따가움", "건조함"],
@@ -30,9 +34,32 @@ export default function CareInputForm({
 }: CareInputFormProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const [isAnalyzingImage, setIsAnalyzingImage] = useState(false);
+  const [isUploadErrorOpen, setIsUploadErrorOpen] = useState(false);
+
+  const pendingImagesRef = useRef<File[]>([]);
+
   const isDaily = variant === "daily";
   const hasImages = skinImages.length > 0;
+  const uploadAttemptRef = useRef(0);
 
+  const handleCompleteImageAnalysis = () => {
+    setIsAnalyzingImage(false);
+
+    uploadAttemptRef.current += 1;
+
+    const isSuccess = uploadAttemptRef.current % 2 === 0;
+
+    if (isSuccess) {
+      onChangeImages([...skinImages, ...pendingImagesRef.current]);
+
+      pendingImagesRef.current = [];
+      return;
+    }
+
+    pendingImagesRef.current = [];
+    setIsUploadErrorOpen(true);
+  };
   const handleOpenImagePicker = () => {
     fileInputRef.current?.click();
   };
@@ -44,10 +71,29 @@ export default function CareInputForm({
       return;
     }
 
-    onChangeImages([...skinImages, ...selectedFiles]);
+    // 아직 부모의 skinImages에 저장하지 않고 임시 보관
+    pendingImagesRef.current = selectedFiles;
+
+    // 사진 분석 로딩 시작
+    setIsAnalyzingImage(true);
 
     // 같은 사진을 다시 선택할 수 있도록 초기화
     event.target.value = "";
+  };
+
+  const handleCancelReupload = () => {
+    pendingImagesRef.current = [];
+    setIsUploadErrorOpen(false);
+  };
+
+  const handleReupload = () => {
+    pendingImagesRef.current = [];
+    setIsUploadErrorOpen(false);
+
+    // 모달이 닫힌 뒤 파일 선택창 다시 열기
+    window.setTimeout(() => {
+      fileInputRef.current?.click();
+    }, 0);
   };
 
   const handleRemoveImage = (indexToRemove: number) => {
@@ -193,6 +239,25 @@ export default function CareInputForm({
           </S.UploadCompleteBox>
         )}
       </S.Section>
+
+      {isAnalyzingImage && (
+        <ModalS.Overlay>
+          <ModalS.Modal>
+            <AnalysisLoading
+              variant={variant}
+              type="image"
+              onComplete={handleCompleteImageAnalysis}
+            />
+          </ModalS.Modal>
+        </ModalS.Overlay>
+      )}
+
+      {isUploadErrorOpen && (
+        <ImageUploadErrorModal
+          onCancel={handleCancelReupload}
+          onReupload={handleReupload}
+        />
+      )}
     </>
   );
 }

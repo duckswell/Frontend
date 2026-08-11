@@ -22,7 +22,7 @@ export default function FirstDaliyCare() {
 
   const [additionalSymptom, setAdditionalSymptom] = useState("");
 
-  const isNextEnabled = selectedConditions.length > 0 && skinImages.length > 0;
+  const isNextEnabled = selectedConditions.length > 0;
 
   const handleToggleCondition = (condition: string) => {
     setSelectedConditions((previousConditions) => {

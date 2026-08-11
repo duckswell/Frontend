@@ -5,11 +5,13 @@ import * as S from "../../styles/FocusCare/AnalysisLoading.styles";
 interface AnalysisLoadingProps {
   onComplete: () => void;
   variant?: "focus" | "daily";
+  type?: "routine" | "image";
 }
 
 export default function AnalysisLoading({
   onComplete,
   variant = "focus",
+  type = "routine",
 }: AnalysisLoadingProps) {
   const [progress, setProgress] = useState(0);
 
@@ -91,12 +93,28 @@ export default function AnalysisLoading({
       </S.ProgressCircle>
 
       <S.TextArea>
-        <S.Title>오늘의 맞춤 루틴을 만들고 있어요</S.Title>
+        <S.Title>
+          {type === "image"
+            ? "사진을 확인 중이에요"
+            : "오늘의 맞춤 루틴을 만들고 있어요"}
+        </S.Title>
 
         <S.Description>
-          AI 피부 분석 결과에 맞춰
-          <br />
-          지금 필요한 성분과 관리 순서를 조합 중이에요
+          {type === "image" ? (
+            <>
+              조명이 너무 어둡거나 밝은 경우
+              <br />
+              정확한 분석을 위해
+              <br />
+              사진을 다시 요청할 수 있어요
+            </>
+          ) : (
+            <>
+              AI 피부 분석 결과에 맞춰
+              <br />
+              지금 필요한 성분과 관리 순서를 조합 중이에요
+            </>
+          )}
         </S.Description>
       </S.TextArea>
     </S.Container>
