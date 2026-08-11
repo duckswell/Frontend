@@ -5,7 +5,6 @@ import { NavBar } from "../components/NavBar";
 import CareButton from "../components/CareButton";
 import CareInputForm from "../components/FocusCare/CareInputForm";
 import FocusProgress from "../components/FocusCare/FocusProgress";
-import ImageAnalysisModal from "../components/FocusCare/ImageAnalysisModal";
 
 import { colorPalette } from "../lib/colorPalette";
 import * as S from "../styles/DailyCare/FirstDaliyCare.styles";
@@ -23,9 +22,7 @@ export default function FirstDaliyCare() {
 
   const [additionalSymptom, setAdditionalSymptom] = useState("");
 
-  const [isImageAnalysisOpen, setIsImageAnalysisOpen] = useState(false);
-
-  const isNextEnabled = selectedConditions.length > 0 && skinImages.length > 0;
+  const isNextEnabled = selectedConditions.length > 0;
 
   const handleToggleCondition = (condition: string) => {
     setSelectedConditions((previousConditions) => {
@@ -57,12 +54,6 @@ export default function FirstDaliyCare() {
       skinImages,
       additionalSymptom,
     });
-
-    setIsImageAnalysisOpen(true);
-  };
-
-  const handleCompleteImageAnalysis = () => {
-    setIsImageAnalysisOpen(false);
 
     navigate("/care/second_daily_care");
   };
@@ -99,13 +90,6 @@ export default function FirstDaliyCare() {
           다음으로
         </CareButton>
       </S.BottomArea>
-
-      {isImageAnalysisOpen && (
-        <ImageAnalysisModal
-          variant="daily"
-          onComplete={handleCompleteImageAnalysis}
-        />
-      )}
     </S.Page>
   );
 }
