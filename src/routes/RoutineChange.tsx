@@ -52,7 +52,7 @@ export default function RoutineChange() {
       selectedRoutineId,
     });
 
-    navigate("/care");
+    navigate("/care/first_daily_care");
   };
 
   return (

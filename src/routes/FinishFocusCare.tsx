@@ -12,15 +12,15 @@ import * as S from "../styles/FocusCare/FinishFocusCare.styles";
 type PageStep = "intro" | "indicator" | "concern" | "routine";
 
 type SkinConcern =
+  | "붉은기"
+  | "열감"
   | "따가움"
   | "건조함"
-  | "번들거림"
   | "각질"
-  | "붓기"
-  | "트러블"
+  | "번들거림"
   | "가려움"
-  | "붉은기"
-  | "열감";
+  | "붓기"
+  | "트러블";
 
 type RoutineId = "calm" | "clear" | "sebum" | "moisture";
 
@@ -35,12 +35,15 @@ interface RoutineOption {
 const PAGE_STEPS: PageStep[] = ["intro", "indicator", "concern", "routine"];
 
 const SKIN_CONCERNS: SkinConcern[] = [
+  "붉은기",
+  "열감",
   "따가움",
   "건조함",
+  "각질",
   "번들거림",
   "가려움",
-  "각질",
   "붓기",
+  "트러블",
 ];
 
 const ROUTINE_OPTIONS: RoutineOption[] = [
@@ -80,11 +83,9 @@ export default function FinishFocusCare() {
   const [currentStep, setCurrentStep] = useState<PageStep>("intro");
 
   const PRIMARY_CONCERNS: SkinConcern[] = ["붉은기", "열감"];
-
   const SECONDARY_CONCERNS = SKIN_CONCERNS.filter(
     (concern) => !PRIMARY_CONCERNS.includes(concern)
   );
-
   const [selectedRoutine, setSelectedRoutine] = useState<RoutineId | null>(
     null
   );
