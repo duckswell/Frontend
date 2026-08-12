@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import * as S from "../styles/DailycoursePreview.styles";
 import { NavBar } from "../components/NavBar";
 import { RoutineCard } from "../components/DailycoursePreview/RoutineCard";
@@ -36,10 +37,11 @@ const ROUTINE_DATA: RoutineCardProps[] = [
 ];
 
 const DailycoursePreview: React.FC = () => {
+  const navigate = useNavigate();
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const handleSubmit = () => {
-    if (!selectedId) return;
+    navigate("/care/first_daily_care");
   };
 
   return (

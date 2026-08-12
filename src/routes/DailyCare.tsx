@@ -35,7 +35,7 @@ export default function DailyCare() {
   };
 
   const handleOpenConsultationGuide = () => {
-    console.log("상담이 필요한 증상 확인");
+    navigate("/safety");
   };
 
   const handleStartRoutine = () => {
