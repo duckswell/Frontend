@@ -14,18 +14,8 @@ export const Container = styled.div`
   max-width: 430px;
   margin: 0 auto;
   min-height: 100vh;
-  padding: 64px 20px 40px 20px;
+  padding: 80px 20px 40px 20px;
   box-sizing: border-box;
-
-  @media (min-width: 768px) {
-    max-width: 1024px;
-    padding: 80px 40px 60px 40px;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    column-gap: 32px;
-    row-gap: 0;
-    align-items: start;
-  }
 `;
 
 export const LeftColumn = styled.div`
@@ -129,6 +119,8 @@ export const CallButton = styled.a`
   text-align: center;
   text-decoration: none;
   box-sizing: border-box;
+
+  -webkit-tap-highlight-color: transparent;
 
   @media (hover: hover) {
     &:hover {
