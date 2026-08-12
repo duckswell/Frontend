@@ -48,6 +48,15 @@ const NewProcedure: React.FC = () => {
 
   const [isSaved, setIsSaved] = useState(false);
 
+  const isFormValid = procedures.every(
+    (item) =>
+      item.type.trim() !== "" &&
+      item.date.trim() !== "" &&
+      item.currentCount.trim() !== "" &&
+      item.totalCount.trim() !== "" &&
+      item.selectedParts.length > 0,
+  );
+
   const updateProcedure = <K extends keyof ProcedureData>(
     id: number,
     field: K,
@@ -117,6 +126,8 @@ const NewProcedure: React.FC = () => {
   };
 
   const handleSubmit = () => {
+    if (!isFormValid) return;
+
     setIsSaved(true);
     setTimeout(() => {
       setIsSaved(false);
@@ -461,7 +472,11 @@ const NewProcedure: React.FC = () => {
           </S.SavedNotice>
         )}
 
-        <S.SubmitButton type="button" onClick={handleSubmit}>
+        <S.SubmitButton
+          type="button"
+          disabled={!isFormValid}
+          onClick={handleSubmit}
+        >
           저장
         </S.SubmitButton>
       </S.Container>

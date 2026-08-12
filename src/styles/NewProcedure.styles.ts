@@ -501,21 +501,31 @@ export const SubmitButton = styled.button`
   width: 100%;
   padding: 16px 0;
   background-color: ${colorPalette.FocusPrimary};
+  color: ${colorPalette.OffWhite};
   border: none;
   border-radius: 12px;
-  color: ${colorPalette.OffWhite};
   ${applyTypography("H3")}
   cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    opacity 0.2s ease;
 
   -webkit-tap-highlight-color: transparent;
 
+  &:disabled {
+    background-color: ${colorPalette.White};
+    color: ${colorPalette.Tertiary};
+    cursor: not-allowed;
+  }
+
   @media (hover: hover) {
-    &:hover {
+    &:not(:disabled):hover {
       background-color: ${colorPalette.FocusSelected};
     }
   }
 
-  &:active {
+  &:not(:disabled):active {
     background-color: ${colorPalette.FocusSelected};
+    color: ${colorPalette.OffWhite};
   }
 `;
