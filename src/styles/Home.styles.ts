@@ -16,18 +16,6 @@ export const Container = styled.div`
   min-height: 100vh;
   padding: 76px 20px 80px 20px;
   box-sizing: border-box;
-
-  @media (min-width: 768px) {
-    max-width: 1024px;
-    padding: 80px 40px;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    column-gap: 32px;
-    row-gap: 0;
-
-    align-content: center;
-    align-items: center;
-  }
 `;
 
 export const LeftColumn = styled.div`
@@ -51,11 +39,6 @@ export const HeroCard = styled.div<{ $isFocus: boolean }>`
   padding: 20px;
   box-sizing: border-box;
   margin-bottom: 30px;
-
-  @media (min-width: 768px) {
-    padding: 28px;
-    margin-bottom: 0;
-  }
 `;
 
 export const Badge = styled.div<{ $isFocus: boolean }>`
@@ -77,10 +60,6 @@ export const HeroTitle = styled.h2`
   color: ${colorPalette.Black};
   margin: 10px 0 65px 0;
   white-space: pre-line;
-
-  @media (min-width: 768px) {
-    ${applyTypography("H1")}
-  }
 `;
 
 export const StatGrid = styled.div`
@@ -150,6 +129,8 @@ export const RoutineButton = styled.button<{ $isFocus: boolean }>`
   ${applyTypography("H3")}
   cursor: pointer;
 
+  -webkit-tap-highlight-color: transparent;
+
   @media (hover: hover) {
     &:hover {
       background-color: ${({ $isFocus }) =>
@@ -173,6 +154,8 @@ export const BannerCard = styled.div`
   padding: 20px 16px;
   margin-bottom: 12px;
   cursor: pointer;
+
+  -webkit-tap-highlight-color: transparent;
 
   .left {
     display: flex;
@@ -206,10 +189,6 @@ export const GoToimg = styled.div`
 
 export const SectionHeader = styled.div`
   margin: 34px 0 12px 0;
-
-  @media (min-width: 768px) {
-    margin: 0 0 16px 0;
-  }
 
   h3 {
     ${applyTypography("H3")}
