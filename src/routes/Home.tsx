@@ -17,7 +17,7 @@ const Home: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabType>("home");
 
   const [currentVersion, setCurrentVersion] = useState<"focus" | "daily">(
-    "focus"
+    "focus",
   );
 
   const [todos, setTodos] = useState<TodoItem[]>([
@@ -47,8 +47,8 @@ const Home: React.FC = () => {
   const handleToggleTodo = (id: number) => {
     setTodos((prev) =>
       prev.map((todo) =>
-        todo.id === id ? { ...todo, isChecked: !todo.isChecked } : todo
-      )
+        todo.id === id ? { ...todo, isChecked: !todo.isChecked } : todo,
+      ),
     );
   };
 
@@ -123,7 +123,7 @@ const Home: React.FC = () => {
             </S.StatGrid>
             <S.RoutineButton
               $isFocus={isFocus}
-              onClick={() => navigate("/care/daily_care")}
+              onClick={() => navigate(isFocus ? "/care" : "/care/daily_care")}
             >
               오늘의 루틴 시작하기
             </S.RoutineButton>

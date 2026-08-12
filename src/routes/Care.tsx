@@ -29,7 +29,7 @@ export default function Care() {
   };
 
   const handleOpenConsultationGuide = () => {
-    console.log("상담 안내 확인");
+    navigate("/safety");
   };
 
   const handleStartRoutine = () => {

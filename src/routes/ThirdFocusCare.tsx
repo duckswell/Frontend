@@ -15,6 +15,10 @@ export default function ThirdFocusCare() {
     navigate("/care/finish_routine");
   }
 
+  const handleOpenConsultationGuide = () => {
+    navigate("/safety");
+  };
+
   function handleMoveToRecommendedProduct() {
     navigate("/recommend?from=care");
   }
@@ -104,7 +108,10 @@ export default function ThirdFocusCare() {
               </S.WarningText>
             </S.WarningList>
 
-            <S.SymptomButton type="button">
+            <S.SymptomButton
+              type="button"
+              onClick={handleOpenConsultationGuide}
+            >
               상담이 필요한 증상 확인
             </S.SymptomButton>
           </S.WarningBox>

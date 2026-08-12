@@ -15,6 +15,10 @@ export default function ThirdDailyCare() {
     navigate("/care/today_routine_summary");
   }
 
+  const handleOpenConsultationGuide = () => {
+    navigate("/safety");
+  };
+
   function handleMoveToRecommendedProduct() {
     navigate("/recommend?from=care");
   }
@@ -117,7 +121,12 @@ export default function ThirdDailyCare() {
               </S.WarningText>
             </S.WarningList>
 
-            <S.SymptomButton type="button">상담 안내 확인</S.SymptomButton>
+            <S.SymptomButton
+              type="button"
+              onClick={handleOpenConsultationGuide}
+            >
+              상담 안내 확인
+            </S.SymptomButton>
           </S.WarningBox>
 
           <S.CompleteButtonWrapper>
