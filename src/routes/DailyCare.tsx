@@ -38,8 +38,12 @@ export default function DailyCare() {
     navigate("/safety");
   };
 
-  const handleStartRoutine = () => {
+  const handleMoveToRoutineChange = () => {
     navigate("/care/routine_change");
+  };
+
+  const handleStartRoutine = () => {
+    navigate("/care/first_daily_care");
   };
 
   return (
@@ -50,7 +54,7 @@ export default function DailyCare() {
         <S.RoutineSection>
           <S.SectionTitle>오늘의 데일리 루틴</S.SectionTitle>
 
-          <S.RoutineCard>
+          <S.RoutineCard type="button" onClick={handleMoveToRoutineChange}>
             <S.RoutineBadge>현재 진행 중인 루틴</S.RoutineBadge>
 
             <S.RoutineTitleRow>

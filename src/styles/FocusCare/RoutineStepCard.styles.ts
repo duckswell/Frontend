@@ -48,7 +48,11 @@ export const StepBadge = styled.span<VariantProps>`
   border: 1px solid ${({ $variant }) => getPrimaryColor($variant)};
   border-radius: 999px;
 
-  color: ${({ $variant }) => getPrimaryColor($variant)};
+  background-color: ${({ $variant }) =>
+    $variant === "daily" ? colorPalette.DailyPrimary : "transparent"};
+
+  color: ${({ $variant }) =>
+    $variant === "daily" ? colorPalette.OffWhite : getPrimaryColor($variant)};
 
   font-size: ${typography.Body2Bold.fontSize};
   font-weight: ${typography.Body2Bold.fontWeight};
