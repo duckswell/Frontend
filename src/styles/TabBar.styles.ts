@@ -51,12 +51,21 @@ export const TabItem = styled.button<{ $isActive: boolean }>`
     $isActive ? applyTypography("Body2Bold") : applyTypography("Body2")};
   transition: color 0.2s ease;
 
-  &:hover {
-    color: ${colorPalette.Black};
+  -webkit-tap-highlight-color: transparent;
+
+  @media (hover: hover) {
+    &:hover {
+      color: ${colorPalette.Black};
+
+      img {
+        filter: brightness(0);
+      }
+    }
   }
 `;
 
 export const Icon = styled.img`
   width: 24px;
   height: 24px;
+  transition: filter 0.2s ease;
 `;
