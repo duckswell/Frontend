@@ -5,8 +5,6 @@ import CareButton from "../components/CareButton";
 import FocusConfetti from "../components/FocusCare/FocusConfetti";
 import { RoutineCard } from "../components/DailycoursePreview/RoutineCard";
 
-import { colorPalette } from "../lib/colorPalette";
-
 import * as S from "../styles/FocusCare/FinishFocusCare.styles";
 
 type PageStep = "intro" | "indicator" | "concern" | "routine";
@@ -360,15 +358,8 @@ export default function FinishFocusCare() {
 
             <S.ButtonWrapper>
               <CareButton
+                variant="black"
                 disabled={!isRoutineSelected}
-                backgroundColor={
-                  isRoutineSelected
-                    ? colorPalette.BlackSelected
-                    : colorPalette.White
-                }
-                textColor={
-                  isRoutineSelected ? colorPalette.White : colorPalette.Tertiary
-                }
                 onClick={handleStartDailyCourse}
               >
                 나의 데일리 코스 시작하기

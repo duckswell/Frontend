@@ -1,10 +1,11 @@
-import styled from "styled-components";
+import styled, { keyframes } from "styled-components";
 import { colorPalette } from "../../lib/colorPalette";
 import { typography } from "../../lib/typography";
-
 type CareVariant = "focus" | "daily";
 
 export const Section = styled.section`
+  position: relative;
+
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -225,24 +226,6 @@ export const Notice = styled.p`
    사진 등록 완료
 ========================= */
 
-export const UploadCompleteBox = styled.div`
-  box-sizing: border-box;
-
-  display: flex;
-  align-items: center;
-  gap: 12px;
-
-  width: 100%;
-  max-width: 370px;
-
-  padding: 16px;
-
-  border: 1px solid ${colorPalette.Quaternary};
-  border-radius: 12px;
-
-  background-color: ${colorPalette.OffWhite};
-`;
-
 export const CheckIcon = styled.img`
   flex-shrink: 0;
 
@@ -253,4 +236,53 @@ export const CheckIcon = styled.img`
 export const UploadCompleteText = styled.span`
   ${typography.Body1Bold};
   color: ${colorPalette.Black};
+`;
+
+const showToast = keyframes`
+  0% {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  12% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  82% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+`;
+
+export const UploadToast = styled.div`
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+
+  z-index: 10;
+
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  width: 100%;
+  max-width: 370px;
+
+  box-sizing: border-box;
+  padding: 16px;
+
+  border: 1px solid ${colorPalette.Quaternary};
+  border-radius: 12px;
+
+  background-color: ${colorPalette.OffWhite};
+
+  animation: ${showToast} 2.5s ease forwards;
+
+  pointer-events: none;
 `;

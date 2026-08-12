@@ -6,17 +6,12 @@ import CareButton from "../components/CareButton";
 import CareInputForm from "../components/FocusCare/CareInputForm";
 import FocusProgress from "../components/FocusCare/FocusProgress";
 
-import { colorPalette } from "../lib/colorPalette";
 import * as S from "../styles/DailyCare/FirstDaliyCare.styles";
 
 export default function FirstDaliyCare() {
   const navigate = useNavigate();
 
-  const [selectedConditions, setSelectedConditions] = useState<string[]>([
-    "열감",
-    "따가움",
-    "건조함",
-  ]);
+  const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
 
   const [skinImages, setSkinImages] = useState<File[]>([]);
 
@@ -80,11 +75,8 @@ export default function FirstDaliyCare() {
 
       <S.BottomArea>
         <CareButton
+          variant="daily"
           disabled={!isNextEnabled}
-          backgroundColor={
-            isNextEnabled ? colorPalette.DailyPrimary : colorPalette.White
-          }
-          textColor={isNextEnabled ? colorPalette.White : colorPalette.Tertiary}
           onClick={handleMoveToNext}
         >
           다음으로
