@@ -30,16 +30,11 @@ const slideUpDown = keyframes`
 
 export const Container = styled.div`
   width: 100%;
-  max-width: 430px;
+  max-width: 402px;
   margin: 0 auto;
   min-height: 100vh;
   padding: 64px 20px 100px 20px;
   box-sizing: border-box;
-
-  @media (min-width: 768px) {
-    max-width: 680px;
-    padding: 80px 40px 120px 40px;
-  }
 `;
 
 export const FormCardGroup = styled.div`
