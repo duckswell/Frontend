@@ -1,4 +1,4 @@
-import styled, { css } from "styled-components";
+import styled, { css, keyframes } from "styled-components";
 import { colorPalette } from "../lib/colorPalette";
 import { typography } from "../lib/typography";
 
@@ -7,6 +7,25 @@ const applyTypography = (type: keyof typeof typography) => css`
   font-weight: ${typography[type].fontWeight};
   line-height: ${typography[type].lineHeight};
   letter-spacing: ${typography[type].letterSpacing};
+`;
+
+const slideUpDown = keyframes`
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  15% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  85% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
 `;
 
 export const Container = styled.div`
@@ -482,7 +501,9 @@ export const SavedNotice = styled.div`
   ${applyTypography("Body1Bold")}
   color: ${colorPalette.Black};
   margin-bottom: 16px;
-  margin-top: -70px;
+  margin-top: -71px;
+
+  animation: ${slideUpDown} 2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 
   .check-icon {
     width: 20px;
