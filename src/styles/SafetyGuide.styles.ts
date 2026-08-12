@@ -11,7 +11,7 @@ const applyTypography = (type: keyof typeof typography) => css`
 
 export const Container = styled.div`
   width: 100%;
-  max-width: 430px;
+  max-width: 402px;
   margin: 0 auto;
   min-height: 100vh;
   padding: 80px 20px 40px 20px;
