@@ -51,7 +51,7 @@ export const SectionTitle = styled.h2`
   color: ${colorPalette.Black};
 `;
 
-export const RoutineCard = styled.section`
+export const RoutineCard = styled.button`
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -69,6 +69,11 @@ export const RoutineCard = styled.section`
   background-repeat: no-repeat;
   background-position: center;
   background-size: cover;
+
+  font-family: inherit;
+  text-align: left;
+
+  cursor: pointer;
 `;
 
 export const RoutineBadge = styled.span`
