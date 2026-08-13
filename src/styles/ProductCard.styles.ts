@@ -1,6 +1,5 @@
 import styled from "styled-components";
 
-import { colorPalette } from "../lib/colorPalette";
 import { typography } from "../lib/typography";
 
 export const Card = styled.article`
@@ -40,33 +39,6 @@ export const ProductName = styled.p`
   color: #1f2937;
 `;
 
-export const CategoryList = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-
-  width: 100%;
-
-  margin-top: 4px;
-`;
-
-export const Category = styled.span`
-  ${typography.Body2};
-
-  box-sizing: border-box;
-
-  width: fit-content;
-
-  padding: 6px 12px;
-
-  border: 0.5px solid ${colorPalette.Quaternary};
-  border-radius: 9999px;
-
-  background-color: rgba(251, 251, 251, 0.8);
-  color: ${colorPalette.Black};
-
-  white-space: nowrap;
-`;
 export const ProductImageButton = styled.button`
   display: block;
 
