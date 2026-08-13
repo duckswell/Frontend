@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+
 import * as S from "../../styles/FocusCare/FocusProgress.styles";
 
 interface FocusProgressProps {
@@ -9,6 +11,16 @@ export default function FocusProgress({
   currentStep,
   variant = "focus",
 }: FocusProgressProps) {
+  const [isStarted, setIsStarted] = useState(false);
+
+  useEffect(() => {
+    const animationFrame = requestAnimationFrame(() => {
+      setIsStarted(true);
+    });
+
+    return () => cancelAnimationFrame(animationFrame);
+  }, []);
+
   return (
     <S.Container
       aria-label={`${
@@ -21,6 +33,7 @@ export default function FocusProgress({
           $completed={step < currentStep}
           $current={step === currentStep}
           $variant={variant}
+          $isStarted={isStarted}
         />
       ))}
     </S.Container>

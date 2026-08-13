@@ -20,6 +20,7 @@ interface ProgressBarProps {
   $completed: boolean;
   $current: boolean;
   $variant: "focus" | "daily";
+  $isStarted: boolean;
 }
 
 const getProgressColor = (variant: "focus" | "daily") =>
@@ -58,17 +59,17 @@ export const ProgressBar = styled.div<ProgressBarProps>`
 
     background-color: ${({ $variant }) => getProgressColor($variant)};
 
-    ${({ $completed, $current }) => {
+    ${({ $completed, $current, $isStarted }) => {
       if ($completed) {
         return css`
           width: 100%;
         `;
       }
 
-      if ($current) {
+      if ($current && $isStarted) {
         return css`
           width: 0;
-          animation: ${fillProgress} 2.2s linear forwards;
+          animation: ${fillProgress} 1.9s linear forwards;
         `;
       }
 
