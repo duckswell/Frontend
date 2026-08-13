@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { colorPalette } from "../../lib/colorPalette";
+
 import CareButton from "../CareButton";
 import RoutineOptionCard from "./RoutineOptionCard";
 
@@ -48,8 +48,9 @@ export default function RoutineBottomSheet({
   const [selectedRoutine, setSelectedRoutine] = useState<RoutineLevel | null>(
     null
   );
-  const isRoutineSelected = selectedRoutine !== null;
   const [dragOffset, setDragOffset] = useState(0);
+
+  const isRoutineSelected = selectedRoutine !== null;
 
   const startYRef = useRef<number | null>(null);
 
@@ -139,17 +140,8 @@ export default function RoutineBottomSheet({
 
         <S.ButtonArea>
           <CareButton
+            variant={variant}
             disabled={!isRoutineSelected}
-            backgroundColor={
-              isRoutineSelected
-                ? variant === "daily"
-                  ? colorPalette.DailyPrimary
-                  : colorPalette.FocusPrimary
-                : colorPalette.White
-            }
-            textColor={
-              isRoutineSelected ? colorPalette.White : colorPalette.Tertiary
-            }
             onClick={handleMoveToNextCare}
           >
             {variant === "daily" ? "루틴 시작하기" : "선택한 루틴 시작하기"}

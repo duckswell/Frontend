@@ -192,7 +192,7 @@ export default function CareInputForm({
         <S.UploadButton type="button" onClick={handleOpenImagePicker}>
           <S.PlusIcon src="/assets/Plus.svg" alt="" aria-hidden="true" />
 
-          <S.UploadText>{hasImages ? "사진 변경" : "사진 추가"}</S.UploadText>
+          <S.UploadText>{hasImages ? "사진 추가" : "사진 추가"}</S.UploadText>
         </S.UploadButton>
 
         <S.HiddenInput

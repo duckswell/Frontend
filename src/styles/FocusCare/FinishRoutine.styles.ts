@@ -56,7 +56,6 @@ export const InformationSection = styled.div`
 
   margin-bottom: 44px;
 `;
-
 export const DailyCard = styled.button`
   box-sizing: border-box;
 
@@ -72,7 +71,7 @@ export const DailyCard = styled.button`
   border: 0.5px solid ${colorPalette.Quaternary};
   border-radius: 12px;
 
-  background-color: ${colorPalette.White};
+  background-color: transparent;
 
   font-family: inherit;
   text-align: left;

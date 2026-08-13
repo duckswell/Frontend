@@ -5,7 +5,6 @@ import CareButton from "../components/CareButton";
 import FocusProgress from "../components/FocusCare/FocusProgress";
 import RoutineStepCard from "../components/FocusCare/RoutineStepCard";
 
-import { colorPalette } from "../lib/colorPalette";
 import * as S from "../styles/FocusCare/ThirdFocusCare.styles";
 
 export default function ThirdFocusCare() {
@@ -118,9 +117,8 @@ export default function ThirdFocusCare() {
 
           <S.CompleteButtonWrapper>
             <CareButton
+              variant="focus"
               onClick={handleCompleteFocusCareRoutine}
-              backgroundColor={colorPalette.FocusPrimary}
-              textColor={colorPalette.OffWhite}
             >
               루틴 완료
             </CareButton>

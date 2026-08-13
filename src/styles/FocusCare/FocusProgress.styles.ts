@@ -68,7 +68,7 @@ export const ProgressBar = styled.div<ProgressBarProps>`
       if ($current) {
         return css`
           width: 0;
-          animation: ${fillProgress} 1.2s linear forwards;
+          animation: ${fillProgress} 2.2s linear forwards;
         `;
       }
 

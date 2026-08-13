@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { NavBar } from "../components/NavBar";
 import { TabBar } from "../components/TabBar";
 import CareButton from "../components/CareButton";
-import { colorPalette } from "../lib/colorPalette";
+
 import * as S from "../styles/DailyCare/DailyCare.styles";
 
 const ROUTINE_CATEGORIES = ["붉은기", "열감", "민감함"];
@@ -133,11 +133,8 @@ export default function DailyCare() {
       </S.Content>
 
       <S.BottomArea>
-        <CareButton
-          backgroundColor={colorPalette.DailyPrimary}
-          onClick={handleStartRoutine}
-        >
-          루틴 시작하기
+        <CareButton variant="daily" onClick={handleStartRoutine}>
+          데일리 코스 살펴보기
         </CareButton>
       </S.BottomArea>
 

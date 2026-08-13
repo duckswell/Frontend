@@ -4,7 +4,6 @@ import CareButton from "../components/CareButton";
 import FocusConfetti from "../components/FocusCare/FocusConfetti";
 import RecommendedProductSection from "../components/FocusCare/RecommendedProductSection";
 
-import { colorPalette } from "../lib/colorPalette";
 import * as S from "../styles/DailyCare/TodayRoutineSummary.styles";
 
 const RECOMMENDED_PRODUCTS = [
@@ -70,11 +69,7 @@ export default function TodayRoutineSummary() {
         </S.ProductSection>
 
         <S.ButtonArea>
-          <CareButton
-            onClick={handleMoveToHome}
-            backgroundColor={colorPalette.Black}
-            textColor={colorPalette.White}
-          >
+          <CareButton onClick={handleMoveToHome} variant="black">
             홈으로
           </CareButton>
         </S.ButtonArea>

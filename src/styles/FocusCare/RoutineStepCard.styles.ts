@@ -48,11 +48,9 @@ export const StepBadge = styled.span<VariantProps>`
   border: 1px solid ${({ $variant }) => getPrimaryColor($variant)};
   border-radius: 999px;
 
-  background-color: ${({ $variant }) =>
-    $variant === "daily" ? colorPalette.DailyPrimary : "transparent"};
+  background-color: ${({ $variant }) => getPrimaryColor($variant)};
 
-  color: ${({ $variant }) =>
-    $variant === "daily" ? colorPalette.OffWhite : getPrimaryColor($variant)};
+  color: ${colorPalette.OffWhite};
 
   font-size: ${typography.Body2Bold.fontSize};
   font-weight: ${typography.Body2Bold.fontWeight};
@@ -61,7 +59,6 @@ export const StepBadge = styled.span<VariantProps>`
 
   white-space: nowrap;
 `;
-
 export const Title = styled.h3<VariantProps>`
   margin: 0;
 
