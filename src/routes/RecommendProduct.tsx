@@ -14,21 +14,21 @@ const INGREDIENTS = [
     category: "진정",
     ingredient: "히알루론산",
     description: "히알루론산이 어디에 어떻게 좋은지에 대한 설명",
-    image: "/assets/Ingridient_herb.png",
+    image: "/assets/Ingridient_pink.svg",
   },
   {
     id: "panthenol",
     category: ["진정", "진정"],
     ingredient: "판테놀",
     description: "판테놀이 어디에 어떻게 좋은지에 대한 설명",
-    image: "/assets/Ingridient_moisture.png",
+    image: "/assets/Ingridient_clover.svg",
   },
   {
     id: "ceramide",
     category: "장벽",
     ingredient: "세라마이드",
     description: "세라마이드가 어디에 어떻게 좋은지에 대한 설명",
-    image: "/assets/Ingridient_vitamin.png",
+    image: "/assets/Ingridient_yellow.svg",
   },
 ];
 
