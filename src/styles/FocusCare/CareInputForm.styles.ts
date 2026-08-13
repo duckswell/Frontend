@@ -241,22 +241,22 @@ export const UploadCompleteText = styled.span`
 const showToast = keyframes`
   0% {
     opacity: 0;
-    transform: translateY(16px);
+    transform: translateY(20px);
   }
 
-  12% {
+  15% {
     opacity: 1;
     transform: translateY(0);
   }
 
-  82% {
+  85% {
     opacity: 1;
     transform: translateY(0);
   }
 
   100% {
     opacity: 0;
-    transform: translateY(16px);
+    transform: translateY(20px);
   }
 `;
 
@@ -282,7 +282,7 @@ export const UploadToast = styled.div`
 
   background-color: ${colorPalette.OffWhite};
 
-  animation: ${showToast} 2.5s ease forwards;
+  animation: ${showToast} 2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 
   pointer-events: none;
 `;

@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import AnalysisLoading from "./AnalysisLoading";
 import ImageUploadErrorModal from "./ImageUploadErrorModal";
@@ -34,6 +34,7 @@ export default function CareInputForm({
   onChangeAdditionalSymptom,
 }: CareInputFormProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const uploadToastRef = useRef<HTMLDivElement>(null);
 
   const pendingImagesRef = useRef<File[]>([]);
   const uploadAttemptRef = useRef(0);
@@ -44,6 +45,21 @@ export default function CareInputForm({
 
   const isDaily = variant === "daily";
   const hasImages = skinImages.length > 0;
+
+  useEffect(() => {
+    if (!isUploadToastVisible) {
+      return;
+    }
+
+    const animationFrame = requestAnimationFrame(() => {
+      uploadToastRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    });
+
+    return () => cancelAnimationFrame(animationFrame);
+  }, [isUploadToastVisible]);
 
   const handleCompleteImageAnalysis = () => {
     setIsAnalyzingImage(false);
@@ -64,7 +80,7 @@ export default function CareInputForm({
 
       window.setTimeout(() => {
         setIsUploadToastVisible(false);
-      }, 2500);
+      }, 2000);
 
       return;
     }
@@ -192,7 +208,7 @@ export default function CareInputForm({
         <S.UploadButton type="button" onClick={handleOpenImagePicker}>
           <S.PlusIcon src="/assets/Plus.svg" alt="" aria-hidden="true" />
 
-          <S.UploadText>{hasImages ? "사진 추가" : "사진 추가"}</S.UploadText>
+          <S.UploadText>사진 추가</S.UploadText>
         </S.UploadButton>
 
         <S.HiddenInput
@@ -237,7 +253,7 @@ export default function CareInputForm({
         </S.Notice>
 
         {isUploadToastVisible && (
-          <S.UploadToast>
+          <S.UploadToast ref={uploadToastRef}>
             <S.CheckIcon
               src="/assets/CheckIcon.svg"
               alt=""
