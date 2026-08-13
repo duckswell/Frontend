@@ -46,7 +46,7 @@ export const Spinner = styled.svg`
   height: 150px;
 
   transform-origin: center;
-  animation: ${rotateSpinner} 1.1s linear infinite;
+  animation: ${rotateSpinner} 1.8s linear infinite;
 `;
 
 export const ProgressText = styled.div<ProgressTextProps>`

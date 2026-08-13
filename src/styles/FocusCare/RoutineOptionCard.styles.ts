@@ -23,15 +23,10 @@ export const Card = styled.button<SelectedProps>`
 
   box-sizing: border-box;
 
-  border: ${({ $selected, $variant }) => {
-    if ($variant === "daily") {
-      return `0.5px solid ${colorPalette.DailySecondary}`;
-    }
-
-    return $selected
-      ? `0.5px solid ${colorPalette.FocusTertiary}`
-      : `0.5px solid ${colorPalette.FocusSecondary}`;
-  }};
+  border: ${({ $variant }) =>
+    $variant === "daily"
+      ? `0.5px solid ${colorPalette.DailySecondary}`
+      : `0.5px solid ${colorPalette.FocusSecondary}`};
 
   border-radius: 6px;
 
@@ -47,6 +42,7 @@ export const Card = styled.button<SelectedProps>`
 
   text-align: left;
   font-family: inherit;
+
   cursor: pointer;
 `;
 

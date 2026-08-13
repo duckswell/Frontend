@@ -13,6 +13,7 @@ const SKIN_CONDITION_ROWS = [
 
 interface CareInputFormProps {
   variant?: "focus" | "daily";
+
   selectedConditions: string[];
   onToggleCondition: (condition: string) => void;
 
@@ -34,32 +35,44 @@ export default function CareInputForm({
 }: CareInputFormProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const pendingImagesRef = useRef<File[]>([]);
+  const uploadAttemptRef = useRef(0);
+
   const [isAnalyzingImage, setIsAnalyzingImage] = useState(false);
   const [isUploadErrorOpen, setIsUploadErrorOpen] = useState(false);
-
-  const pendingImagesRef = useRef<File[]>([]);
+  const [isUploadToastVisible, setIsUploadToastVisible] = useState(false);
 
   const isDaily = variant === "daily";
   const hasImages = skinImages.length > 0;
-  const uploadAttemptRef = useRef(0);
 
   const handleCompleteImageAnalysis = () => {
     setIsAnalyzingImage(false);
 
     uploadAttemptRef.current += 1;
 
+    // 테스트용
+    // 홀수 번째: 실패
+    // 짝수 번째: 성공
     const isSuccess = uploadAttemptRef.current % 2 === 0;
 
     if (isSuccess) {
       onChangeImages([...skinImages, ...pendingImagesRef.current]);
 
       pendingImagesRef.current = [];
+
+      setIsUploadToastVisible(true);
+
+      window.setTimeout(() => {
+        setIsUploadToastVisible(false);
+      }, 2500);
+
       return;
     }
 
     pendingImagesRef.current = [];
     setIsUploadErrorOpen(true);
   };
+
   const handleOpenImagePicker = () => {
     fileInputRef.current?.click();
   };
@@ -71,13 +84,10 @@ export default function CareInputForm({
       return;
     }
 
-    // 아직 부모의 skinImages에 저장하지 않고 임시 보관
     pendingImagesRef.current = selectedFiles;
 
-    // 사진 분석 로딩 시작
     setIsAnalyzingImage(true);
 
-    // 같은 사진을 다시 선택할 수 있도록 초기화
     event.target.value = "";
   };
 
@@ -90,7 +100,6 @@ export default function CareInputForm({
     pendingImagesRef.current = [];
     setIsUploadErrorOpen(false);
 
-    // 모달이 닫힌 뒤 파일 선택창 다시 열기
     window.setTimeout(() => {
       fileInputRef.current?.click();
     }, 0);
@@ -183,7 +192,7 @@ export default function CareInputForm({
         <S.UploadButton type="button" onClick={handleOpenImagePicker}>
           <S.PlusIcon src="/assets/Plus.svg" alt="" aria-hidden="true" />
 
-          <S.UploadText>{hasImages ? "사진 변경" : "사진 추가"}</S.UploadText>
+          <S.UploadText>{hasImages ? "사진 추가" : "사진 추가"}</S.UploadText>
         </S.UploadButton>
 
         <S.HiddenInput
@@ -227,8 +236,8 @@ export default function CareInputForm({
             : "* 입력한 정보는 루틴 추천에만 사용되며 의료 진단을 대신하지 않아요"}
         </S.Notice>
 
-        {hasImages && (
-          <S.UploadCompleteBox>
+        {isUploadToastVisible && (
+          <S.UploadToast>
             <S.CheckIcon
               src="/assets/CheckIcon.svg"
               alt=""
@@ -236,7 +245,7 @@ export default function CareInputForm({
             />
 
             <S.UploadCompleteText>사진을 등록했어요</S.UploadCompleteText>
-          </S.UploadCompleteBox>
+          </S.UploadToast>
         )}
       </S.Section>
 

@@ -89,20 +89,21 @@ export default function Care() {
               alt=""
               aria-hidden="true"
             />
-            <S.WarningTitle>이런 증상이 느껴지시나요?</S.WarningTitle>
+
+            <S.WarningTitle>잠깐, 이런 증상이 있나요?</S.WarningTitle>
           </S.WarningTitleRow>
 
           <S.WarningDescription>
-            심한 통증, 급격한 악화, 심한 붓기 등이 있다면 루틴 대신
+            통증이 심하거나 붓기·붉은기가 갑자기 심해졌다면
             <br />
-            시술 병원 또는 의료기관 상담을 권고합니다.
+            루틴을 멈추고 시술 받은 병원에 상담 요청을 해 주세요
           </S.WarningDescription>
 
           <S.ConsultationButton
             type="button"
             onClick={handleOpenConsultationGuide}
           >
-            상담 안내 확인
+            상담이 필요한 증상 확인
           </S.ConsultationButton>
         </S.WarningCard>
       </S.Content>

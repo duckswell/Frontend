@@ -41,7 +41,7 @@ export const BottomArea = styled.div`
   max-width: 402px;
 
   margin: auto auto 0;
-  padding: 32px 16px 22px;
+  padding: 72px 16px 22px;
 
   box-sizing: border-box;
 `;

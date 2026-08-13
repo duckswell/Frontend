@@ -6,7 +6,6 @@ import CareButton from "../components/CareButton";
 import CareInputForm from "../components/FocusCare/CareInputForm";
 import FocusProgress from "../components/FocusCare/FocusProgress";
 
-import { colorPalette } from "../lib/colorPalette";
 import * as S from "../styles/FocusCare/FirstFocusCare.styles";
 
 export default function FirstFocusCare() {
@@ -78,11 +77,8 @@ export default function FirstFocusCare() {
 
       <S.BottomArea>
         <CareButton
+          variant="focus"
           disabled={!isNextEnabled}
-          backgroundColor={
-            isNextEnabled ? colorPalette.FocusPrimary : colorPalette.White
-          }
-          textColor={isNextEnabled ? colorPalette.White : colorPalette.Tertiary}
           onClick={handleMoveToNext}
         >
           다음으로

@@ -133,10 +133,13 @@ export const StepBadge = styled.span`
   display: inline-flex;
   align-items: center;
   justify-content: center;
+
   width: fit-content;
   padding: 6px 12px;
+
   border: 0.5px solid ${colorPalette.FocusPrimary};
   border-radius: 999px;
+
   background-color: rgb(255 255 255 / 80%);
   color: ${colorPalette.FocusPrimary};
 `;

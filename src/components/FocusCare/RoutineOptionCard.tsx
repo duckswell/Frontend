@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 import * as S from "../../styles/FocusCare/RoutineOptionCard.styles";
 
 interface RoutineOptionCardProps {
@@ -19,24 +21,29 @@ export default function RoutineOptionCard({
   variant = "focus",
   onClick,
 }: RoutineOptionCardProps) {
+  const [isHovered, setIsHovered] = useState(false);
+
   const isDaily = variant === "daily";
+  const isHighlighted = selected || isHovered;
 
   return (
     <S.Card
       type="button"
-      $selected={selected}
+      $selected={isHighlighted}
       $variant={variant}
       onClick={onClick}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
       <S.TopRow>
-        <S.RoutineTitle $selected={selected} $variant={variant}>
+        <S.RoutineTitle $selected={isHighlighted} $variant={variant}>
           {title}
         </S.RoutineTitle>
 
-        <S.TimeArea $selected={selected} $variant={variant}>
+        <S.TimeArea $selected={isHighlighted} $variant={variant}>
           <S.ClockIcon
             src={
-              selected
+              isHighlighted
                 ? isDaily
                   ? "/assets/GreenClock.svg"
                   : "/assets/BlueClock.svg"
