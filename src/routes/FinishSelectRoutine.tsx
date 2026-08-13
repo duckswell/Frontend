@@ -4,7 +4,6 @@ import FocusConfetti from "../components/FocusCare/FocusConfetti";
 import RecommendedProductSection from "../components/FocusCare/RecommendedProductSection";
 import CareButton from "../components/CareButton";
 
-import { colorPalette } from "../lib/colorPalette";
 import * as S from "../styles/FocusCare/FinishSelectRoutine.styles";
 
 const ROUTINE_CATEGORIES = ["센텔라", "판테놀", "알로에"];
@@ -79,11 +78,7 @@ export default function FinishSelectRoutine() {
         </S.ProductSection>
 
         <S.ButtonArea>
-          <CareButton
-            onClick={handleMoveToHome}
-            backgroundColor={colorPalette.Black}
-            textColor={colorPalette.White}
-          >
+          <CareButton variant="black" onClick={handleMoveToHome}>
             홈으로
           </CareButton>
         </S.ButtonArea>
