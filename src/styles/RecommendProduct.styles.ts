@@ -124,7 +124,7 @@ export const ProductSection = styled.section`
 export const ProductCategoryScroll = styled.div`
   display: flex;
   align-items: center;
-  gap: 30px;
+  gap: 8px;
 
   width: calc(100% + 16px);
 
