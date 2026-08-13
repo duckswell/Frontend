@@ -38,7 +38,7 @@ export const Logo = styled.div`
   cursor: pointer;
 
   img {
-    height: 40px;
+    height: 20px;
     width: auto;
   }
 `;
