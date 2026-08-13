@@ -4,7 +4,6 @@ export interface Product {
   id: number;
   brand: string;
   name: string;
-  categories: string[];
 }
 
 interface ProductCardProps {
@@ -28,12 +27,6 @@ export default function ProductCard({ product, onClick }: ProductCardProps) {
           <S.Brand>{product.brand}</S.Brand>
           <S.ProductName>{product.name}</S.ProductName>
         </S.ProductTextButton>
-
-        <S.CategoryList>
-          {product.categories.map((category) => (
-            <S.Category key={category}>{category}</S.Category>
-          ))}
-        </S.CategoryList>
       </S.ProductInfo>
     </S.Card>
   );
