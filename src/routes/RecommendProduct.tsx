@@ -214,7 +214,18 @@ export default function RecommendProduct() {
       }
     };
   }, []);
+  function handleProductCategoryClick(
+    category: string,
+    event: React.MouseEvent<HTMLButtonElement>
+  ) {
+    setSelectedProductCategory(category);
 
+    event.currentTarget.scrollIntoView({
+      behavior: "smooth",
+      block: "nearest",
+      inline: "nearest",
+    });
+  }
   function handlePageScroll() {
     const page = pageRef.current;
 
@@ -387,7 +398,9 @@ export default function RecommendProduct() {
                   key={category}
                   type="button"
                   $selected={isSelected}
-                  onClick={() => setSelectedProductCategory(category)}
+                  onClick={(event) =>
+                    handleProductCategoryClick(category, event)
+                  }
                 >
                   {category}
                 </S.ProductCategoryButton>

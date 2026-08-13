@@ -136,7 +136,6 @@ export const ProductCategoryScroll = styled.div`
     display: none;
   }
 `;
-
 export const ProductCategoryButton = styled.button<ProductCategoryButtonProps>`
   ${typography.Body1};
 
@@ -144,7 +143,7 @@ export const ProductCategoryButton = styled.button<ProductCategoryButtonProps>`
 
   flex-shrink: 0;
 
-  padding: ${({ $selected }) => ($selected ? "6px 12px" : "6px 0")};
+  padding: 6px 12px;
 
   border: none;
   border-radius: 9999px;
@@ -238,7 +237,7 @@ export const ProductModalHeader = styled.div`
   align-items: center;
   justify-content: flex-end;
 
-  width: 100%;
+  width: 100%;ProductCategoryButton
 `;
 
 export const ProductModalCloseButton = styled.button`
