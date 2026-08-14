@@ -101,7 +101,7 @@ export const CardContainer = styled.div<{ $isSelected: boolean }>`
     $isSelected ? `${colorPalette.White}` : `${colorPalette.OffWhite}`};
   border: ${({ $isSelected }) =>
     $isSelected
-      ? `0.5px solid ${colorPalette.Secondary}`
+      ? `0.5px solid ${colorPalette.Black}`
       : `0.5px solid ${colorPalette.Quaternary}`};
   border-radius: 12px;
   padding: 15px 16px;
