@@ -3,12 +3,12 @@ import * as S from "../../styles/Header.styles";
 
 interface HeaderProps {
   currentVersion: "focus" | "daily";
-  onToggleVersion: () => void;
+  onRestartFocus: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
   currentVersion,
-  onToggleVersion,
+  onRestartFocus,
 }) => {
   return (
     <S.Container>
@@ -16,20 +16,11 @@ export const Header: React.FC<HeaderProps> = ({
         <img src="/icons.svg" alt="로고" />
       </S.Logo>
 
-      <S.ToggleWrapper onClick={onToggleVersion}>
-        <S.ToggleOption
-          $isActive={currentVersion === "focus"}
-          $isFocusOption={true}
-        >
-          집중
-        </S.ToggleOption>
-        <S.ToggleOption
-          $isActive={currentVersion === "daily"}
-          $isFocusOption={false}
-        >
-          데일리
-        </S.ToggleOption>
-      </S.ToggleWrapper>
+      {currentVersion === "daily" && (
+        <S.SwitchToFocusButton type="button" onClick={onRestartFocus}>
+          집중코스로 →
+        </S.SwitchToFocusButton>
+      )}
     </S.Container>
   );
 };

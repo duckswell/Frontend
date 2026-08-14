@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import * as S from "../styles/Home.styles";
 import { useNavigate } from "react-router-dom";
 import { TabBar, type TabType } from "../components/TabBar";
 import { AITodos } from "../components/Home/AITodos";
 import { Header } from "../components/Home/Header";
+import { courseApi } from "../api/course";
 import {
   dashboardApi,
   type WeatherBannerData,
@@ -16,7 +17,7 @@ const Home: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabType>("home");
 
   const [currentVersion, setCurrentVersion] = useState<"focus" | "daily">(
-    "focus",
+    "daily",
   );
 
   const [recoveryData, setRecoveryData] = useState<RecoveryBannerData | null>(
@@ -44,12 +45,8 @@ const Home: React.FC = () => {
 
   const isFocus = currentVersion === "focus";
 
-  // 💡 데이터 조회 (위치 정보 취득 후 API 호출)
-  useEffect(() => {
-    const fetchDashboardData = async (coords?: {
-      lat: number;
-      lon: number;
-    }) => {
+  const fetchDashboardData = useCallback(
+    async (coords?: { lat: number; lon: number }) => {
       try {
         if (isFocus) {
           const recoveryRes = await dashboardApi.getRecoveryBanner();
@@ -66,10 +63,15 @@ const Home: React.FC = () => {
       } catch (error) {
         console.error("대시보드 데이터 조회 실패:", error);
       }
-    };
+    },
+    [isFocus],
+  );
 
-    // 브라우저 위치 정보 가져오기 (거부 시 서울 기본 좌표로 서버에서 처리됨)
-    if (navigator.geolocation) {
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchDashboardData();
+
+    if (navigator.geolocation && !isFocus) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           fetchDashboardData({
@@ -77,18 +79,22 @@ const Home: React.FC = () => {
             lon: position.coords.longitude,
           });
         },
-        () => {
-          fetchDashboardData();
+        (err) => {
+          console.warn("위치 정보 미제공 (기본 좌표 사용):", err.message);
         },
-        { timeout: 3000 },
+        { timeout: 5000 },
       );
-    } else {
-      fetchDashboardData();
     }
-  }, [isFocus]);
+  }, [fetchDashboardData, isFocus]);
 
-  const handleToggleVersion = () => {
-    setCurrentVersion((prev) => (prev === "focus" ? "daily" : "focus"));
+  const handleRestartFocus = async () => {
+    try {
+      await courseApi.restartFocusCourse();
+    } catch (error) {
+      console.error("집중 코스 전환/재시작 요청 실패:", error);
+    } finally {
+      setCurrentVersion("focus");
+    }
   };
 
   const handleToggleTodo = async (id: number) => {
@@ -99,16 +105,26 @@ const Home: React.FC = () => {
     );
 
     try {
-      await dashboardApi.toggleChecklistItem(id);
+      const updatedItem = await dashboardApi.toggleChecklistItem(id);
+
+      if (updatedItem) {
+        setTodos((prev) =>
+          prev.map((todo) => (todo.id === id ? updatedItem : todo)),
+        );
+      }
     } catch (error) {
       console.error("체크리스트 토글 요청 실패:", error);
+      setTodos((prev) =>
+        prev.map((todo) =>
+          todo.id === id ? { ...todo, checked: !todo.checked } : todo,
+        ),
+      );
     }
   };
 
   const totalTodos = todos.length;
   const completedCount = todos.filter((todo) => todo.checked).length;
 
-  // 💡 심각도(level)가 '양호'가 아니거나 '주의'/'심각'일 때 경고 아이콘 표시 함수
   const isWarning = (level?: string) => {
     if (!level) return false;
     return level === "주의" || level === "심각" || level !== "양호";
@@ -118,13 +134,17 @@ const Home: React.FC = () => {
     <>
       <Header
         currentVersion={currentVersion}
-        onToggleVersion={handleToggleVersion}
+        onRestartFocus={handleRestartFocus}
       />
       <S.Container>
         <S.LeftColumn>
           <S.HeroCard $isFocus={isFocus}>
             <S.Badge $isFocus={isFocus}>
-              {isFocus ? "다음 시술 D-3" : "수분 케어 D+7"}
+              {isFocus
+                ? recoveryData?.dDay !== undefined
+                  ? `시술 D+${recoveryData.dDay}`
+                  : "다음 시술 D-3"
+                : weatherData?.triggerFactor || "날씨 맞춤 케어"}
             </S.Badge>
 
             <S.HeroTitle>
@@ -271,7 +291,7 @@ const Home: React.FC = () => {
             <h3>
               {`오늘 하루 신경 써야 하는 것 (${completedCount}/${totalTodos})`}
             </h3>
-            <p>데이터를 바탕으로 AI가 추천한거라는 안내</p>
+            <p>데이터를 바탕으로 AI가 추천한 안내</p>
           </S.SectionHeader>
 
           {todos.map((todo) => (

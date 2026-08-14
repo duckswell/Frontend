@@ -55,4 +55,11 @@ export const procedureApi = {
     );
     return response.data.data;
   },
+
+  deleteProcedure: async (procedureId: number | string) => {
+    const response = await api.delete<ApiResponse<string>>(
+      `/api/procedures/${procedureId}`,
+    );
+    return response.data.data;
+  },
 };

@@ -3,33 +3,35 @@ import { api } from "../lib/api";
 export interface ApiResponse<T> {
   success: boolean;
   data: T;
+  errorCode?: string;
+  message?: string;
 }
 
-export interface WeatherItem {
+export interface WeatherFactor {
   value: number;
-  level: string;
+  level: "양호" | "주의" | "심각" | string;
   cardStatus: string;
 }
 
 export interface WeatherBannerData {
-  uv: WeatherItem;
-  humidity: WeatherItem;
-  dust: WeatherItem;
+  uv: WeatherFactor;
+  humidity: WeatherFactor;
+  dust: WeatherFactor;
   summaryMessage: string;
-  triggerFactor?: string;
+  triggerFactor: string;
 }
 
-export interface RecoveryScoreItem {
+export interface StatMetric {
   current: number;
-  previous: number;
   delta: number;
 }
 
 export interface RecoveryBannerData {
-  redness: RecoveryScoreItem;
-  texture: RecoveryScoreItem;
-  blemish: RecoveryScoreItem;
   summaryMessage: string;
+  dDay: number;
+  redness: StatMetric;
+  texture: StatMetric;
+  blemish: StatMetric;
 }
 
 export interface ChecklistItem {
@@ -40,10 +42,12 @@ export interface ChecklistItem {
 }
 
 export const dashboardApi = {
-  getWeatherBanner: async (params?: { lat?: number; lon?: number }) => {
+  getWeatherBanner: async (coords?: { lat: number; lon: number }) => {
     const response = await api.get<ApiResponse<WeatherBannerData>>(
       "/api/dashboard/weather-banner",
-      { params },
+      {
+        params: coords ? { lat: coords.lat, lon: coords.lon } : undefined,
+      },
     );
     return response.data.data;
   },
@@ -55,15 +59,17 @@ export const dashboardApi = {
     return response.data.data;
   },
 
-  getChecklist: async (params?: { lat?: number; lon?: number }) => {
+  getChecklist: async (coords?: { lat: number; lon: number }) => {
     const response = await api.get<ApiResponse<ChecklistItem[]>>(
       "/api/dashboard/checklist",
-      { params },
+      {
+        params: coords ? { lat: coords.lat, lon: coords.lon } : undefined,
+      },
     );
     return response.data.data;
   },
 
-  toggleChecklistItem: async (checklistItemId: number) => {
+  toggleChecklistItem: async (checklistItemId: number | string) => {
     const response = await api.patch<ApiResponse<ChecklistItem>>(
       `/api/dashboard/checklist/${checklistItemId}/toggle`,
     );

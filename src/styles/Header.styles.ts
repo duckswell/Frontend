@@ -23,7 +23,6 @@ export const Container = styled.header`
   padding: 0 20px;
   box-sizing: border-box;
   z-index: 1000;
-  border-bottom: 1px solid ${colorPalette.grey50};
 
   @media (min-width: 768px) {
     height: 64px;
@@ -43,35 +42,27 @@ export const Logo = styled.div`
   }
 `;
 
-export const ToggleWrapper = styled.div`
-  display: flex;
+export const SwitchToFocusButton = styled.button`
+  display: inline-flex;
   align-items: center;
-  background-color: ${colorPalette.grey50};
+  justify-content: center;
+  gap: 4px;
+  padding: 6px 14px;
   border-radius: 999px;
-  padding: 3px;
+  border: 1px solid ${colorPalette.FocusPrimary};
+  background-color: ${colorPalette.White};
+  color: ${colorPalette.FocusPrimary};
+  ${applyTypography("Body2Bold")};
   cursor: pointer;
-  user-select: none;
-`;
-
-export const ToggleOption = styled.div<{
-  $isActive: boolean;
-  $isFocusOption: boolean;
-}>`
-  padding: 6px 12px;
-  border-radius: 999px;
-  ${applyTypography("Body2Bold")}
+  outline: none;
   transition: all 0.2s ease;
 
-  color: ${({ $isActive, $isFocusOption }) =>
-    $isActive
-      ? $isFocusOption
-        ? colorPalette.FocusPrimary
-        : colorPalette.DailyPrimary
-      : colorPalette.grey400};
+  &:hover {
+    background-color: ${colorPalette.FocusPrimary};
+    color: ${colorPalette.White};
+  }
 
-  background-color: ${({ $isActive }) =>
-    $isActive ? colorPalette.White : "transparent"};
-
-  box-shadow: ${({ $isActive }) =>
-    $isActive ? "0 2px 6px rgba(0, 0, 0, 0.06)" : "none"};
+  &:active {
+    transform: scale(0.96);
+  }
 `;

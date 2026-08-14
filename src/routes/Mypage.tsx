@@ -4,7 +4,17 @@ import * as S from "../styles/Mypage.styles";
 import { PageName } from "../components/PageName";
 import { TabBar, type TabType } from "../components/TabBar";
 import { procedureApi, type ProcedureItem } from "../api/procedure";
-import { courseApi, type CourseDetail } from "../api/course";
+import { courseApi, type CurrentCourseResponse } from "../api/course";
+
+const formatKoreanDate = (dateStr?: string) => {
+  if (!dateStr) return "";
+  const parts = dateStr.split("-");
+  if (parts.length === 3) {
+    const [year, month, day] = parts;
+    return `${year}년 ${Number(month)}월 ${Number(day)}일`;
+  }
+  return dateStr;
+};
 
 const Mypage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabType>("my");
@@ -21,13 +31,14 @@ const Mypage: React.FC = () => {
       areas: ["얼굴 전체"],
     },
   ]);
-  const [currentCourse, setCurrentCourse] = useState<CourseDetail | null>({
-    id: 1,
-    courseType: "FOCUS",
-    title: "집중 코스 진행 중",
-    startDate: "2026-08-11",
-    dayCount: 3,
-  });
+  const [currentCourse, setCurrentCourse] =
+    useState<CurrentCourseResponse | null>({
+      courseId: 1,
+      courseType: "FOCUS",
+      label: "집중 코스 진행 중",
+      startedAt: "2026-08-11",
+      streakDays: 3,
+    });
 
   useEffect(() => {
     const fetchMypageData = async () => {
@@ -73,7 +84,7 @@ const Mypage: React.FC = () => {
               >
                 <div className="info">
                   <h4>{latestProcedure.procedureTypeName}</h4>
-                  <p>{latestProcedure.procedureDate} 시작</p>
+                  <p>{formatKoreanDate(latestProcedure.procedureDate)} 시작</p>
                 </div>
                 <img
                   src="/assets/Setting.svg"
@@ -124,11 +135,11 @@ const Mypage: React.FC = () => {
               />
               <div>
                 <div className="desc">
-                  {currentCourse?.title || "집중 코스 진행 중"}
+                  {currentCourse?.label || "진행 중인 코스"}
                 </div>
                 <div className="title">
-                  {currentCourse?.dayCount
-                    ? `연속 ${currentCourse.dayCount}일째`
+                  {currentCourse?.streakDays !== undefined
+                    ? `연속 ${currentCourse.streakDays}일째`
                     : "진행 중인 코스 없음"}
                 </div>
               </div>

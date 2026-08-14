@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import * as S from "../styles/NewProcedure.styles";
 import { NavBar } from "../components/NavBar";
 import { procedureApi } from "../api/procedure";
@@ -12,25 +12,49 @@ interface ProcedureData {
   currentCount: string;
   totalCount: string;
   selectedParts: string[];
+  isNew?: boolean;
 }
 
 const PROCEDURE_MAP: Record<string, string> = {
   스케일링: "SCALING",
   피지파괴술: "PDT_PTT",
+  "PDT/PTT": "PDT_PTT",
   "압출/염증주사": "EXTRACTION_INJECTION",
   레이저토닝: "IPL_LASER_TONING",
+  "IPL/레이저토닝": "IPL_LASER_TONING",
 };
 
 const BODY_PART_MAP: Record<string, string> = {
   "얼굴 전체": "FULL_FACE",
+  "전체 얼굴": "FULL_FACE",
   T존: "T_ZONE",
   나비존: "BUTTERFLY_ZONE",
   턱: "JAW",
   볼: "CHEEK",
 };
 
-const PROCEDURE_OPTIONS = Object.keys(PROCEDURE_MAP);
-const BODY_PARTS = Object.keys(BODY_PART_MAP);
+const REVERSE_PROCEDURE_MAP: Record<string, string> = {
+  SCALING: "스케일링",
+  PDT_PTT: "PDT/PTT",
+  EXTRACTION_INJECTION: "압출/염증주사",
+  IPL_LASER_TONING: "IPL/레이저토닝",
+};
+
+const REVERSE_BODY_PART_MAP: Record<string, string> = {
+  FULL_FACE: "얼굴 전체",
+  T_ZONE: "T존",
+  BUTTERFLY_ZONE: "나비존",
+  JAW: "턱",
+  CHEEK: "볼",
+};
+
+const PROCEDURE_OPTIONS = [
+  "스케일링",
+  "PDT/PTT",
+  "압출/염증주사",
+  "IPL/레이저토닝",
+];
+const BODY_PARTS = ["얼굴 전체", "T존", "나비존", "턱", "볼"];
 const WEEKDAYS = ["월", "화", "수", "목", "금", "토", "일"];
 
 const NewProcedure: React.FC = () => {
@@ -43,6 +67,7 @@ const NewProcedure: React.FC = () => {
       currentCount: "",
       totalCount: "",
       selectedParts: [],
+      isNew: true,
     },
   ]);
 
@@ -60,6 +85,56 @@ const NewProcedure: React.FC = () => {
 
   const [isSaved, setIsSaved] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const fetchProcedures = useCallback(async () => {
+    try {
+      const data = await procedureApi.getAllProcedures();
+      if (data && data.length > 0) {
+        const mappedList: ProcedureData[] = data.map((item, index) => {
+          const displayType =
+            REVERSE_PROCEDURE_MAP[item.procedureType] ||
+            item.procedureTypeName ||
+            item.procedureType;
+
+          return {
+            id: item.id,
+            isOpen: index === 0,
+            type: displayType,
+            date: item.procedureDate
+              ? item.procedureDate.replace(/-/g, ".")
+              : "",
+            currentCount: String(item.currentCount ?? ""),
+            totalCount: String(item.totalCount ?? ""),
+            selectedParts: (item.areas || []).map(
+              (area) => REVERSE_BODY_PART_MAP[area] || area,
+            ),
+            isNew: false,
+          };
+        });
+        setProcedures(mappedList);
+      } else {
+        setProcedures([
+          {
+            id: Date.now(),
+            isOpen: true,
+            type: "",
+            date: "",
+            currentCount: "",
+            totalCount: "",
+            selectedParts: [],
+            isNew: true,
+          },
+        ]);
+      }
+    } catch (error) {
+      console.error("기존 시술 목록 불러오기 실패:", error);
+    }
+  }, []);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchProcedures();
+  }, [fetchProcedures]);
 
   const isFormValid = procedures.every(
     (item) =>
@@ -116,8 +191,38 @@ const NewProcedure: React.FC = () => {
         currentCount: "",
         totalCount: "",
         selectedParts: [],
+        isNew: true,
       },
     ]);
+  };
+
+  const handleDeleteProcedure = async (
+    e: React.MouseEvent,
+    item: ProcedureData,
+  ) => {
+    e.stopPropagation();
+
+    if (!window.confirm(`'${item.type || "시술"}' 정보를 삭제하시겠습니까?`)) {
+      return;
+    }
+
+    if (item.isNew) {
+      setProcedures((prev) => prev.filter((p) => p.id !== item.id));
+      return;
+    }
+
+    try {
+      await procedureApi.deleteProcedure(item.id);
+      alert("삭제되었습니다.");
+      await fetchProcedures();
+    } catch (error: unknown) {
+      console.error("시술 정보 삭제 실패:", error);
+      if (isAxiosError(error)) {
+        alert(error.response?.data?.message || "시술 삭제에 실패했습니다.");
+      } else {
+        alert("알 수 없는 오류가 발생했습니다.");
+      }
+    }
   };
 
   const handlePrevMonth = () => {
@@ -143,29 +248,57 @@ const NewProcedure: React.FC = () => {
 
     setIsSubmitting(true);
 
-    const payload = {
-      procedures: procedures.map((item) => ({
-        procedureType: PROCEDURE_MAP[item.type] || item.type,
-        procedureDate: item.date.replace(/\./g, "-"),
-        currentCount: Number(item.currentCount),
-        totalCount: Number(item.totalCount),
-        areas: item.selectedParts.map((part) => BODY_PART_MAP[part] || part),
-      })),
-    };
+    const existingProcedures = procedures.filter((p) => !p.isNew);
+    const newProcedures = procedures.filter((p) => p.isNew);
 
     try {
-      await procedureApi.createProcedures(payload);
+      const promises: Promise<unknown>[] = [];
+
+      existingProcedures.forEach((item) => {
+        promises.push(
+          procedureApi.updateProcedure(item.id, {
+            procedureType: PROCEDURE_MAP[item.type] || item.type,
+            procedureDate: item.date.replace(/\./g, "-"),
+            currentCount: Number(item.currentCount),
+            totalCount: Number(item.totalCount),
+            areas: item.selectedParts.map(
+              (part) => BODY_PART_MAP[part] || part,
+            ),
+          }),
+        );
+      });
+
+      if (newProcedures.length > 0) {
+        promises.push(
+          procedureApi.createProcedures({
+            procedures: newProcedures.map((item) => ({
+              procedureType: PROCEDURE_MAP[item.type] || item.type,
+              procedureDate: item.date.replace(/\./g, "-"),
+              currentCount: Number(item.currentCount),
+              totalCount: Number(item.totalCount),
+              areas: item.selectedParts.map(
+                (part) => BODY_PART_MAP[part] || part,
+              ),
+            })),
+          }),
+        );
+      }
+
+      await Promise.all(promises);
+
       setIsSaved(true);
       setTimeout(() => {
         setIsSaved(false);
       }, 3000);
+
+      await fetchProcedures();
     } catch (error: unknown) {
-      console.error("시술 정보 등록 실패:", error);
+      console.error("시술 정보 저장 실패:", error);
 
       if (isAxiosError(error)) {
         alert(
           error.response?.data?.message ||
-            "시술 등록에 실패했습니다. (진행 중인 집중 코스가 있는지 확인해주세요)",
+            "시술 저장에 실패했습니다. (진행 중인 집중 코스가 있는지 확인해주세요)",
         );
       } else {
         alert("알 수 없는 오류가 발생했습니다.");
@@ -183,10 +316,13 @@ const NewProcedure: React.FC = () => {
         <S.FormCardGroup>
           {procedures.map((item, index) => {
             const isSingle = procedures.length === 1;
-            const isEditing = item.isOpen || !item.type;
-            const subTitleText = item.isOpen
-              ? "작성 중"
-              : item.type || "작성 중";
+
+            const hasValue = Boolean(item.type && item.type.trim() !== "");
+            const displayText = hasValue
+              ? item.type
+              : isSingle
+                ? "시술 이름"
+                : "작성 중";
 
             const isSelectOpen = openSelectId === item.id;
             const isDatePickerOpen = openDatePickerId === item.id;
@@ -203,26 +339,54 @@ const NewProcedure: React.FC = () => {
                 >
                   <div className="title">
                     {isSingle ? (
-                      <>시술 정보 - {item.type || "시술 이름"}</>
+                      <>
+                        시술 정보 -{" "}
+                        <span className={hasValue ? "has-value" : "is-editing"}>
+                          {displayText}
+                        </span>
+                      </>
                     ) : (
                       <>
-                        시술 정보 {index + 1} -
-                        <span
-                          className={isEditing ? "is-editing" : "has-value"}
-                        >
-                          {subTitleText}
+                        시술 정보 {index + 1} -{" "}
+                        <span className={hasValue ? "has-value" : "is-editing"}>
+                          {displayText}
                         </span>
                       </>
                     )}
                   </div>
 
-                  {!isSingle && (
-                    <img
-                      className={`arrow-icon ${item.isOpen ? "open" : ""}`}
-                      src="/assets/ChevronDown.svg"
-                      alt="더보기"
-                    />
-                  )}
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                    }}
+                  >
+                    <button
+                      type="button"
+                      onClick={(e) => handleDeleteProcedure(e, item)}
+                      style={{
+                        background: "none",
+                        border: "1px solid #e53935",
+                        borderRadius: "6px",
+                        color: "#e53935",
+                        fontSize: "12px",
+                        fontWeight: 600,
+                        padding: "4px 8px",
+                        cursor: "pointer",
+                      }}
+                    >
+                      삭제
+                    </button>
+
+                    {!isSingle && (
+                      <img
+                        className={`arrow-icon ${item.isOpen ? "open" : ""}`}
+                        src="/assets/ChevronDown.svg"
+                        alt="더보기"
+                      />
+                    )}
+                  </div>
                 </S.AccordionHeader>
 
                 {item.isOpen && (

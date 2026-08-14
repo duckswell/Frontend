@@ -23,7 +23,6 @@ export const Container = styled.header`
   padding: 0 16px;
   box-sizing: border-box;
   z-index: 1000;
-  border-bottom: 1px solid ${colorPalette.grey50};
 
   @media (min-width: 768px) {
     height: 64px;

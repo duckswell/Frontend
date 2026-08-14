@@ -21,7 +21,6 @@ export const Container = styled.header`
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  border-bottom: 1px solid ${colorPalette.grey50};
 
   @media (min-width: 768px) {
     height: 64px;
