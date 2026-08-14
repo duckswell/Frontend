@@ -7,10 +7,12 @@ export const Page = styled.div`
   min-height: 100dvh;
 
   padding-top: 56px;
-  padding-bottom: 60px;
+  padding-bottom: 177px;
 
   background-color: ${colorPalette.OffWhite};
   color: ${colorPalette.Black};
+
+  box-sizing: border-box;
 
   > header > button:first-child {
     visibility: hidden;
@@ -306,11 +308,51 @@ export const ConsultationButton = styled.button`
 `;
 
 export const BottomArea = styled.div`
+  position: fixed;
+
+  left: 50%;
+  bottom: 64px;
+
+  z-index: 20;
+
+  display: flex;
+  justify-content: center;
+
   width: 100%;
   max-width: 402px;
 
-  margin: 68px auto 0;
-  padding: 0 16px 18px;
+  padding: 0 16px 16px;
 
   box-sizing: border-box;
+
+  transform: translateX(-50%);
+
+  background-color: ${colorPalette.OffWhite};
+
+  &::before {
+    content: "";
+
+    position: absolute;
+
+    left: 0;
+    right: 0;
+    bottom: 72px;
+
+    height: 25px;
+
+    pointer-events: none;
+
+    background: linear-gradient(
+      to bottom,
+      rgba(251, 251, 251, 0) 0%,
+      rgba(251, 251, 251, 0.45) 30%,
+      rgba(251, 251, 251, 0.75) 60%,
+      rgba(251, 251, 251, 0.92) 100%
+    );
+  }
+
+  > button {
+    position: relative;
+    z-index: 1;
+  }
 `;
