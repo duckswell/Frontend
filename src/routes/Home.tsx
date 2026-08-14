@@ -18,7 +18,7 @@ const Home: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabType>("home");
 
   const [currentVersion, setCurrentVersion] = useState<"focus" | "daily">(
-    "daily",
+    "focus",
   );
 
   const [recoveryData, setRecoveryData] = useState<RecoveryBannerData | null>(
