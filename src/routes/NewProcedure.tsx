@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import * as S from "../styles/NewProcedure.styles";
 import { NavBar } from "../components/NavBar";
+import { procedureApi } from "../api/procedure";
+import { isAxiosError } from "axios";
 
 interface ProcedureData {
   id: number;
@@ -12,13 +14,23 @@ interface ProcedureData {
   selectedParts: string[];
 }
 
-const PROCEDURE_OPTIONS = [
-  "스케일링",
-  "피지파괴술",
-  "압출/염증주사",
-  "레이저토닝",
-];
-const BODY_PARTS = ["얼굴 전체", "T존", "나비존", "턱", "볼"];
+const PROCEDURE_MAP: Record<string, string> = {
+  스케일링: "SCALING",
+  피지파괴술: "PDT_PTT",
+  "압출/염증주사": "EXTRACTION_INJECTION",
+  레이저토닝: "IPL_LASER_TONING",
+};
+
+const BODY_PART_MAP: Record<string, string> = {
+  "얼굴 전체": "FULL_FACE",
+  T존: "T_ZONE",
+  나비존: "BUTTERFLY_ZONE",
+  턱: "JAW",
+  볼: "CHEEK",
+};
+
+const PROCEDURE_OPTIONS = Object.keys(PROCEDURE_MAP);
+const BODY_PARTS = Object.keys(BODY_PART_MAP);
 const WEEKDAYS = ["월", "화", "수", "목", "금", "토", "일"];
 
 const NewProcedure: React.FC = () => {
@@ -47,6 +59,7 @@ const NewProcedure: React.FC = () => {
   const [calendarMonth, setCalendarMonth] = useState(currentMonth);
 
   const [isSaved, setIsSaved] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const isFormValid = procedures.every(
     (item) =>
@@ -125,13 +138,41 @@ const NewProcedure: React.FC = () => {
     }
   };
 
-  const handleSubmit = () => {
-    if (!isFormValid) return;
+  const handleSubmit = async () => {
+    if (!isFormValid || isSubmitting) return;
 
-    setIsSaved(true);
-    setTimeout(() => {
-      setIsSaved(false);
-    }, 3000);
+    setIsSubmitting(true);
+
+    const payload = {
+      procedures: procedures.map((item) => ({
+        procedureType: PROCEDURE_MAP[item.type] || item.type,
+        procedureDate: item.date.replace(/\./g, "-"),
+        currentCount: Number(item.currentCount),
+        totalCount: Number(item.totalCount),
+        areas: item.selectedParts.map((part) => BODY_PART_MAP[part] || part),
+      })),
+    };
+
+    try {
+      await procedureApi.createProcedures(payload);
+      setIsSaved(true);
+      setTimeout(() => {
+        setIsSaved(false);
+      }, 3000);
+    } catch (error: unknown) {
+      console.error("시술 정보 등록 실패:", error);
+
+      if (isAxiosError(error)) {
+        alert(
+          error.response?.data?.message ||
+            "시술 등록에 실패했습니다. (진행 중인 집중 코스가 있는지 확인해주세요)",
+        );
+      } else {
+        alert("알 수 없는 오류가 발생했습니다.");
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -465,6 +506,7 @@ const NewProcedure: React.FC = () => {
         <S.AddButton type="button" onClick={handleAddProcedure}>
           <img src="/assets/Add.svg" alt="시술 추가" /> 시술 추가
         </S.AddButton>
+
         <S.BottomArea>
           {isSaved && (
             <S.SavedNotice>
@@ -474,7 +516,7 @@ const NewProcedure: React.FC = () => {
 
           <S.SubmitButton
             type="button"
-            disabled={!isFormValid}
+            disabled={!isFormValid || isSubmitting}
             onClick={handleSubmit}
           >
             저장
