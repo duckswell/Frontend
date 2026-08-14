@@ -20,7 +20,6 @@ export const Container = styled.nav`
   display: flex;
   align-items: center;
   justify-content: space-around;
-  border-top: 1px solid ${colorPalette.grey50};
   z-index: 1000;
 
   @media (min-width: 768px) {

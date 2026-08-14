@@ -1,9 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import * as S from "../styles/CourseHistories.styles";
 import { Courses } from "../components/Mypage/Courses";
 import { NavBar } from "../components/NavBar";
-import { courseApi, type CourseDetail } from "../api/course";
+import {
+  courseApi,
+  type CurrentCourseResponse,
+  type PastCourseHistoryItem,
+} from "../api/course";
 
 interface CourseViewItem {
   id: number;
@@ -15,7 +19,7 @@ interface CourseViewItem {
 const CourseHistories: React.FC = () => {
   const navigate = useNavigate();
 
-  const [currentCourse, setCurrentCourse] = useState<CourseViewItem>({
+  const [currentCourse, setCurrentCourse] = useState<CourseViewItem | null>({
     id: 0,
     iconSrc: "/assets/Home_Focus.png",
     description: "집중 코스 진행 중",
@@ -26,55 +30,78 @@ const CourseHistories: React.FC = () => {
     {
       id: 1,
       iconSrc: "/assets/Home_Focus.png",
-      description: "2026년 7월 21일 ~ 2026년 7월 28일",
+      description: "2026.07.21 ~ 2026.07.28",
       title: "집중 코스 완료",
     },
     {
       id: 2,
       iconSrc: "/assets/Home_Daily.png",
-      description: "2026년 7월 21일 ~ 2026년 7월 28일",
+      description: "2026.07.21 ~ 2026.07.28",
       title: "데일리 수분 코스 완료",
     },
   ]);
 
-  useEffect(() => {
-    const fetchHistory = async () => {
-      try {
-        const historyRes = await courseApi.getCourseHistory();
-        if (historyRes) {
-          if (historyRes.currentCourse) {
-            setCurrentCourse({
-              id: historyRes.currentCourse.id,
+  const fetchHistory = useCallback(async () => {
+    try {
+      const [currentRes, historyRes] = await Promise.allSettled([
+        courseApi.getCurrentCourse(),
+        courseApi.getCourseHistory(),
+      ]);
+
+      if (currentRes.status === "fulfilled" && currentRes.value) {
+        const cur: CurrentCourseResponse = currentRes.value;
+        setCurrentCourse({
+          id: cur.courseId,
+          iconSrc:
+            cur.courseType === "DAILY"
+              ? "/assets/Home_Daily.png"
+              : "/assets/Home_Focus.png",
+          description:
+            cur.label ||
+            (cur.courseType === "DAILY" ? "데일리 코스" : "집중 코스"),
+          title: `연속 ${cur.streakDays}일째`,
+        });
+      } else {
+        setCurrentCourse(null);
+      }
+
+      if (
+        historyRes.status === "fulfilled" &&
+        Array.isArray(historyRes.value)
+      ) {
+        const list: PastCourseHistoryItem[] = historyRes.value;
+        setPastCourses(
+          list.map((c) => {
+            const start = c.startedAt
+              ? `${c.startedAt.replace(/-/g, ".")} ~ `
+              : "";
+            const end = c.endedAt ? c.endedAt.replace(/-/g, ".") : "";
+
+            return {
+              id: c.id,
               iconSrc:
-                historyRes.currentCourse.courseType === "DAILY"
+                c.courseType === "DAILY"
                   ? "/assets/Home_Daily.png"
                   : "/assets/Home_Focus.png",
-              description: historyRes.currentCourse.title || "코스 진행 중",
-              title: `연속 ${historyRes.currentCourse.dayCount}일째`,
-            });
-          }
-
-          if (historyRes.pastCourses?.length > 0) {
-            setPastCourses(
-              historyRes.pastCourses.map((c: CourseDetail) => ({
-                id: c.id,
-                iconSrc:
-                  c.courseType === "DAILY"
-                    ? "/assets/Home_Daily.png"
-                    : "/assets/Home_Focus.png",
-                description: `${c.startDate} ~ ${c.endDate || ""}`,
-                title: `${c.title} 완료`,
-              })),
-            );
-          }
-        }
-      } catch (error) {
-        console.error("코스 기록 조회 실패:", error);
+              description: `${start}${end}`,
+              title: c.routineTypeName
+                ? `${c.routineTypeName} 코스 완료`
+                : c.courseType === "DAILY"
+                  ? "데일리 코스 완료"
+                  : "집중 코스 완료",
+            };
+          }),
+        );
       }
-    };
-
-    fetchHistory();
+    } catch (error) {
+      console.error("코스 기록 조회 실패:", error);
+    }
   }, []);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchHistory();
+  }, [fetchHistory]);
 
   return (
     <>
@@ -83,23 +110,39 @@ const CourseHistories: React.FC = () => {
       <S.Container>
         <S.Section>
           <S.SectionTitle>현재 진행중인 코스</S.SectionTitle>
-          <Courses
-            iconSrc={currentCourse.iconSrc}
-            description={currentCourse.description}
-            title={currentCourse.title}
-          />
+          {currentCourse ? (
+            <Courses
+              iconSrc={currentCourse.iconSrc}
+              description={currentCourse.description}
+              title={currentCourse.title}
+            />
+          ) : (
+            <Courses
+              iconSrc="/assets/Home_Focus.png"
+              description="진행 중인 코스가 없습니다"
+              title="새 코스를 시작해보세요"
+            />
+          )}
         </S.Section>
 
         <S.Section>
           <S.SectionTitle>지난 코스 기록</S.SectionTitle>
-          {pastCourses.map((course) => (
+          {pastCourses.length > 0 ? (
+            pastCourses.map((course) => (
+              <Courses
+                key={course.id}
+                iconSrc={course.iconSrc}
+                description={course.description}
+                title={course.title}
+              />
+            ))
+          ) : (
             <Courses
-              key={course.id}
-              iconSrc={course.iconSrc}
-              description={course.description}
-              title={course.title}
+              iconSrc="/assets/Home_Daily.png"
+              description="완료된 코스 기록이 없습니다"
+              title="코스를 완료해보세요"
             />
-          ))}
+          )}
         </S.Section>
 
         <S.InfoNoticeCard>
