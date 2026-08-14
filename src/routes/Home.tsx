@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState } from "react";
 import * as S from "../styles/Home.styles";
 import { useNavigate } from "react-router-dom";
 import { TabBar, type TabType } from "../components/TabBar";
@@ -10,6 +10,7 @@ import {
   type WeatherBannerData,
   type RecoveryBannerData,
   type ChecklistItem,
+  type WeatherFactor,
 } from "../api/dashboard";
 
 const Home: React.FC = () => {
@@ -45,47 +46,61 @@ const Home: React.FC = () => {
 
   const isFocus = currentVersion === "focus";
 
-  const fetchDashboardData = useCallback(
-    async (coords?: { lat: number; lon: number }) => {
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadDashboardData = async () => {
       try {
         if (isFocus) {
           const recoveryRes = await dashboardApi.getRecoveryBanner();
-          if (recoveryRes) setRecoveryData(recoveryRes);
+          if (isMounted && recoveryRes) setRecoveryData(recoveryRes);
         } else {
-          const weatherRes = await dashboardApi.getWeatherBanner(coords);
-          if (weatherRes) setWeatherData(weatherRes);
+          const weatherRes = await dashboardApi.getWeatherBanner();
+          if (isMounted && weatherRes) setWeatherData(weatherRes);
         }
 
-        const checklistRes = await dashboardApi.getChecklist(coords);
-        if (checklistRes && checklistRes.length > 0) {
+        const checklistRes = await dashboardApi.getChecklist();
+        if (isMounted && checklistRes && checklistRes.length > 0) {
           setTodos(checklistRes);
         }
       } catch (error) {
         console.error("대시보드 데이터 조회 실패:", error);
       }
-    },
-    [isFocus],
-  );
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    fetchDashboardData();
+      if (navigator.geolocation && !isFocus) {
+        navigator.geolocation.getCurrentPosition(
+          async (position) => {
+            const coords = {
+              lat: position.coords.latitude,
+              lon: position.coords.longitude,
+            };
+            try {
+              const [weatherRes, checklistRes] = await Promise.all([
+                dashboardApi.getWeatherBanner(coords),
+                dashboardApi.getChecklist(coords),
+              ]);
+              if (isMounted && weatherRes) setWeatherData(weatherRes);
+              if (isMounted && checklistRes && checklistRes.length > 0) {
+                setTodos(checklistRes);
+              }
+            } catch (error) {
+              console.error("위치 기반 대시보드 데이터 조회 실패:", error);
+            }
+          },
+          (err) => {
+            console.warn("위치 정보 미제공 (기본 좌표 사용):", err.message);
+          },
+          { timeout: 5000 },
+        );
+      }
+    };
 
-    if (navigator.geolocation && !isFocus) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          fetchDashboardData({
-            lat: position.coords.latitude,
-            lon: position.coords.longitude,
-          });
-        },
-        (err) => {
-          console.warn("위치 정보 미제공 (기본 좌표 사용):", err.message);
-        },
-        { timeout: 5000 },
-      );
-    }
-  }, [fetchDashboardData, isFocus]);
+    loadDashboardData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [isFocus]);
 
   const handleRestartFocus = async () => {
     try {
@@ -106,7 +121,6 @@ const Home: React.FC = () => {
 
     try {
       const updatedItem = await dashboardApi.toggleChecklistItem(id);
-
       if (updatedItem) {
         setTodos((prev) =>
           prev.map((todo) => (todo.id === id ? updatedItem : todo)),
@@ -125,9 +139,27 @@ const Home: React.FC = () => {
   const totalTodos = todos.length;
   const completedCount = todos.filter((todo) => todo.checked).length;
 
-  const isWarning = (level?: string) => {
-    if (!level) return false;
-    return level === "주의" || level === "심각" || level !== "양호";
+  const isWarning = (factor?: WeatherFactor) => {
+    if (!factor) return false;
+    const { level = "", cardStatus = "" } = factor;
+    return (
+      level.includes("주의") ||
+      level.includes("심각") ||
+      cardStatus.includes("주의") ||
+      cardStatus.includes("심각")
+    );
+  };
+
+  const renderDeltaArrow = (delta?: number) => {
+    if (delta === undefined || delta === 0) return null;
+
+    return (
+      <img
+        className="arrow-icon"
+        src={delta > 0 ? "/assets/CaretUp.svg" : "/assets/CaretDown.svg"}
+        alt={delta > 0 ? "증가" : "감소"}
+      />
+    );
   };
 
   return (
@@ -143,65 +175,60 @@ const Home: React.FC = () => {
               {isFocus
                 ? recoveryData?.dDay !== undefined
                   ? `시술 D+${recoveryData.dDay}`
-                  : "다음 시술 D-3"
-                : weatherData?.triggerFactor || "날씨 맞춤 케어"}
+                  : "시술 D+3"
+                : weatherData?.triggerFactor || "쿨다운 루틴 D+1"}
             </S.Badge>
 
             <S.HeroTitle>
               {isFocus
                 ? recoveryData?.summaryMessage ||
-                  "시술 후 3일째\n안정기에 접어들고 있어요"
+                  "지금은\n피부 회복에 집중할 때예요"
                 : weatherData?.summaryMessage ||
-                  "날씨가 건조하니\n오늘은 미스트를 종종 뿌려주세요"}
+                  "오늘은\n피부가 쉽게 건조해질 수 있어요"}
             </S.HeroTitle>
 
             <S.StatGrid>
               {isFocus ? (
                 <>
                   <S.StatItem>
-                    <span>붉은기</span>
-                    <strong>
-                      {recoveryData?.redness?.current ?? 28}
-                      <S.Percent>%</S.Percent>
-                      {(recoveryData?.redness?.delta ?? 1) >= 0 ? (
-                        <S.Up>▴</S.Up>
-                      ) : (
-                        <S.Down>▾</S.Down>
-                      )}
-                    </strong>
+                    <span className="label">붉은기</span>
+                    <div className="value-wrap">
+                      <span className="number">
+                        {recoveryData?.redness?.current ?? 28}
+                      </span>
+                      <span className="unit">%</span>
+                      {renderDeltaArrow(recoveryData?.redness?.delta ?? 1)}
+                    </div>
                   </S.StatItem>
+
                   <S.StatItem>
-                    <span>요철</span>
-                    <strong>
-                      {recoveryData?.texture?.current ?? 28}
-                      <S.Percent>%</S.Percent>
-                      {(recoveryData?.texture?.delta ?? -1) >= 0 ? (
-                        <S.Up>▴</S.Up>
-                      ) : (
-                        <S.Down>▾</S.Down>
-                      )}
-                    </strong>
+                    <span className="label">요철</span>
+                    <div className="value-wrap">
+                      <span className="number">
+                        {recoveryData?.texture?.current ?? 28}
+                      </span>
+                      <span className="unit">%</span>
+                      {renderDeltaArrow(recoveryData?.texture?.delta ?? -1)}
+                    </div>
                   </S.StatItem>
+
                   <S.StatItem>
-                    <span>잡티</span>
-                    <strong>
-                      {recoveryData?.blemish?.current ?? 28}
-                      <S.Percent>%</S.Percent>
-                      {(recoveryData?.blemish?.delta ?? -1) >= 0 ? (
-                        <S.Up>▴</S.Up>
-                      ) : (
-                        <S.Down>▾</S.Down>
-                      )}
-                    </strong>
+                    <span className="label">잡티</span>
+                    <div className="value-wrap">
+                      <span className="number">
+                        {recoveryData?.blemish?.current ?? 28}
+                      </span>
+                      <span className="unit">%</span>
+                      {renderDeltaArrow(recoveryData?.blemish?.delta ?? -1)}
+                    </div>
                   </S.StatItem>
                 </>
               ) : (
                 <>
-                  {/* 자외선 */}
                   <S.DailyStatItem>
                     <div className="header">
                       <span>자외선</span>
-                      {isWarning(weatherData?.uv?.level) && (
+                      {isWarning(weatherData?.uv) && (
                         <img src="/assets/Warning.svg" alt="경고" />
                       )}
                     </div>
@@ -210,11 +237,10 @@ const Home: React.FC = () => {
                     </p>
                   </S.DailyStatItem>
 
-                  {/* 습도 */}
                   <S.DailyStatItem>
                     <div className="header">
                       <span>습도</span>
-                      {isWarning(weatherData?.humidity?.level) && (
+                      {isWarning(weatherData?.humidity) && (
                         <img src="/assets/Warning.svg" alt="경고" />
                       )}
                     </div>
@@ -223,11 +249,10 @@ const Home: React.FC = () => {
                     </p>
                   </S.DailyStatItem>
 
-                  {/* 미세먼지 */}
                   <S.DailyStatItem>
                     <div className="header">
                       <span>미세먼지</span>
-                      {isWarning(weatherData?.dust?.level) && (
+                      {isWarning(weatherData?.dust) && (
                         <img src="/assets/Warning.svg" alt="경고" />
                       )}
                     </div>
@@ -253,7 +278,7 @@ const Home: React.FC = () => {
             <div className="left">
               <img
                 className="icon-img"
-                src={"/assets/Home_Daily.png"}
+                src="/assets/Home_Daily.png"
                 alt="데일리 코스"
               />
               <div>
@@ -268,7 +293,7 @@ const Home: React.FC = () => {
               </div>
             </div>
             <div className="arrow">
-              <img className="Go-toimg" src={"/assets/Goto.svg"} alt="이동" />
+              <img className="Goto-img" src="/assets/Goto.svg" alt="이동" />
             </div>
           </S.BannerCard>
 
@@ -276,7 +301,7 @@ const Home: React.FC = () => {
             <div className="left">
               <img
                 className="icon-img"
-                src={"/assets/Home_Focus.png"}
+                src="/assets/Home_Focus.png"
                 alt="집중 코스"
               />
               <div>
@@ -284,13 +309,13 @@ const Home: React.FC = () => {
                 <div className="title">시술 정보 등록하기</div>
               </div>
             </div>
-            <img className="GoToimg" src={"/assets/Goto.svg"} alt="이동" />
+            <div className="arrow">
+              <img className="Goto-img" src="/assets/Goto.svg" alt="이동" />
+            </div>
           </S.BannerCard>
 
           <S.SectionHeader>
-            <h3>
-              {`오늘 하루 신경 써야 하는 것 (${completedCount}/${totalTodos})`}
-            </h3>
+            <h3>{`오늘 하루 신경 써야 하는 것 (${completedCount}/${totalTodos})`}</h3>
             <p>데이터를 바탕으로 AI가 추천한 안내</p>
           </S.SectionHeader>
 

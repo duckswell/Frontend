@@ -34,31 +34,34 @@ export const HeroCard = styled.div<{ $isFocus: boolean }>`
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-
   border-radius: 12px;
-  padding: 20px;
+  padding: 24px 18px 20px 18px;
   box-sizing: border-box;
-  margin-bottom: 30px;
+  margin-bottom: 24px;
 `;
 
 export const Badge = styled.div<{ $isFocus: boolean }>`
-  display: inline-block;
-  padding: 6px 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 12px;
   border-radius: 999px;
   border: 0.5px solid
     ${({ $isFocus }) =>
       $isFocus ? colorPalette.FocusPrimary : colorPalette.DailyPrimary};
-  background-color: ${colorPalette.OffWhite};
+  background: rgba(255, 255, 255, 0.8);
+
   color: ${({ $isFocus }) =>
     $isFocus ? colorPalette.FocusPrimary : colorPalette.DailyPrimary};
   ${applyTypography("Body2Bold")}
-  margin-bottom: 12px;
+  margin-bottom: 16px;
 `;
 
 export const HeroTitle = styled.h2`
   ${applyTypography("H2")}
+  line-height: 1.35;
   color: ${colorPalette.Black};
-  margin: 10px 0 65px 0;
+  margin: 0 0 52px 0;
   white-space: pre-line;
 `;
 
@@ -72,55 +75,91 @@ export const StatGrid = styled.div`
 export const StatItem = styled.div`
   background-color: ${colorPalette.OffWhite};
   border-radius: 8px;
-  padding: 12px 0px;
+  padding: 12px 13px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 80px;
+  box-sizing: border-box;
 
-  span {
+  .label {
     display: block;
     ${applyTypography("Body1")}
     color: ${colorPalette.Black};
     margin-bottom: 6px;
-    padding-left: 15px;
   }
 
-  strong {
-    font-size: 32px;
-    font-weight: 500;
-    line-height: 150%;
-    letter-spacing: 0;
-    color: ${colorPalette.Black};
+  .value-wrap {
     display: flex;
-    align-items: baseline;
+    align-items: center;
     justify-content: center;
-    gap: 2px;
+    line-height: 1;
+    width: 100%;
+
+    .number {
+      font-size: 32px;
+      font-weight: 500;
+      color: #000;
+      letter-spacing: -0.5px;
+    }
+
+    .unit {
+      font-size: 16px;
+      font-weight: 900;
+      color: ${colorPalette.Black};
+      margin-left: 1px;
+      margin-top: 10px;
+    }
+
+    .arrow-icon {
+      width: 14px;
+      height: 14px;
+      object-fit: contain;
+      margin-left: 5px;
+      margin-bottom: 10px;
+    }
   }
 `;
 
-export const Percent = styled.div`
-  ${applyTypography("H3")}
-  display: inline-flex;
-  align-items: baseline;
-  justify-content: center;
-`;
+export const DailyStatItem = styled.div`
+  background-color: ${colorPalette.OffWhite};
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 71px;
+  box-sizing: border-box;
 
-export const Down = styled.div`
-  font-size: 30px;
-  font-weight: 700;
-  line-height: 150%;
-  letter-spacing: 0;
-  color: ${colorPalette.FocusPrimary};
-`;
+  .header {
+    display: flex;
+    align-items: center;
+    gap: 4px;
 
-export const Up = styled.div`
-  font-size: 30px;
-  font-weight: 700;
-  line-height: 150%;
-  letter-spacing: 0;
-  color: ${colorPalette.Red};
+    span {
+      ${applyTypography("Body2")}
+      color: ${colorPalette.Black};
+    }
+
+    img {
+      width: 16px;
+      height: 16px;
+      object-fit: contain;
+    }
+  }
+
+  .status-text {
+    ${applyTypography("Body1Bold")}
+    color: ${colorPalette.Black};
+    margin: 0;
+    white-space: nowrap;
+    letter-spacing: -0.3px;
+  }
 `;
 
 export const RoutineButton = styled.button<{ $isFocus: boolean }>`
   width: 100%;
-  padding: 17px 0;
+  padding: 14px 0;
   border: none;
   border-radius: 12px;
   background-color: ${({ $isFocus }) =>
@@ -151,7 +190,7 @@ export const BannerCard = styled.div`
   background-color: ${colorPalette.OffWhite};
   border: 0.5px solid ${colorPalette.Quaternary};
   border-radius: 12px;
-  padding: 20px 16px;
+  padding: 18px 16px;
   margin-bottom: 12px;
   cursor: pointer;
 
@@ -163,14 +202,14 @@ export const BannerCard = styled.div`
     gap: 12px;
 
     .icon-img {
-      width: 34px;
-      height: 34px;
+      width: 36px;
+      height: 36px;
       border-radius: 50%;
       object-fit: cover;
     }
 
     .desc {
-      ${applyTypography("Body1")}
+      ${applyTypography("Body2")}
       color: ${colorPalette.grey400};
       margin-bottom: 2px;
     }
@@ -180,15 +219,21 @@ export const BannerCard = styled.div`
       color: ${colorPalette.Black};
     }
   }
-`;
 
-export const GoToimg = styled.div`
-  width: 7.5px;
-  height: 7.5px;
+  .arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .Goto-img {
+      width: 8px;
+      height: auto;
+    }
+  }
 `;
 
 export const SectionHeader = styled.div`
-  margin: 34px 0 12px 0;
+  margin: 32px 0 12px 0;
 
   h3 {
     ${applyTypography("H3")}
@@ -263,7 +308,6 @@ export const TodoCard = styled.div<{ $isChecked: boolean; $isFocus: boolean }>`
 
     p {
       ${applyTypography("Body1")}
-      font-size: 13px;
       margin: 0;
       color: ${({ $isChecked, $isFocus }) =>
         $isChecked
@@ -272,39 +316,5 @@ export const TodoCard = styled.div<{ $isChecked: boolean; $isFocus: boolean }>`
             : colorPalette.DailyPrimary
           : colorPalette.grey400};
     }
-  }
-`;
-
-export const DailyStatItem = styled.div`
-  background-color: ${colorPalette.OffWhite};
-  border-radius: 12px;
-  padding: 12px 10px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  min-height: 72px;
-  box-sizing: border-box;
-
-  .header {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-
-    span {
-      ${applyTypography("Body2")}
-      color: ${colorPalette.Black};
-    }
-
-    img {
-      width: 14px;
-      height: 14px;
-    }
-  }
-
-  .status-text {
-    ${applyTypography("Body1Bold")}
-    color: ${colorPalette.Black};
-    margin: 0;
-    text-wrap: nowrap;
   }
 `;
