@@ -33,7 +33,7 @@ export const Container = styled.div`
   max-width: 402px;
   margin: 0 auto;
   min-height: 100vh;
-  padding: 64px 16px 100px 16px;
+  padding: 64px 16px 120px 16px;
   box-sizing: border-box;
 `;
 
@@ -465,7 +465,7 @@ export const AddButton = styled.button`
   justify-content: center;
   gap: 8px;
   cursor: pointer;
-  margin-bottom: 120px;
+  margin-bottom: 24px;
 
   -webkit-tap-highlight-color: transparent;
 
@@ -496,7 +496,6 @@ export const SavedNotice = styled.div`
   ${applyTypography("Body1Bold")}
   color: ${colorPalette.Black};
   margin-bottom: 16px;
-  margin-top: -71px;
 
   animation: ${slideUpDown} 2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 
@@ -510,6 +509,49 @@ export const SavedNotice = styled.div`
     align-items: center;
     justify-content: center;
     ${applyTypography("Body2Bold")}
+  }
+`;
+
+export const BottomArea = styled.div`
+  position: fixed;
+  left: 50%;
+  bottom: 0;
+  z-index: 20;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  width: 100%;
+  max-width: 402px;
+  padding: 0 16px 16px;
+  box-sizing: border-box;
+
+  transform: translateX(-50%);
+  background-color: ${colorPalette.OffWhite};
+
+  &::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 100%;
+
+    height: 25px;
+    pointer-events: none;
+
+    background: linear-gradient(
+      to bottom,
+      rgba(251, 251, 251, 0) 0%,
+      rgba(251, 251, 251, 0.45) 30%,
+      rgba(251, 251, 251, 0.75) 60%,
+      rgba(251, 251, 251, 0.92) 100%
+    );
+  }
+
+  > button {
+    position: relative;
+    z-index: 1;
   }
 `;
 

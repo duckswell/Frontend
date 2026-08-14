@@ -465,20 +465,21 @@ const NewProcedure: React.FC = () => {
         <S.AddButton type="button" onClick={handleAddProcedure}>
           <img src="/assets/Add.svg" alt="시술 추가" /> 시술 추가
         </S.AddButton>
+        <S.BottomArea>
+          {isSaved && (
+            <S.SavedNotice>
+              <span className="check-icon">✓</span> 시술정보를 저장했어요
+            </S.SavedNotice>
+          )}
 
-        {isSaved && (
-          <S.SavedNotice>
-            <span className="check-icon">✓</span> 시술정보를 저장했어요
-          </S.SavedNotice>
-        )}
-
-        <S.SubmitButton
-          type="button"
-          disabled={!isFormValid}
-          onClick={handleSubmit}
-        >
-          저장
-        </S.SubmitButton>
+          <S.SubmitButton
+            type="button"
+            disabled={!isFormValid}
+            onClick={handleSubmit}
+          >
+            저장
+          </S.SubmitButton>
+        </S.BottomArea>
       </S.Container>
     </>
   );
