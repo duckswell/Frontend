@@ -33,14 +33,14 @@ export const BottomSheet = styled.section<BottomSheetProps>`
 
   width: 100%;
   max-width: 402px;
-  height: 600px;
+
+  /* height: 600px; 삭제 */
 
   padding: 0 16px 16px;
 
   box-sizing: border-box;
 
   border-top: 0.5px solid ${colorPalette.grey300};
-
   border-radius: 24px 24px 0 0;
 
   background-color: #ffffff;
@@ -66,6 +66,23 @@ export const BottomSheet = styled.section<BottomSheetProps>`
 
   transition: ${({ $dragOffset }) =>
     $dragOffset === 0 ? "transform 0.3s ease" : "none"};
+`;
+
+export const OptionList = styled.div`
+  display: flex;
+  flex-direction: column;
+
+  /* 카드 ↔ 카드 = 16px */
+  gap: 16px;
+
+  margin-top: 24px;
+`;
+
+export const ButtonArea = styled.div`
+  width: 100%;
+
+  /* 마지막 카드 ↔ 버튼 = 24px */
+  margin-top: 24px;
 `;
 
 export const DragArea = styled.div`
@@ -128,18 +145,4 @@ export const Description = styled.p`
   margin: 0;
 
   color: ${colorPalette.Black};
-`;
-
-export const OptionList = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-
-  margin-top: 24px;
-`;
-
-export const ButtonArea = styled.div`
-  width: 100%;
-
-  margin-top: 24px;
 `;

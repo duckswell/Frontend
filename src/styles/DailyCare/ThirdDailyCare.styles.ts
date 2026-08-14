@@ -166,5 +166,5 @@ export const CompleteButtonWrapper = styled.div`
   margin-top: 40px;
 
   box-sizing: border-box;
-  padding-bottom: 22px;
+  padding-bottom: 16px;
 `;

@@ -301,7 +301,7 @@ export const RoutineContent = styled.div`
   max-width: 402px;
 
   margin: 0 auto;
-  padding: 80px 16px 40px;
+  padding: 56px 16px 16px;
 
   animation: ${slideUpFadeIn} 0.6s cubic-bezier(0.22, 1, 0.36, 1);
 `;
