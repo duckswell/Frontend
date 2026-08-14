@@ -54,13 +54,12 @@ export default function CareInputForm({
     const animationFrame = requestAnimationFrame(() => {
       uploadToastRef.current?.scrollIntoView({
         behavior: "smooth",
-        block: "center",
+        block: "end",
       });
     });
 
     return () => cancelAnimationFrame(animationFrame);
   }, [isUploadToastVisible]);
-
   const handleCompleteImageAnalysis = () => {
     setIsAnalyzingImage(false);
 

@@ -1,4 +1,5 @@
 import styled from "styled-components";
+
 import { colorPalette } from "../../lib/colorPalette";
 
 export const Page = styled.div`
@@ -7,6 +8,14 @@ export const Page = styled.div`
 
   min-height: calc(100dvh - 64px);
   margin-top: 64px;
+
+  /*
+   * 그라데이션 25px
+   * + 버튼 56px
+   * + 버튼 아래 16px
+   * + 마지막 콘텐츠 여유 16px
+   */
+  padding-bottom: 113px;
 
   background-color: ${colorPalette.OffWhite};
   color: ${colorPalette.Black};
@@ -37,11 +46,52 @@ export const Content = styled.div`
 `;
 
 export const BottomArea = styled.div`
+  position: fixed;
+
+  left: 50%;
+  bottom: 0;
+
+  z-index: 20;
+
+  display: flex;
+  justify-content: center;
+
   width: 100%;
   max-width: 402px;
 
-  margin: auto auto 0;
-  padding: 72px 16px 22px;
+  /* 좌우 16px / 버튼 아래 16px */
+  padding: 0 16px 16px;
 
   box-sizing: border-box;
+
+  transform: translateX(-50%);
+
+  background-color: ${colorPalette.OffWhite};
+
+  &::before {
+    content: "";
+
+    position: absolute;
+
+    left: 0;
+    right: 0;
+    bottom: 72px;
+
+    height: 25px;
+
+    pointer-events: none;
+
+    background: linear-gradient(
+      to bottom,
+      rgba(251, 251, 251, 0) 0%,
+      rgba(251, 251, 251, 0.45) 30%,
+      rgba(251, 251, 251, 0.75) 60%,
+      rgba(251, 251, 251, 0.92) 100%
+    );
+  }
+
+  > button {
+    position: relative;
+    z-index: 1;
+  }
 `;
