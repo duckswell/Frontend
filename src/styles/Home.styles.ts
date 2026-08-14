@@ -14,7 +14,7 @@ export const Container = styled.div`
   max-width: 402px;
   margin: 0 auto;
   min-height: 100vh;
-  padding: 76px 16px 80px 16px;
+  padding: 72px 16px 80px 16px;
   box-sizing: border-box;
 `;
 
@@ -190,7 +190,7 @@ export const BannerCard = styled.div`
   background-color: ${colorPalette.OffWhite};
   border: 0.5px solid ${colorPalette.Quaternary};
   border-radius: 12px;
-  padding: 18px 16px;
+  padding: 16px;
   margin-bottom: 12px;
   cursor: pointer;
 
@@ -202,15 +202,15 @@ export const BannerCard = styled.div`
     gap: 12px;
 
     .icon-img {
-      width: 36px;
-      height: 36px;
+      width: 34px;
+      height: 34px;
       border-radius: 50%;
       object-fit: cover;
     }
 
     .desc {
-      ${applyTypography("Body2")}
-      color: ${colorPalette.grey400};
+      ${applyTypography("Body1")}
+      color: ${colorPalette.Secondary};
       margin-bottom: 2px;
     }
 
@@ -226,24 +226,24 @@ export const BannerCard = styled.div`
     justify-content: center;
 
     .Goto-img {
-      width: 8px;
+      width: 10px;
       height: auto;
     }
   }
 `;
 
 export const SectionHeader = styled.div`
-  margin: 32px 0 12px 0;
+  margin: 45px 0 12px 0;
 
   h3 {
     ${applyTypography("H3")}
     color: ${colorPalette.Black};
-    margin: 0 0 4px 0;
+    margin: 0 0 6px 0;
   }
 
   p {
-    ${applyTypography("Body2")}
-    color: ${colorPalette.grey400};
+    ${applyTypography("Body1")}
+    color: ${colorPalette.grey700};
     margin: 0;
   }
 `;
@@ -253,7 +253,7 @@ export const TodoCard = styled.div<{ $isChecked: boolean; $isFocus: boolean }>`
   align-items: flex-start;
   gap: 12px;
   padding: 16px;
-  border-radius: 12px;
+  border-radius: 6px;
   margin-bottom: 10px;
   cursor: pointer;
 
@@ -273,8 +273,10 @@ export const TodoCard = styled.div<{ $isChecked: boolean; $isFocus: boolean }>`
       : colorPalette.OffWhite};
 
   .checkbox {
-    width: 20px;
-    height: 20px;
+    min-width: 18px;
+    min-height: 18px;
+    width: 18px;
+    height: 18px;
     border-radius: 4px;
     margin-top: 2px;
     display: flex;
@@ -314,7 +316,7 @@ export const TodoCard = styled.div<{ $isChecked: boolean; $isFocus: boolean }>`
           ? $isFocus
             ? colorPalette.FocusPrimary
             : colorPalette.DailyPrimary
-          : colorPalette.grey400};
+          : colorPalette.Black};
     }
   }
 `;

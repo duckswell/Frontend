@@ -14,12 +14,8 @@ export const Container = styled.div`
   max-width: 402px;
   margin: 0 auto;
   min-height: 100vh;
-  padding: 64px 16px 40px 16px;
+  padding: 70px 16px 40px 16px;
   box-sizing: border-box;
-
-  @media (min-width: 768px) {
-    padding-top: 80px;
-  }
 `;
 
 export const BannerCard = styled.div`

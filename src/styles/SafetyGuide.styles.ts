@@ -53,7 +53,7 @@ export const GuideCard = styled.div`
   border: 0.5px solid ${colorPalette.Quaternary};
   border-radius: 6px;
   padding: 16px;
-  ${applyTypography("Body1Bold")}
+  ${applyTypography("Body1")}
   color: ${colorPalette.Black};
   margin-bottom: 10px;
 `;
