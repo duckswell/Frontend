@@ -73,7 +73,7 @@ export const CompleteButtonWrapper = styled.div`
   margin-top: 28px;
 
   box-sizing: border-box;
-  padding-bottom: 22px;
+  padding-bottom: 16px;
 `;
 
 export const SectionTitle = styled.h2`
