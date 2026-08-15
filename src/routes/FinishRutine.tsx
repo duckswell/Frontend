@@ -1,21 +1,39 @@
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+
+import type { RoutineCompletionData } from "../api/routine";
 
 import CareButton from "../components/CareButton";
 import FocusConfetti from "../components/FocusCare/FocusConfetti";
+import RecommendedProductSection, {
+  type Product,
+} from "../components/FocusCare/RecommendedProductSection";
 import RoutineRecordCard from "../components/FocusCare/RoutineRecordCard";
-import RecommendedProductSection from "../components/FocusCare/RecommendedProductSection";
 
 import * as S from "../styles/FocusCare/FinishRoutine.styles";
 
+interface FinishRoutineLocationState {
+  routineId: number;
+  completionData: RoutineCompletionData;
+  recommendedProducts: Product[];
+}
+
 export default function FinishRoutine() {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const state = location.state as FinishRoutineLocationState | null;
+
+  const completionData = state?.completionData;
+  const recommendedProducts = state?.recommendedProducts ?? [];
 
   function handleMoveToHome() {
     navigate("/");
   }
+
   function handleMoveToDaily() {
     navigate("/care/finish_focus_care");
   }
+
   return (
     <S.Page>
       <S.Content>
@@ -31,9 +49,11 @@ export default function FinishRoutine() {
 
         <S.InformationSection>
           <RoutineRecordCard
-            symptoms="붉은기와 건조함, 각질"
-            routineName="진정·장벽 루틴"
-            ingredients={["판테놀", "센텔라", "히알루론산", "세라마이드"]}
+            completionSummaryText={
+              completionData?.completionSummaryText ??
+              "오늘의 루틴을 완료했어요."
+            }
+            ingredients={completionData?.recommendedIngredients ?? []}
           />
 
           <S.DailyCard type="button" onClick={handleMoveToDaily}>
@@ -55,7 +75,10 @@ export default function FinishRoutine() {
           </S.DailyCard>
         </S.InformationSection>
 
-        <RecommendedProductSection />
+        <RecommendedProductSection
+          title="오늘의 추천 성분 제품"
+          products={recommendedProducts}
+        />
 
         <S.ButtonWrapper>
           <CareButton variant="black" onClick={handleMoveToHome}>

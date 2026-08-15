@@ -19,8 +19,6 @@ export interface PastCourseHistoryItem {
   status: string;
 }
 
-// src/api/course.ts
-
 export interface StartCourseRequest {
   courseType: "FOCUS" | "DAILY";
   routineTypeCode?:
@@ -31,40 +29,82 @@ export interface StartCourseRequest {
     | null;
 }
 
+export interface StartCourseResponse {
+  id: number;
+  courseType: "FOCUS" | "DAILY";
+  routineTypeCode:
+    | "COOLDOWN"
+    | "CLEAR_UP"
+    | "SEBUM_CONTROL"
+    | "HYDRATION"
+    | null;
+  routineTypeName: string | null;
+  startedAt: string;
+  endedAt: string | null;
+  status: "IN_PROGRESS" | "COMPLETED";
+}
+
+export interface RecoverySummaryResponse {
+  recoveryStageSummaryText: string;
+}
+export interface EndCourseResponse {
+  id: number;
+  courseType: "FOCUS" | "DAILY";
+  routineTypeCode:
+    | "COOLDOWN"
+    | "CLEAR_UP"
+    | "SEBUM_CONTROL"
+    | "HYDRATION"
+    | null;
+  routineTypeName: string | null;
+  startedAt: string;
+  endedAt: string;
+  status: "COMPLETED";
+}
 export const courseApi = {
   getCurrentCourse: async () => {
     const response = await api.get<ApiResponse<CurrentCourseResponse>>(
-      "/api/courses/current",
+      "/api/courses/current"
     );
     return response.data.data;
   },
 
   getCourseHistory: async () => {
     const response = await api.get<ApiResponse<PastCourseHistoryItem[]>>(
-      "/api/courses/history",
+      "/api/courses/history"
     );
     return response.data.data;
   },
 
   startCourse: async (data: StartCourseRequest) => {
-    const response = await api.post<ApiResponse<CurrentCourseResponse>>(
+    const response = await api.post<ApiResponse<StartCourseResponse>>(
       "/api/courses/start",
-      data,
+      data
     );
+
     return response.data.data;
   },
 
   endCourse: async (courseId: number | string) => {
-    const response = await api.post<ApiResponse<string>>(
-      `/api/courses/${courseId}/end`,
+    const response = await api.post<ApiResponse<EndCourseResponse>>(
+      `/api/courses/${courseId}/end`
     );
+
     return response.data.data;
   },
 
   restartFocusCourse: async () => {
     const response = await api.post<ApiResponse<CurrentCourseResponse>>(
-      "/api/courses/restart-focus",
+      "/api/courses/restart-focus"
     );
+    return response.data.data;
+  },
+
+  getRecoverySummary: async (courseId: number | string) => {
+    const response = await api.get<ApiResponse<RecoverySummaryResponse>>(
+      `/api/courses/${courseId}/recovery-summary`
+    );
+
     return response.data.data;
   },
 };

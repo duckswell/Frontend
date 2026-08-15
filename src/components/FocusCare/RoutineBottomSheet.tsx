@@ -4,50 +4,32 @@ import { useNavigate } from "react-router-dom";
 import CareButton from "../CareButton";
 import RoutineOptionCard from "./RoutineOptionCard";
 
-import * as S from "../../styles/FocusCare/RoutineBottomSheet.styles";
+import type { Difficulty, DifficultyOption } from "../../api/diagnosis";
+import { routineApi } from "../../api/routine";
 
-type RoutineLevel = "light" | "basic" | "full";
+import * as S from "../../styles/FocusCare/RoutineBottomSheet.styles";
 
 interface RoutineBottomSheetProps {
   variant?: "focus" | "daily";
+  difficultyOptions: DifficultyOption[];
+  routineId: number;
 }
-
-const ROUTINE_OPTIONS = [
-  {
-    id: "light" as const,
-    focusTitle: "가벼운 루틴",
-    dailyTitle: "가벼운 관리",
-    time: "약 5분",
-    description: "꼭 필요한 단계만 빠르게",
-    steps: "예) 진정 클렌징 → 토너 → 진정 세럼 → 크림",
-  },
-  {
-    id: "basic" as const,
-    focusTitle: "기본 루틴",
-    dailyTitle: "기본 관리",
-    time: "약 10분",
-    description: "피부 상태에 필요한 관리를 균형 있게",
-    steps: "예) 진정 클렌징 → 토너 → 추천 세럼 → 마스크팩 → 크림",
-  },
-  {
-    id: "full" as const,
-    focusTitle: "꼼꼼한 루틴",
-    dailyTitle: "꼼꼼한 관리",
-    time: "약 15분",
-    description: "오늘 추천된 관리 단계를 빠짐없이",
-    steps: "예) 진정 클렌징 → 토너 → 추천 세럼 → 마스크팩 → 크림 → 추가 관리",
-  },
-];
 
 export default function RoutineBottomSheet({
   variant = "focus",
+  difficultyOptions,
+  routineId,
 }: RoutineBottomSheetProps) {
   const navigate = useNavigate();
 
   const [isExpanded, setIsExpanded] = useState(true);
-  const [selectedRoutine, setSelectedRoutine] = useState<RoutineLevel | null>(
+
+  const [selectedRoutine, setSelectedRoutine] = useState<Difficulty | null>(
     null
   );
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const [dragOffset, setDragOffset] = useState(0);
 
   const isRoutineSelected = selectedRoutine !== null;
@@ -83,22 +65,45 @@ export default function RoutineBottomSheet({
     setDragOffset(0);
   };
 
-  const handleSelectRoutine = (routine: RoutineLevel) => {
-    setSelectedRoutine(routine);
+  const handleSelectRoutine = (difficulty: Difficulty) => {
+    setSelectedRoutine(difficulty);
   };
 
-  function handleMoveToNextCare() {
-    if (!selectedRoutine) {
+  async function handleMoveToNextCare() {
+    if (!selectedRoutine || isSubmitting) {
       return;
     }
 
-    if (variant === "daily") {
-      navigate("/care/third_daily_care");
+    try {
+      setIsSubmitting(true);
 
-      return;
+      const routine = await routineApi.selectDifficulty(
+        routineId,
+        selectedRoutine
+      );
+
+      console.log("루틴 난이도 선택 성공:", routine);
+
+      if (variant === "daily") {
+        navigate("/care/third_daily_care", {
+          state: {
+            routine,
+          },
+        });
+
+        return;
+      }
+
+      navigate("/care/third_focus_care", {
+        state: {
+          routine,
+        },
+      });
+    } catch (error) {
+      console.error("루틴 난이도 선택 실패:", error);
+    } finally {
+      setIsSubmitting(false);
     }
-
-    navigate("/care/third_focus_care");
   }
 
   return (
@@ -122,18 +127,16 @@ export default function RoutineBottomSheet({
         </S.HeaderArea>
 
         <S.OptionList>
-          {ROUTINE_OPTIONS.map((routine) => (
+          {difficultyOptions.map((option) => (
             <RoutineOptionCard
-              key={routine.id}
-              title={
-                variant === "daily" ? routine.dailyTitle : routine.focusTitle
-              }
-              time={routine.time}
-              description={routine.description}
-              steps={routine.steps}
-              selected={selectedRoutine === routine.id}
+              key={option.difficulty}
+              title={option.title}
+              time={`약 ${option.estimatedMinutes}분`}
+              description={option.subtitle}
+              steps={option.stepPreview}
+              selected={selectedRoutine === option.difficulty}
               variant={variant}
-              onClick={() => handleSelectRoutine(routine.id)}
+              onClick={() => handleSelectRoutine(option.difficulty)}
             />
           ))}
         </S.OptionList>
@@ -141,7 +144,7 @@ export default function RoutineBottomSheet({
         <S.ButtonArea>
           <CareButton
             variant={variant}
-            disabled={!isRoutineSelected}
+            disabled={!isRoutineSelected || isSubmitting}
             onClick={handleMoveToNextCare}
           >
             {variant === "daily" ? "루틴 시작하기" : "선택한 루틴 시작하기"}

@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import CareButton from "../components/CareButton";
 import FocusConfetti from "../components/FocusCare/FocusConfetti";
 import { RoutineCard } from "../components/DailycoursePreview/RoutineCard";
-
+import { courseApi } from "../api/course";
 import * as S from "../styles/FocusCare/FinishFocusCare.styles";
 
 type PageStep = "intro" | "indicator" | "concern" | "routine";
@@ -43,7 +43,15 @@ const SKIN_CONCERNS: SkinConcern[] = [
   "붓기",
   "트러블",
 ];
-
+const ROUTINE_TYPE_CODE_MAP: Record<
+  RoutineId,
+  "COOLDOWN" | "CLEAR_UP" | "SEBUM_CONTROL" | "HYDRATION"
+> = {
+  calm: "COOLDOWN",
+  clear: "CLEAR_UP",
+  sebum: "SEBUM_CONTROL",
+  moisture: "HYDRATION",
+};
 const ROUTINE_OPTIONS: RoutineOption[] = [
   {
     id: "calm",
@@ -77,7 +85,7 @@ const ROUTINE_OPTIONS: RoutineOption[] = [
 
 export default function FinishFocusCare() {
   const navigate = useNavigate();
-
+  const [isStartingDailyCourse, setIsStartingDailyCourse] = useState(false);
   const [currentStep, setCurrentStep] = useState<PageStep>("intro");
 
   const PRIMARY_CONCERNS: SkinConcern[] = ["붉은기", "열감"];
@@ -154,12 +162,29 @@ export default function FinishFocusCare() {
   function handleSelectRoutine(routineId: RoutineId) {
     setSelectedRoutine(routineId);
   }
-  function handleStartDailyCourse() {
-    if (!selectedRoutine) {
+  async function handleStartDailyCourse() {
+    if (!selectedRoutine || isStartingDailyCourse) {
       return;
     }
 
-    navigate("/care/finish_select_routine");
+    try {
+      setIsStartingDailyCourse(true);
+
+      const routineTypeCode = ROUTINE_TYPE_CODE_MAP[selectedRoutine];
+
+      const course = await courseApi.startCourse({
+        courseType: "DAILY",
+        routineTypeCode,
+      });
+
+      console.log("데일리 코스 시작 성공:", course);
+
+      navigate("/care/finish_select_routine");
+    } catch (error) {
+      console.error("데일리 코스 시작 실패:", error);
+    } finally {
+      setIsStartingDailyCourse(false);
+    }
   }
 
   useEffect(() => {

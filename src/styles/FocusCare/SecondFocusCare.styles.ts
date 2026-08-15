@@ -111,6 +111,18 @@ export const StatusTitle = styled.h3`
   color: ${colorPalette.Black};
 `;
 
+export const AnalysisImage = styled.img`
+  width: 120px;
+  height: 80px;
+
+  margin-top: 16px;
+
+  border-radius: 4px;
+
+  object-fit: cover;
+  display: block;
+`;
+
 export const PhotoPlaceholder = styled.div`
   width: 120px;
   height: 80px;

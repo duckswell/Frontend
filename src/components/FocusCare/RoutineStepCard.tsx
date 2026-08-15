@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import * as S from "../../styles/FocusCare/RoutineStepCard.styles";
 
 interface RoutineStepCardProps {
-  step: 1 | 2 | 3 | 4;
+  step: number;
   title: string;
   product: string;
   method: ReactNode;

@@ -1,20 +1,57 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useLocation } from "react-router-dom";
 
 import { NavBar } from "../components/NavBar";
 import AnalysisLoading from "../components/FocusCare/AnalysisLoading";
 import FocusProgress from "../components/FocusCare/FocusProgress";
 import RoutineBottomSheet from "../components/FocusCare/RoutineBottomSheet";
 
+import type { DiagnosisResponse } from "../api/diagnosis";
+
 import * as S from "../styles/FocusCare/SecondFocusCare.styles";
 
-const SKIN_CONDITIONS = ["열감", "따가움", "건조함"];
+interface SecondFocusCareLocationState {
+  diagnosis: DiagnosisResponse;
+  selectedConditions: string[];
+  skinImage?: File;
+}
 
 export default function SecondFocusCare() {
+  const location = useLocation();
+
+  const state = location.state as SecondFocusCareLocationState | null;
+
+  const diagnosis = state?.diagnosis;
+  const selectedConditions = state?.selectedConditions ?? [];
+  const skinImage = state?.skinImage;
+
   const [isRoutineSheetVisible, setIsRoutineSheetVisible] = useState(false);
+
+  const imageUrl = useMemo(() => {
+    if (!(skinImage instanceof File)) {
+      return "";
+    }
+
+    return URL.createObjectURL(skinImage);
+  }, [skinImage]);
+
+  useEffect(() => {
+    return () => {
+      if (imageUrl) {
+        URL.revokeObjectURL(imageUrl);
+      }
+    };
+  }, [imageUrl]);
 
   const handleAnalysisComplete = useCallback(() => {
     setIsRoutineSheetVisible(true);
   }, []);
+
+  const today = new Date();
+
+  const formattedDate = `${today.getFullYear()}년 ${
+    today.getMonth() + 1
+  }월 ${today.getDate()}일`;
 
   return (
     <S.Page>
@@ -28,7 +65,7 @@ export default function SecondFocusCare() {
             <S.AnalysisHeader>
               <S.AnalysisTitle>AI 피부 분석 결과</S.AnalysisTitle>
 
-              <S.DateBadge>2026년 8월 31일</S.DateBadge>
+              <S.DateBadge>{formattedDate}</S.DateBadge>
             </S.AnalysisHeader>
 
             <S.Divider />
@@ -36,10 +73,14 @@ export default function SecondFocusCare() {
             <S.AnalysisContent>
               <S.StatusTitle>오늘 확인한 피부 상태</S.StatusTitle>
 
-              <S.PhotoPlaceholder />
+              {imageUrl ? (
+                <S.AnalysisImage src={imageUrl} alt="오늘 촬영한 피부 사진" />
+              ) : (
+                <S.PhotoPlaceholder />
+              )}
 
               <S.ConditionList>
-                {SKIN_CONDITIONS.map((condition) => (
+                {selectedConditions.map((condition) => (
                   <S.ConditionBadge key={condition}>
                     {condition}
                   </S.ConditionBadge>
@@ -50,7 +91,7 @@ export default function SecondFocusCare() {
                 <S.SummaryTitle>분석 요약</S.SummaryTitle>
 
                 <S.SummaryDescription>
-                  붉은기는 어제보다 줄었지만, 각질이 여전히 많이 남아 있어요
+                  {diagnosis?.summaryText ?? ""}
                 </S.SummaryDescription>
               </S.SummaryArea>
             </S.AnalysisContent>
@@ -60,7 +101,12 @@ export default function SecondFocusCare() {
         </S.Content>
       </S.Main>
 
-      {isRoutineSheetVisible && <RoutineBottomSheet />}
+      {isRoutineSheetVisible && diagnosis && (
+        <RoutineBottomSheet
+          difficultyOptions={diagnosis.difficultyOptions}
+          routineId={diagnosis.routineId}
+        />
+      )}
     </S.Page>
   );
 }
