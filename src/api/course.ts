@@ -19,8 +19,16 @@ export interface PastCourseHistoryItem {
   status: string;
 }
 
+// src/api/course.ts
+
 export interface StartCourseRequest {
-  courseType: "FOCUS" | "DAILY" | string;
+  courseType: "FOCUS" | "DAILY";
+  routineTypeCode?:
+    | "COOLDOWN"
+    | "CLEAR_UP"
+    | "SEBUM_CONTROL"
+    | "HYDRATION"
+    | null;
 }
 
 export const courseApi = {
