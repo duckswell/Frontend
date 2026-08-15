@@ -19,8 +19,6 @@ export interface PastCourseHistoryItem {
   status: string;
 }
 
-// src/api/course.ts
-
 export interface StartCourseRequest {
   courseType: "FOCUS" | "DAILY";
   routineTypeCode?:

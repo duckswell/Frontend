@@ -67,7 +67,6 @@ const NewProcedure: React.FC = () => {
 
   const [initialDate, setInitialDate] = useState<string>("");
 
-  // 💡 커스텀 삭제 모달 타겟 상태
   const [deleteTargetItem, setDeleteTargetItem] =
     useState<ProcedureData | null>(null);
 
@@ -102,7 +101,6 @@ const NewProcedure: React.FC = () => {
 
             return {
               id: item.id,
-              // 💡 1개 이상일 때도 가장 최근(마지막) 시술 정보만 펼쳐진 상태 유지
               isOpen: idx === sortedData.length - 1,
               type: displayType,
               date: item.procedureDate
@@ -194,7 +192,7 @@ const NewProcedure: React.FC = () => {
       ...prev.map((p) => ({ ...p, isOpen: false })),
       {
         id: newId,
-        isOpen: true, // 💡 새로 추가된 시술이 가장 최근 항목이므로 열림
+        isOpen: true,
         type: "",
         date: "",
         currentCount: "",
@@ -205,7 +203,6 @@ const NewProcedure: React.FC = () => {
     ]);
   };
 
-  // 💡 커스텀 모달에서 [삭제] 확정 클릭 시 실행
   const handleConfirmDelete = async () => {
     if (!deleteTargetItem) return;
 
@@ -216,7 +213,6 @@ const NewProcedure: React.FC = () => {
       setProcedures((prev) => {
         const filtered = prev.filter((p) => p.id !== target.id);
         if (filtered.length > 0) {
-          // 마지막 항목 열림 처리
           return filtered.map((item, idx) => ({
             ...item,
             isOpen: idx === filtered.length - 1,
