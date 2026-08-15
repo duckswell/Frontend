@@ -463,7 +463,7 @@ export const CardDeleteButton = styled.button`
   background-color: ${colorPalette.OffWhite};
   ${applyTypography("Body1Bold")}
   font-size: 15px;
-  color: #e53935;
+  color: ${colorPalette.Red};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -695,7 +695,7 @@ export const ModalCard = styled.div`
     }
 
     .delete-btn {
-      background-color: #e53935;
+      background-color: ${colorPalette.Red};
       color: ${colorPalette.OffWhite};
     }
   }
