@@ -4,6 +4,22 @@ import * as S from "../styles/DailycoursePreview.styles";
 import { NavBar } from "../components/NavBar";
 import { RoutineCard } from "../components/DailycoursePreview/RoutineCard";
 import type { RoutineCardProps } from "../components/DailycoursePreview/RoutineCard";
+import { courseApi } from "../api/course";
+import { isAxiosError } from "axios";
+
+const ROUTINE_CODE_MAP: Record<
+  string,
+  "COOLDOWN" | "CLEAR_UP" | "SEBUM_CONTROL" | "HYDRATION"
+> = {
+  cooldown: "COOLDOWN",
+  clearup: "CLEAR_UP",
+  sebum: "SEBUM_CONTROL",
+  moisture: "HYDRATION",
+};
+
+type StartDailyCoursePayload = Parameters<typeof courseApi.startCourse>[0] & {
+  routineTypeCode: "COOLDOWN" | "CLEAR_UP" | "SEBUM_CONTROL" | "HYDRATION";
+};
 
 const ROUTINE_DATA: RoutineCardProps[] = [
   {
@@ -39,9 +55,50 @@ const ROUTINE_DATA: RoutineCardProps[] = [
 const DailycoursePreview: React.FC = () => {
   const navigate = useNavigate();
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
-  const handleSubmit = () => {
-    navigate("/care/first_daily_care");
+  const handleSubmit = async () => {
+    if (!selectedId || isSubmitting) return;
+
+    const routineTypeCode = ROUTINE_CODE_MAP[selectedId];
+    if (!routineTypeCode) return;
+
+    setIsSubmitting(true);
+
+    const payload: StartDailyCoursePayload = {
+      courseType: "DAILY",
+      routineTypeCode,
+    };
+
+    try {
+      await courseApi.startCourse(payload);
+
+      navigate("/care/first_daily_care");
+    } catch (error) {
+      console.error("데일리 코스 시작 실패:", error);
+
+      try {
+        const current = await courseApi.getCurrentCourse();
+        if (current?.courseId) {
+          await courseApi.endCourse(current.courseId);
+          await courseApi.startCourse(payload);
+          navigate("/care/first_daily_care");
+          return;
+        }
+      } catch (retryError) {
+        console.error("코스 재시작 실패:", retryError);
+      }
+
+      if (isAxiosError(error)) {
+        alert(
+          error.response?.data?.message || "데일리 코스 시작에 실패했습니다.",
+        );
+      } else {
+        alert("알 수 없는 오류가 발생했습니다.");
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -81,10 +138,10 @@ const DailycoursePreview: React.FC = () => {
 
         <S.SubmitButton
           type="button"
-          disabled={!selectedId}
+          disabled={!selectedId || isSubmitting}
           onClick={handleSubmit}
         >
-          이 루틴으로 시작하기
+          {isSubmitting ? "시작하는 중..." : "이 루틴으로 시작하기"}
         </S.SubmitButton>
       </S.Container>
     </>
