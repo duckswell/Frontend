@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { TabBar, type TabType } from "../components/TabBar";
 import { AITodos } from "../components/Home/AITodos";
 import { Header } from "../components/Home/Header";
-import { courseApi } from "../api/course";
+import { courseApi, type CurrentCourseResponse } from "../api/course";
 import { procedureApi, type ProcedureItem } from "../api/procedure";
 import {
   dashboardApi,
@@ -14,15 +14,16 @@ import {
   type WeatherFactor,
 } from "../api/dashboard";
 
-const calculateDDay = (procedureDateStr?: string): number | null => {
-  if (!procedureDateStr) return null;
-  const procDate = new Date(procedureDateStr.replace(/\./g, "-"));
+// 💡 시작 날짜(YYYY-MM-DD)로부터 D+N 일수를 계산하는 헬퍼 함수
+const calculateDDay = (dateStr?: string): number | null => {
+  if (!dateStr) return null;
+  const targetDate = new Date(dateStr.replace(/\./g, "-"));
   const today = new Date();
 
-  procDate.setHours(0, 0, 0, 0);
+  targetDate.setHours(0, 0, 0, 0);
   today.setHours(0, 0, 0, 0);
 
-  const diffTime = today.getTime() - procDate.getTime();
+  const diffTime = today.getTime() - targetDate.getTime();
   const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
 
   return diffDays >= 0 ? diffDays + 1 : 1;
@@ -35,6 +36,10 @@ const Home: React.FC = () => {
   const [currentVersion, setCurrentVersion] = useState<"focus" | "daily">(
     "daily",
   );
+
+  // 💡 현재 코스 정보 상태 추가
+  const [currentCourse, setCurrentCourse] =
+    useState<CurrentCourseResponse | null>(null);
 
   const [currentProcedures, setCurrentProcedures] = useState<ProcedureItem[]>(
     [],
@@ -70,9 +75,15 @@ const Home: React.FC = () => {
         const course = await courseApi.getCurrentCourse();
         if (!isMounted) return;
 
-        if (course && course.courseType === "FOCUS") {
-          setCurrentVersion("focus");
+        if (course) {
+          setCurrentCourse(course);
+          if (course.courseType === "FOCUS") {
+            setCurrentVersion("focus");
+          } else {
+            setCurrentVersion("daily");
+          }
         } else {
+          setCurrentCourse(null);
           setCurrentVersion("daily");
         }
       } catch (error) {
@@ -198,12 +209,17 @@ const Home: React.FC = () => {
   const totalTodos = todos.length;
   const completedCount = todos.filter((todo) => todo.checked).length;
 
-  const isWarning = (factor?: WeatherFactor) => {
+  const isWarning = (factor?: WeatherFactor & { siren?: boolean }) => {
     if (!factor) return false;
+    if (typeof factor.siren === "boolean") {
+      return factor.siren;
+    }
     const { level = "", cardStatus = "" } = factor;
     return (
       level.includes("주의") ||
       level.includes("심각") ||
+      level.includes("높음") ||
+      level.includes("위험") ||
       cardStatus.includes("주의") ||
       cardStatus.includes("심각")
     );
@@ -223,6 +239,7 @@ const Home: React.FC = () => {
 
   const latestProcedure = currentProcedures[0];
 
+  // 💡 집중 코스 배지 텍스트
   const getFocusBadgeText = () => {
     if (recoveryData?.dDay !== undefined && recoveryData.dDay !== null) {
       return `D+${recoveryData.dDay}`;
@@ -236,6 +253,17 @@ const Home: React.FC = () => {
     return "-";
   };
 
+  // 💡 데일리 코스 배지 텍스트 (예: "쿨다운 케어 D+1")
+  const getDailyBadgeText = () => {
+    if (currentCourse && currentCourse.courseType === "DAILY") {
+      const label = currentCourse.label || "데일리 케어";
+      const dDay = calculateDDay(currentCourse.startedAt) ?? 1;
+      return `${label} D+${dDay}`;
+    }
+
+    return weatherData?.triggerFactor || "-";
+  };
+
   return (
     <>
       <Header
@@ -246,9 +274,7 @@ const Home: React.FC = () => {
         <S.LeftColumn>
           <S.HeroCard $isFocus={isFocus}>
             <S.Badge $isFocus={isFocus}>
-              {isFocus
-                ? getFocusBadgeText()
-                : weatherData?.triggerFactor || "-"}
+              {isFocus ? getFocusBadgeText() : getDailyBadgeText()}
             </S.Badge>
 
             <S.HeroTitle>
