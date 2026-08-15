@@ -19,30 +19,15 @@ interface CourseViewItem {
 const CourseHistories: React.FC = () => {
   const navigate = useNavigate();
 
-  const [currentCourse, setCurrentCourse] = useState<CourseViewItem | null>({
-    id: 0,
-    iconSrc: "/assets/Home_Focus.png",
-    description: "집중 코스 진행 중",
-    title: "연속 3일째",
-  });
-
-  const [pastCourses, setPastCourses] = useState<CourseViewItem[]>([
-    {
-      id: 1,
-      iconSrc: "/assets/Home_Focus.png",
-      description: "2026.07.21 ~ 2026.07.28",
-      title: "집중 코스 완료",
-    },
-    {
-      id: 2,
-      iconSrc: "/assets/Home_Daily.png",
-      description: "2026.07.21 ~ 2026.07.28",
-      title: "데일리 수분 코스 완료",
-    },
-  ]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [currentCourse, setCurrentCourse] = useState<CourseViewItem | null>(
+    null,
+  );
+  const [pastCourses, setPastCourses] = useState<CourseViewItem[]>([]);
 
   const fetchHistory = useCallback(async () => {
     try {
+      setIsLoading(true);
       const [currentRes, historyRes] = await Promise.allSettled([
         courseApi.getCurrentCourse(),
         courseApi.getCourseHistory(),
@@ -70,8 +55,13 @@ const CourseHistories: React.FC = () => {
         Array.isArray(historyRes.value)
       ) {
         const list: PastCourseHistoryItem[] = historyRes.value;
+
+        const completedList = list
+          .filter((c) => Boolean(c.endedAt))
+          .sort((a, b) => Number(b.id) - Number(a.id));
+
         setPastCourses(
-          list.map((c) => {
+          completedList.map((c) => {
             const start = c.startedAt
               ? `${c.startedAt.replace(/-/g, ".")} ~ `
               : "";
@@ -95,6 +85,8 @@ const CourseHistories: React.FC = () => {
       }
     } catch (error) {
       console.error("코스 기록 조회 실패:", error);
+    } finally {
+      setIsLoading(false);
     }
   }, []);
 
@@ -110,7 +102,13 @@ const CourseHistories: React.FC = () => {
       <S.Container>
         <S.Section>
           <S.SectionTitle>현재 진행중인 코스</S.SectionTitle>
-          {currentCourse ? (
+          {isLoading ? (
+            <Courses
+              iconSrc="/assets/Home_Focus.png"
+              description="코스 정보를 불러오는 중입니다"
+              title="로딩 중..."
+            />
+          ) : currentCourse ? (
             <Courses
               iconSrc={currentCourse.iconSrc}
               description={currentCourse.description}
@@ -127,7 +125,13 @@ const CourseHistories: React.FC = () => {
 
         <S.Section>
           <S.SectionTitle>지난 코스 기록</S.SectionTitle>
-          {pastCourses.length > 0 ? (
+          {isLoading ? (
+            <Courses
+              iconSrc="/assets/Home_Daily.png"
+              description="지난 기록을 불러오는 중입니다"
+              title="로딩 중..."
+            />
+          ) : pastCourses.length > 0 ? (
             pastCourses.map((course) => (
               <Courses
                 key={course.id}
