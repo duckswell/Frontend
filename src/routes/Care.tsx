@@ -67,7 +67,7 @@ export default function Care() {
   }, []);
 
   const handleMoveToProductRecommendation = () => {
-    console.log("추천 성분 제품 페이지로 이동");
+    navigate("/recommend");
   };
 
   const handleOpenConsultationGuide = () => {

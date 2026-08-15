@@ -15,9 +15,7 @@ import * as S from "../styles/FocusCare/FirstFocusCare.styles";
 export default function FirstFocusCare() {
   const navigate = useNavigate();
 
-  const [selectedConditions, setSelectedConditions] = useState<string[]>([
-    "따가움",
-  ]);
+  const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
 
   const [skinImages, setSkinImages] = useState<File[]>([]);
   const [additionalSymptom, setAdditionalSymptom] = useState("");
