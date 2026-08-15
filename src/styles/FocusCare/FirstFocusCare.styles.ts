@@ -6,27 +6,26 @@ export const Page = styled.div`
   display: flex;
   flex-direction: column;
 
-  min-height: calc(100dvh - 64px);
-  margin-top: 64px;
+  min-height: calc(100dvh - 56px);
+  margin-top: 56px;
 
-  /*
-   * 그라데이션 25px
-   * + 버튼 56px
-   * + 버튼 아래 16px
-   * + 마지막 콘텐츠 여유 16px
-   */
   padding-bottom: 113px;
 
   background-color: ${colorPalette.OffWhite};
   color: ${colorPalette.Black};
 
   box-sizing: border-box;
+
+  @media (min-width: 768px) {
+    min-height: calc(100dvh - 64px);
+    margin-top: 64px;
+  }
 `;
 
 export const Main = styled.main`
   display: flex;
   flex-direction: column;
-  gap: 48px;
+  gap: 36px;
 
   width: 100%;
   max-width: 402px;
@@ -36,11 +35,10 @@ export const Main = styled.main`
 
   box-sizing: border-box;
 `;
-
 export const Content = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 44px;
+  gap: 36px;
 
   width: 100%;
 `;
@@ -59,7 +57,6 @@ export const BottomArea = styled.div`
   width: 100%;
   max-width: 402px;
 
-  /* 좌우 16px / 버튼 아래 16px */
   padding: 0 16px 16px;
 
   box-sizing: border-box;

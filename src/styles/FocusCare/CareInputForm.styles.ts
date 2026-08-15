@@ -212,7 +212,7 @@ export const SymptomTextarea = styled.textarea`
 `;
 
 export const Notice = styled.p`
-  margin: 16px 0 0;
+  margin: 20px 0 0;
 
   font-family: "Inter", sans-serif;
   font-size: 11px;
@@ -268,7 +268,6 @@ export const UploadToast = styled.div`
   width: 100%;
   max-width: 370px;
 
-  /* Section gap 16px + margin 20px = Notice 아래 총 36px */
   margin-top: 20px;
 
   box-sizing: border-box;
@@ -278,12 +277,6 @@ export const UploadToast = styled.div`
   border-radius: 12px;
 
   background-color: ${colorPalette.OffWhite};
-
-  /*
-   * fixed 버튼 영역 바로 위까지 스크롤 가능하게
-   * 너무 크게 잡으면 토스트가 위로 올라감
-   */
-  scroll-margin-bottom: 97px;
 
   animation: ${showToast} 2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 

@@ -47,7 +47,7 @@ export const StatusCard = styled.section`
   width: 100%;
   box-sizing: border-box;
 
-  padding: 18px 16px;
+  padding: 16px 16px;
 
   border: 1px solid ${colorPalette.blue50};
   border-radius: 6px;
@@ -79,7 +79,7 @@ export const CourseBadge = styled.span`
 export const StatusTitle = styled.h1`
   ${typography.H2};
 
-  margin: 13px 0 0;
+  margin: 12px 0 0;
 
   color: ${colorPalette.Black};
 `;
@@ -95,7 +95,7 @@ export const StatusDescription = styled.p`
 export const StatusNotice = styled.p`
   ${typography.Body2};
 
-  margin: 9px 0 0;
+  margin: 12px 0 0;
 
   color: ${colorPalette.FocusSecondary};
 `;
@@ -164,7 +164,7 @@ export const StepBadge = styled.span`
 export const StepTitle = styled.h3`
   ${typography.H3};
 
-  margin: 13px 0 0;
+  margin: 12px 0 0;
 
   color: ${colorPalette.Black};
 `;

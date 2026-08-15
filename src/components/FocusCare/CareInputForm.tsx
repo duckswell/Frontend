@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import {  useRef, useState } from "react";
 
 import AnalysisLoading from "./AnalysisLoading";
 import ImageUploadErrorModal from "./ImageUploadErrorModal";
@@ -35,7 +35,6 @@ export default function CareInputForm({
   onChangePhotoId,
 }: CareInputFormProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const uploadToastRef = useRef<HTMLDivElement>(null);
 
   const pendingImagesRef = useRef<File[]>([]);
 
@@ -45,21 +44,6 @@ export default function CareInputForm({
 
   const isDaily = variant === "daily";
   const hasImages = skinImages.length > 0;
-
-  useEffect(() => {
-    if (!isUploadToastVisible) {
-      return;
-    }
-
-    const animationFrame = requestAnimationFrame(() => {
-      uploadToastRef.current?.scrollIntoView({
-        behavior: "smooth",
-        block: "end",
-      });
-    });
-
-    return () => cancelAnimationFrame(animationFrame);
-  }, [isUploadToastVisible]);
 
   const handleOpenImagePicker = () => {
     fileInputRef.current?.click();
@@ -254,7 +238,7 @@ export default function CareInputForm({
         </S.Notice>
 
         {isUploadToastVisible && (
-          <S.UploadToast ref={uploadToastRef}>
+          <S.UploadToast>
             <S.CheckIcon
               src="/assets/CheckIcon.svg"
               alt=""
