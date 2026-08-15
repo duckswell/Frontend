@@ -380,22 +380,27 @@ export const CountGrid = styled.div`
 `;
 
 export const InputBoxWrapper = styled.div`
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   background-color: ${colorPalette.OffWhite};
   border: 0.5px solid ${colorPalette.Quaternary};
   border-radius: 12px;
-  padding: 12px 12px 12px 0;
-  width: 40px;
-  transition: border-color 0.15s ease;
+  padding: 10px 14px;
+  min-width: 52px;
+  width: auto;
+  box-sizing: border-box;
+  transition:
+    border-color 0.15s ease,
+    width 0.15s ease;
 
   &:focus-within {
     border: 0.5px solid ${colorPalette.Black};
   }
 
   input {
-    width: 32px;
+    min-width: 1.2ch;
+    width: auto;
     border: none;
     background: transparent;
     text-align: right;
@@ -423,7 +428,7 @@ export const InputBoxWrapper = styled.div`
     ${applyTypography("Body1Bold")}
     color: ${colorPalette.Black};
     margin-left: 4px;
-    margin-right: 11px;
+    white-space: nowrap;
   }
 `;
 
@@ -443,12 +448,46 @@ export const PartChip = styled.button<{ $isSelected: boolean }>`
     $isSelected ? colorPalette.Black : colorPalette.OffWhite};
   color: ${({ $isSelected }) =>
     $isSelected ? colorPalette.OffWhite : colorPalette.Black};
-  ${applyTypography("Body1Bold")}
+  ${applyTypography("Body1")}
   font-size: 13px;
   cursor: pointer;
   transition: all 0.15s ease;
 
   -webkit-tap-highlight-color: transparent;
+`;
+export const CardDeleteButton = styled.button`
+  width: 100%;
+  padding: 16px 0;
+  border: 0.5px solid transparent;
+  border-radius: 16px;
+  background-color: ${colorPalette.OffWhite};
+  ${applyTypography("Body1Bold")}
+  font-size: 15px;
+  color: ${colorPalette.Red};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  margin-top: 16px;
+  margin-bottom: 8px;
+
+  -webkit-tap-highlight-color: transparent;
+
+  img {
+    width: 24px;
+    height: 24px;
+  }
+
+  @media (hover: hover) {
+    &:hover {
+      background-color: ${colorPalette.White};
+    }
+  }
+
+  &:active {
+    background-color: ${colorPalette.White};
+  }
 `;
 
 export const AddButton = styled.button`
@@ -470,8 +509,8 @@ export const AddButton = styled.button`
   -webkit-tap-highlight-color: transparent;
 
   img {
-    width: 18px;
-    height: 18px;
+    width: 24px;
+    height: 24px;
   }
 
   @media (hover: hover) {
@@ -501,7 +540,7 @@ export const SavedNotice = styled.div`
   box-sizing: border-box;
 
   background-color: ${colorPalette.OffWhite};
-  border: 1px solid ${colorPalette.Quaternary};
+  border: 0.5px solid ${colorPalette.Quaternary};
   border-radius: 12px;
 
   ${applyTypography("Body1Bold")}
@@ -600,5 +639,64 @@ export const SubmitButton = styled.button`
   &:not(:disabled):active {
     background-color: ${colorPalette.FocusSelected};
     color: ${colorPalette.OffWhite};
+  }
+`;
+
+export const ModalOverlay = styled.div`
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+  box-sizing: border-box;
+`;
+
+export const ModalCard = styled.div`
+  width: 100%;
+  max-width: 320px;
+  background-color: ${colorPalette.OffWhite};
+  border-radius: 12px;
+  padding: 24px 16px 16px 16px;
+  box-sizing: border-box;
+
+  h3 {
+    margin: 0 0 8px 0;
+    ${applyTypography("H2")}
+    color: ${colorPalette.Black};
+  }
+
+  p {
+    margin: 0 0 24px 0;
+    ${applyTypography("Body1")}
+    color: ${colorPalette.Secondary};
+  }
+
+  .modal-buttons {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    button {
+      flex: 1;
+      padding: 12px 8px;
+      border-radius: 12px;
+      ${applyTypography("Body1Bold")}
+      cursor: pointer;
+      border: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .cancel-btn {
+      background-color: ${colorPalette.OffWhite};
+      color: ${colorPalette.Black};
+    }
+
+    .delete-btn {
+      background-color: ${colorPalette.Red};
+      color: ${colorPalette.OffWhite};
+    }
   }
 `;

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import * as S from "../styles/NewProcedure.styles";
 import { NavBar } from "../components/NavBar";
 import { procedureApi } from "../api/procedure";
+import { courseApi } from "../api/course";
 import { isAxiosError } from "axios";
 
 interface ProcedureData {
@@ -66,6 +67,9 @@ const NewProcedure: React.FC = () => {
 
   const [initialDate, setInitialDate] = useState<string>("");
 
+  const [deleteTargetItem, setDeleteTargetItem] =
+    useState<ProcedureData | null>(null);
+
   const today = new Date();
   const currentYear = today.getFullYear();
   const currentMonth = today.getMonth() + 1;
@@ -89,7 +93,7 @@ const NewProcedure: React.FC = () => {
             (a, b) => Number(a.id) - Number(b.id),
           );
 
-          const mappedList: ProcedureData[] = sortedData.map((item) => {
+          const mappedList: ProcedureData[] = sortedData.map((item, idx) => {
             const displayType =
               REVERSE_PROCEDURE_MAP[item.procedureType] ||
               item.procedureTypeName ||
@@ -97,7 +101,7 @@ const NewProcedure: React.FC = () => {
 
             return {
               id: item.id,
-              isOpen: false,
+              isOpen: idx === sortedData.length - 1,
               type: displayType,
               date: item.procedureDate
                 ? item.procedureDate.replace(/-/g, ".")
@@ -199,24 +203,28 @@ const NewProcedure: React.FC = () => {
     ]);
   };
 
-  const handleDeleteProcedure = async (
-    e: React.MouseEvent,
-    item: ProcedureData,
-  ) => {
-    e.stopPropagation();
+  const handleConfirmDelete = async () => {
+    if (!deleteTargetItem) return;
 
-    if (!window.confirm(`'${item.type || "시술"}' 정보를 삭제하시겠습니까?`)) {
-      return;
-    }
+    const target = deleteTargetItem;
+    setDeleteTargetItem(null);
 
-    if (item.isNew) {
-      setProcedures((prev) => prev.filter((p) => p.id !== item.id));
+    if (target.isNew) {
+      setProcedures((prev) => {
+        const filtered = prev.filter((p) => p.id !== target.id);
+        if (filtered.length > 0) {
+          return filtered.map((item, idx) => ({
+            ...item,
+            isOpen: idx === filtered.length - 1,
+          }));
+        }
+        return filtered;
+      });
       return;
     }
 
     try {
-      await procedureApi.deleteProcedure(item.id);
-      alert("삭제되었습니다.");
+      await procedureApi.deleteProcedure(target.id);
       setRefreshKey((prev) => prev + 1);
     } catch (error: unknown) {
       console.error("시술 정보 삭제 실패:", error);
@@ -255,6 +263,24 @@ const NewProcedure: React.FC = () => {
     const newProcedures = procedures.filter((p) => p.isNew);
 
     try {
+      if (newProcedures.length > 0) {
+        try {
+          const currentCourse = await courseApi.getCurrentCourse();
+          if (!currentCourse || currentCourse.courseType !== "FOCUS") {
+            if (currentCourse?.courseId) {
+              await courseApi.endCourse(currentCourse.courseId);
+            }
+            await courseApi.startCourse({ courseType: "FOCUS" });
+          }
+        } catch (courseError) {
+          console.warn(
+            "집중 코스 전환 시도 중 오류 (기존 집중 코스 재시작 시도):",
+            courseError,
+          );
+          await courseApi.restartFocusCourse().catch(() => {});
+        }
+      }
+
       const promises: Promise<unknown>[] = [];
 
       existingProcedures.forEach((item) => {
@@ -299,10 +325,7 @@ const NewProcedure: React.FC = () => {
       console.error("시술 정보 저장 실패:", error);
 
       if (isAxiosError(error)) {
-        alert(
-          error.response?.data?.message ||
-            "시술 저장에 실패했습니다. (진행 중인 집중 코스가 있는지 확인해주세요)",
-        );
+        alert(error.response?.data?.message || "시술 저장에 실패했습니다.");
       } else {
         alert("알 수 없는 오류가 발생했습니다.");
       }
@@ -310,6 +333,8 @@ const NewProcedure: React.FC = () => {
       setIsSubmitting(false);
     }
   };
+
+  const isSingle = procedures.length === 1;
 
   return (
     <>
@@ -319,7 +344,11 @@ const NewProcedure: React.FC = () => {
         <S.FormCardGroup>
           {procedures.map((item, index) => {
             const hasValue = Boolean(item.type && item.type.trim() !== "");
-            const displayText = hasValue ? item.type : "작성 중";
+            const displayText = hasValue
+              ? item.type
+              : isSingle
+                ? "시술 이름"
+                : "작성 중";
 
             const isSelectOpen = openSelectId === item.id;
             const isDatePickerOpen = openDatePickerId === item.id;
@@ -327,52 +356,44 @@ const NewProcedure: React.FC = () => {
             return (
               <S.FormCard key={item.id}>
                 <S.AccordionHeader
-                  $isSingle={false}
-                  onClick={() => toggleAccordion(item.id)}
+                  $isSingle={isSingle}
+                  onClick={() => {
+                    if (!isSingle) {
+                      toggleAccordion(item.id);
+                    }
+                  }}
                 >
                   <div className="title">
-                    시술 정보 {index + 1} -{" "}
-                    <span className={hasValue ? "has-value" : "is-editing"}>
-                      {displayText}
-                    </span>
+                    {isSingle ? (
+                      <>
+                        시술 정보 -{" "}
+                        <span className={hasValue ? "has-value" : "is-editing"}>
+                          {displayText}
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        시술 정보 {index + 1} -{" "}
+                        <span className={hasValue ? "has-value" : "is-editing"}>
+                          {displayText}
+                        </span>
+                      </>
+                    )}
                   </div>
 
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "8px",
-                    }}
-                  >
-                    <button
-                      type="button"
-                      onClick={(e) => handleDeleteProcedure(e, item)}
-                      style={{
-                        background: "none",
-                        border: "1px solid #e53935",
-                        borderRadius: "6px",
-                        color: "#e53935",
-                        fontSize: "12px",
-                        fontWeight: 600,
-                        padding: "4px 8px",
-                        cursor: "pointer",
-                      }}
-                    >
-                      삭제
-                    </button>
-
+                  {!isSingle && (
                     <img
                       className={`arrow-icon ${item.isOpen ? "open" : ""}`}
                       src="/assets/ChevronDown.svg"
                       alt="더보기"
                     />
-                  </div>
+                  )}
                 </S.AccordionHeader>
 
                 {item.isOpen && (
                   <S.CardBody>
                     <S.FormGroup>
-                      <label>시술종류</label>
+                      <label>시술 종류</label>
                       <S.SelectBox>
                         <div
                           className={`select-header ${!item.type ? "placeholder" : ""} ${isSelectOpen ? "focused" : ""}`}
@@ -409,7 +430,7 @@ const NewProcedure: React.FC = () => {
                     </S.FormGroup>
 
                     <S.FormGroup>
-                      <label>시술날짜</label>
+                      <label>시술 날짜</label>
                       <S.DateInputWrapper
                         $hasValue={Boolean(item.date)}
                         $isFocused={isDatePickerOpen}
@@ -580,7 +601,7 @@ const NewProcedure: React.FC = () => {
                     </S.FormGroup>
 
                     <S.FormGroup>
-                      <label>시술회차</label>
+                      <label>시술 횟수</label>
                       <S.CountGrid>
                         <div className="count-item">
                           <span className="label-text">현재</span>
@@ -588,6 +609,14 @@ const NewProcedure: React.FC = () => {
                             <input
                               type="number"
                               placeholder="N"
+                              size={
+                                item.currentCount
+                                  ? Math.max(item.currentCount.length, 1)
+                                  : 1
+                              }
+                              style={{
+                                width: `${Math.max(item.currentCount ? item.currentCount.length : 1, 1)}ch`,
+                              }}
                               value={item.currentCount}
                               onChange={(e) =>
                                 updateProcedure(
@@ -607,6 +636,14 @@ const NewProcedure: React.FC = () => {
                             <input
                               type="number"
                               placeholder="N"
+                              size={
+                                item.totalCount
+                                  ? Math.max(item.totalCount.length, 1)
+                                  : 1
+                              }
+                              style={{
+                                width: `${Math.max(item.totalCount ? item.totalCount.length : 1, 1)}ch`,
+                              }}
                               value={item.totalCount}
                               onChange={(e) =>
                                 updateProcedure(
@@ -623,7 +660,7 @@ const NewProcedure: React.FC = () => {
                     </S.FormGroup>
 
                     <S.FormGroup>
-                      <label>시술부위</label>
+                      <label>시술 부위</label>
                       <S.PartsGrid>
                         {BODY_PARTS.map((part) => {
                           const isSelected = item.selectedParts.includes(part);
@@ -640,6 +677,16 @@ const NewProcedure: React.FC = () => {
                         })}
                       </S.PartsGrid>
                     </S.FormGroup>
+
+                    {!isSingle && (
+                      <S.CardDeleteButton
+                        type="button"
+                        onClick={() => setDeleteTargetItem(item)}
+                      >
+                        <img src="/assets/Minus.svg" alt="시술 삭제" /> 시술
+                        삭제
+                      </S.CardDeleteButton>
+                    )}
                   </S.CardBody>
                 )}
               </S.FormCard>
@@ -667,6 +714,31 @@ const NewProcedure: React.FC = () => {
           </S.SubmitButton>
         </S.BottomArea>
       </S.Container>
+
+      {deleteTargetItem && (
+        <S.ModalOverlay onClick={() => setDeleteTargetItem(null)}>
+          <S.ModalCard onClick={(e) => e.stopPropagation()}>
+            <h3>해당 시술 정보를 삭제하겠습니까?</h3>
+            <p>삭제된 시술 정보는 되돌릴 수 없습니다</p>
+            <div className="modal-buttons">
+              <button
+                type="button"
+                className="cancel-btn"
+                onClick={() => setDeleteTargetItem(null)}
+              >
+                취소
+              </button>
+              <button
+                type="button"
+                className="delete-btn"
+                onClick={handleConfirmDelete}
+              >
+                삭제
+              </button>
+            </div>
+          </S.ModalCard>
+        </S.ModalOverlay>
+      )}
     </>
   );
 };

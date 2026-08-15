@@ -14,7 +14,7 @@ export const Container = styled.div`
   max-width: 402px;
   margin: 0 auto;
   min-height: 100vh;
-  padding: 80px 16px 40px 16px;
+  padding: 72px 16px 40px 16px;
   box-sizing: border-box;
 `;
 
@@ -27,7 +27,7 @@ export const RightColumn = styled.div`
 `;
 
 export const Section = styled.section`
-  margin-bottom: 50px;
+  margin-bottom: 36px;
 `;
 
 export const Title = styled.h2`
@@ -52,7 +52,7 @@ export const GuideCard = styled.div`
   background-color: ${colorPalette.White};
   border: 0.5px solid ${colorPalette.Quaternary};
   border-radius: 6px;
-  padding: 16px;
+  padding: 12px;
   ${applyTypography("Body1")}
   color: ${colorPalette.Black};
   margin-bottom: 10px;
@@ -62,8 +62,8 @@ export const InfoNoticeCard = styled.div`
   background-color: ${colorPalette.White};
   border: 0.5px solid ${colorPalette.Quaternary};
   border-radius: 12px;
-  padding: 20px 16px;
-  margin-bottom: 24px;
+  padding: 16px;
+  margin-bottom: 36px;
 
   .notice-header {
     display: flex;
@@ -90,7 +90,7 @@ export const ContactCard = styled.div`
   background-color: ${colorPalette.White};
   border: 0.5px solid ${colorPalette.Quaternary};
   border-radius: 12px;
-  padding: 20px 16px;
+  padding: 16px;
   white-space: nowrap;
 
   .title {

@@ -71,22 +71,37 @@ const DailycoursePreview: React.FC = () => {
     };
 
     try {
+      const current = await courseApi.getCurrentCourse().catch(() => null);
+
+      const currentCourseId =
+        current?.courseId ?? (current as unknown as { id?: number })?.id;
+
+      if (currentCourseId !== undefined && currentCourseId !== null) {
+        await courseApi.endCourse(currentCourseId);
+      }
+
       await courseApi.startCourse(payload);
 
-      navigate("/care/first_daily_care");
+      navigate("/");
     } catch (error) {
-      console.error("데일리 코스 시작 실패:", error);
+      console.error("데일리 코스 전환 실패:", error);
 
-      try {
-        const current = await courseApi.getCurrentCourse();
-        if (current?.courseId) {
-          await courseApi.endCourse(current.courseId);
-          await courseApi.startCourse(payload);
-          navigate("/care/first_daily_care");
-          return;
+      if (isAxiosError(error) && error.response?.status === 409) {
+        try {
+          const fallbackCurrent = await courseApi.getCurrentCourse();
+          const fallbackId =
+            fallbackCurrent?.courseId ??
+            (fallbackCurrent as unknown as { id?: number })?.id;
+
+          if (fallbackId) {
+            await courseApi.endCourse(fallbackId);
+            await courseApi.startCourse(payload);
+            navigate("/");
+            return;
+          }
+        } catch (retryError) {
+          console.error("재시도 실패:", retryError);
         }
-      } catch (retryError) {
-        console.error("코스 재시작 실패:", retryError);
       }
 
       if (isAxiosError(error)) {
@@ -141,7 +156,7 @@ const DailycoursePreview: React.FC = () => {
           disabled={!selectedId || isSubmitting}
           onClick={handleSubmit}
         >
-          {isSubmitting ? "시작하는 중..." : "이 루틴으로 시작하기"}
+          {isSubmitting ? "변경하는 중..." : "이 루틴으로 변경하기"}
         </S.SubmitButton>
       </S.Container>
     </>

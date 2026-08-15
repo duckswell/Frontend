@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { TabBar, type TabType } from "../components/TabBar";
 import { AITodos } from "../components/Home/AITodos";
 import { Header } from "../components/Home/Header";
-import { courseApi } from "../api/course";
+import { courseApi, type CurrentCourseResponse } from "../api/course";
 import { procedureApi, type ProcedureItem } from "../api/procedure";
 import {
   dashboardApi,
@@ -14,15 +14,15 @@ import {
   type WeatherFactor,
 } from "../api/dashboard";
 
-const calculateDDay = (procedureDateStr?: string): number | null => {
-  if (!procedureDateStr) return null;
-  const procDate = new Date(procedureDateStr.replace(/\./g, "-"));
+const calculateDDay = (dateStr?: string): number | null => {
+  if (!dateStr) return null;
+  const targetDate = new Date(dateStr.replace(/\./g, "-"));
   const today = new Date();
 
-  procDate.setHours(0, 0, 0, 0);
+  targetDate.setHours(0, 0, 0, 0);
   today.setHours(0, 0, 0, 0);
 
-  const diffTime = today.getTime() - procDate.getTime();
+  const diffTime = today.getTime() - targetDate.getTime();
   const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
 
   return diffDays >= 0 ? diffDays + 1 : 1;
@@ -33,13 +33,15 @@ const Home: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabType>("home");
 
   const [currentVersion, setCurrentVersion] = useState<"focus" | "daily">(
-    "focus",
+    "daily",
   );
+
+  const [currentCourse, setCurrentCourse] =
+    useState<CurrentCourseResponse | null>(null);
 
   const [currentProcedures, setCurrentProcedures] = useState<ProcedureItem[]>(
     [],
   );
-
   const [recoveryData, setRecoveryData] = useState<RecoveryBannerData | null>(
     null,
   );
@@ -62,6 +64,37 @@ const Home: React.FC = () => {
   ]);
 
   const isFocus = currentVersion === "focus";
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const checkCurrentCourse = async () => {
+      try {
+        const course = await courseApi.getCurrentCourse();
+        if (!isMounted) return;
+
+        if (course) {
+          setCurrentCourse(course);
+          if (course.courseType === "FOCUS") {
+            setCurrentVersion("focus");
+          } else {
+            setCurrentVersion("daily");
+          }
+        } else {
+          setCurrentCourse(null);
+          setCurrentVersion("daily");
+        }
+      } catch (error) {
+        console.error("현재 코스 상태 조회 실패:", error);
+      }
+    };
+
+    checkCurrentCourse();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -174,12 +207,17 @@ const Home: React.FC = () => {
   const totalTodos = todos.length;
   const completedCount = todos.filter((todo) => todo.checked).length;
 
-  const isWarning = (factor?: WeatherFactor) => {
+  const isWarning = (factor?: WeatherFactor & { siren?: boolean }) => {
     if (!factor) return false;
+    if (typeof factor.siren === "boolean") {
+      return factor.siren;
+    }
     const { level = "", cardStatus = "" } = factor;
     return (
       level.includes("주의") ||
       level.includes("심각") ||
+      level.includes("높음") ||
+      level.includes("위험") ||
       cardStatus.includes("주의") ||
       cardStatus.includes("심각")
     );
@@ -201,15 +239,25 @@ const Home: React.FC = () => {
 
   const getFocusBadgeText = () => {
     if (recoveryData?.dDay !== undefined && recoveryData.dDay !== null) {
-      return `시술 D+${recoveryData.dDay}`;
+      return `D+${recoveryData.dDay}`;
     }
 
     const calculatedDay = calculateDDay(latestProcedure?.procedureDate);
     if (calculatedDay !== null) {
-      return `시술 D+${calculatedDay}`;
+      return `D+${calculatedDay}`;
     }
 
     return "-";
+  };
+
+  const getDailyBadgeText = () => {
+    if (currentCourse && currentCourse.courseType === "DAILY") {
+      const label = currentCourse.label || "데일리 케어";
+      const dDay = calculateDDay(currentCourse.startedAt) ?? 1;
+      return `${label} D+${dDay}`;
+    }
+
+    return weatherData?.triggerFactor || "-";
   };
 
   return (
@@ -222,9 +270,7 @@ const Home: React.FC = () => {
         <S.LeftColumn>
           <S.HeroCard $isFocus={isFocus}>
             <S.Badge $isFocus={isFocus}>
-              {isFocus
-                ? getFocusBadgeText()
-                : weatherData?.triggerFactor || "-"}
+              {isFocus ? getFocusBadgeText() : getDailyBadgeText()}
             </S.Badge>
 
             <S.HeroTitle>
@@ -352,9 +398,7 @@ const Home: React.FC = () => {
               />
               <div>
                 <div className="desc">새로운 시술을 받으셨나요?</div>
-                <div className="title">
-                  {isFocus ? "시술 정보 수정/추가하기" : "시술 정보 등록하기"}
-                </div>
+                <div className="title">시술 내역 등록하기</div>
               </div>
             </div>
             <div className="arrow">
