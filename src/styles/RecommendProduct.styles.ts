@@ -16,12 +16,75 @@ export const Page = styled.div<PageProps>`
   width: 100%;
   height: 100dvh;
 
+  /*
+   * care에서 진입한 경우 NavBar가 fixed라서
+   * NavBar 높이만큼 페이지 시작 위치 확보
+   */
+  padding-top: ${({ $hasTabBar }) => ($hasTabBar ? "0" : "56px")};
   padding-bottom: ${({ $hasTabBar }) => ($hasTabBar ? "84px" : "24px")};
 
   overflow-x: hidden;
   overflow-y: auto;
 
   scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  @media (min-width: 768px) {
+    padding-top: ${({ $hasTabBar }) => ($hasTabBar ? "0" : "64px")};
+  }
+`;
+
+export const IngredientSection = styled.section`
+  width: 100%;
+
+  /*
+   * Header/NavBar 아래에서 제목까지 16px
+   */
+  padding-top: 16px;
+`;
+
+export const SectionTitle = styled.h2`
+  ${typography.H3};
+
+  display: flex;
+  align-items: center;
+
+  box-sizing: border-box;
+
+  width: 100%;
+  height: 40px;
+
+  margin: 0;
+  padding: 0 16px;
+
+  color: ${colorPalette.Black};
+`;
+
+export const IngredientScroll = styled.div`
+  box-sizing: border-box;
+
+  display: flex;
+  gap: 16px;
+
+  width: 100%;
+
+  /*
+   * 40px 제목 영역과 카드 사이 16px
+   */
+  margin-top: 16px;
+  padding: 0 60px;
+
+  overflow-x: auto;
+
+  scroll-snap-type: x mandatory;
+  overscroll-behavior-x: contain;
+
+  scrollbar-width: none;
+
+  -webkit-overflow-scrolling: touch;
 
   &::-webkit-scrollbar {
     display: none;
@@ -60,46 +123,6 @@ export const Content = styled.main`
   margin: 0 auto;
 
   overflow-x: hidden;
-`;
-
-export const IngredientSection = styled.section`
-  width: 100%;
-
-  padding-top: 16px;
-`;
-
-export const SectionTitle = styled.h2`
-  ${typography.H3};
-
-  margin: 0;
-  padding: 0 16px;
-
-  color: ${colorPalette.Black};
-`;
-
-export const IngredientScroll = styled.div`
-  box-sizing: border-box;
-
-  display: flex;
-  gap: 16px;
-
-  width: 100%;
-
-  margin-top: 28px;
-  padding: 0 60px;
-
-  overflow-x: auto;
-
-  scroll-snap-type: x mandatory;
-  overscroll-behavior-x: contain;
-
-  scrollbar-width: none;
-
-  -webkit-overflow-scrolling: touch;
-
-  &::-webkit-scrollbar {
-    display: none;
-  }
 `;
 
 export const IngredientCardWrapper = styled.div`
@@ -168,6 +191,7 @@ export const ProductGrid = styled.div`
   row-gap: 16px;
 
   width: 100%;
+  min-width: 0;
 
   margin-top: 16px;
 `;
@@ -237,7 +261,7 @@ export const ProductModalHeader = styled.div`
   align-items: center;
   justify-content: flex-end;
 
-  width: 100%;ProductCategoryButton
+  width: 100%;
 `;
 
 export const ProductModalCloseButton = styled.button`

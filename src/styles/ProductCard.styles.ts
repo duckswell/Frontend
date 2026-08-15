@@ -5,12 +5,16 @@ import { typography } from "../lib/typography";
 export const Card = styled.article`
   box-sizing: border-box;
 
-  width: 177px;
+  width: 100%;
+  max-width: 177px;
+
+  min-width: 0;
 `;
 
 export const ProductImagePlaceholder = styled.div`
-  width: 177px;
-  height: 154px;
+  width: 100%;
+
+  aspect-ratio: 177 / 154;
 
   border-radius: 4px;
   background-color: #d9d9d9;
@@ -19,6 +23,8 @@ export const ProductImagePlaceholder = styled.div`
 export const ProductInfo = styled.div`
   display: flex;
   flex-direction: column;
+
+  width: 100%;
 
   margin-top: 8px;
 `;
@@ -42,7 +48,7 @@ export const ProductName = styled.p`
 export const ProductImageButton = styled.button`
   display: block;
 
-  width: 177px;
+  width: 100%;
 
   padding: 0;
 
@@ -58,7 +64,7 @@ export const ProductTextButton = styled.button`
   flex-direction: column;
   align-items: flex-start;
 
-  width: fit-content;
+  width: 100%;
 
   padding: 0;
 

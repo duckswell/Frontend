@@ -7,19 +7,24 @@ export const Page = styled.div`
   display: flex;
   flex-direction: column;
 
-  min-height: calc(100dvh - 64px);
-  margin-top: 64px;
+  min-height: calc(100dvh - 56px);
+  margin-top: 56px;
 
   background-color: ${colorPalette.OffWhite};
   color: ${colorPalette.Black};
 
   box-sizing: border-box;
+
+  @media (min-width: 768px) {
+    min-height: calc(100dvh - 64px);
+    margin-top: 64px;
+  }
 `;
 
 export const Main = styled.main`
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
 
   width: 100%;
   max-width: 402px;
@@ -42,7 +47,6 @@ export const AnalysisCard = styled.section`
   width: 100%;
   max-width: 370px;
 
-  margin-top: 16px;
   padding: 16px;
 
   box-sizing: border-box;
@@ -109,6 +113,18 @@ export const StatusTitle = styled.h3`
   line-height: 150%;
 
   color: ${colorPalette.Black};
+`;
+
+export const AnalysisImage = styled.img`
+  width: 120px;
+  height: 80px;
+
+  margin-top: 16px;
+
+  border-radius: 4px;
+
+  object-fit: cover;
+  display: block;
 `;
 
 export const PhotoPlaceholder = styled.div`

@@ -6,19 +6,24 @@ export const Page = styled.div`
   display: flex;
   flex-direction: column;
 
-  min-height: calc(100dvh - 64px);
-  margin-top: 64px;
+  min-height: calc(100dvh - 56px);
+  margin-top: 56px;
 
   background-color: ${colorPalette.OffWhite};
   color: ${colorPalette.Black};
 
   box-sizing: border-box;
+
+  @media (min-width: 768px) {
+    min-height: calc(100dvh - 64px);
+    margin-top: 64px;
+  }
 `;
 
 export const Main = styled.main`
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
 
   width: 100%;
   max-width: 402px;
@@ -39,7 +44,6 @@ export const Content = styled.div`
 
 export const RoutineIntro = styled.section`
   width: 100%;
-  margin-top: 24px;
 
   box-sizing: border-box;
 `;

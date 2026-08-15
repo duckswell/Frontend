@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+import { courseApi } from "../api/course";
+import { diagnosisApi, SYMPTOM_CODE_MAP } from "../api/diagnosis";
 import { NavBar } from "../components/NavBar";
 import CareButton from "../components/CareButton";
 import CareInputForm from "../components/FocusCare/CareInputForm";
@@ -16,7 +17,8 @@ export default function FirstDaliyCare() {
   const [skinImages, setSkinImages] = useState<File[]>([]);
 
   const [additionalSymptom, setAdditionalSymptom] = useState("");
-
+  const [photoId, setPhotoId] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const isNextEnabled = selectedConditions.length > 0;
 
   const handleToggleCondition = (condition: string) => {
@@ -39,18 +41,39 @@ export default function FirstDaliyCare() {
     setAdditionalSymptom(value);
   };
 
-  const handleMoveToNext = () => {
-    if (!isNextEnabled) {
+  const handleMoveToNext = async () => {
+    if (!isNextEnabled || isSubmitting) {
       return;
     }
 
-    console.log({
-      selectedConditions,
-      skinImages,
-      additionalSymptom,
-    });
+    try {
+      setIsSubmitting(true);
 
-    navigate("/care/second_daily_care");
+      const currentCourse = await courseApi.getCurrentCourse();
+
+      const symptoms = selectedConditions.map(
+        (condition) => SYMPTOM_CODE_MAP[condition]
+      );
+
+      const diagnosis = await diagnosisApi.createDiagnosis({
+        courseId: currentCourse.courseId,
+        symptoms,
+        symptomNote: additionalSymptom || undefined,
+        photoId: photoId ?? undefined,
+      });
+
+      console.log("데일리 코스 진단 성공:", diagnosis);
+
+      navigate("/care/second_daily_care", {
+        state: {
+          diagnosis,
+        },
+      });
+    } catch (error) {
+      console.error("데일리 코스 진단 실패:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -69,6 +92,7 @@ export default function FirstDaliyCare() {
             onChangeImages={handleChangeImages}
             additionalSymptom={additionalSymptom}
             onChangeAdditionalSymptom={handleChangeAdditionalSymptom}
+            onChangePhotoId={setPhotoId}
           />
         </S.Content>
       </S.Main>
@@ -76,7 +100,7 @@ export default function FirstDaliyCare() {
       <S.BottomArea>
         <CareButton
           variant="daily"
-          disabled={!isNextEnabled}
+          disabled={!isNextEnabled || isSubmitting}
           onClick={handleMoveToNext}
         >
           다음으로

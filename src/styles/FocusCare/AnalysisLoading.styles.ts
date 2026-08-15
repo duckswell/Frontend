@@ -34,16 +34,16 @@ export const ProgressCircle = styled.div`
   align-items: center;
   justify-content: center;
 
-  width: 150px;
-  height: 150px;
+  width: 180px;
+  height: 180px;
 `;
 
 export const Spinner = styled.svg`
   position: absolute;
   inset: 0;
 
-  width: 150px;
-  height: 150px;
+  width: 180px;
+  height: 180px;
 
   transform-origin: center;
   animation: ${rotateSpinner} 1.8s linear infinite;

@@ -26,7 +26,7 @@ export const Modal = styled.div`
 
   width: 320px;
 
-  padding: 32px 16px 16px;
+  padding: 24px 16px 16px;
 
   border-radius: 12px;
 

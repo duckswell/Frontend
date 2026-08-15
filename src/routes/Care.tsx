@@ -1,8 +1,14 @@
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
 import { NavBar } from "../components/NavBar";
 import { TabBar } from "../components/TabBar";
 import CareButton from "../components/CareButton";
+
+import { courseApi, type CurrentCourseResponse } from "../api/course";
+
 import * as S from "../styles/FocusCare/Care.styles";
-import { useNavigate } from "react-router-dom";
+
 const COURSE_STEPS = [
   {
     step: "STEP 1",
@@ -24,16 +30,94 @@ const COURSE_STEPS = [
 export default function Care() {
   const navigate = useNavigate();
 
+  const [currentCourse, setCurrentCourse] =
+    useState<CurrentCourseResponse | null>(null);
+
+  const [recoverySummary, setRecoverySummary] = useState("");
+  const [isStartingCourse, setIsStartingCourse] = useState(false);
+
+  useEffect(() => {
+    const fetchCurrentCourse = async () => {
+      try {
+        const course = await courseApi.getCurrentCourse();
+
+        console.log("현재 진행 중인 코스:", course);
+
+        setCurrentCourse(course);
+
+        try {
+          const summary = await courseApi.getRecoverySummary(course.courseId);
+
+          setRecoverySummary(summary.recoveryStageSummaryText);
+        } catch (error) {
+          console.error("회복 단계 요약 조회 실패:", error);
+
+          // recovery-summary가 500이어도
+          // 현재 코스 정보 자체는 유지
+          setRecoverySummary("");
+        }
+      } catch (error) {
+        console.error("현재 진행 중인 코스 조회 실패:", error);
+
+        setCurrentCourse(null);
+      }
+    };
+
+    fetchCurrentCourse();
+  }, []);
+
   const handleMoveToProductRecommendation = () => {
-    console.log("추천 성분 제품 페이지로 이동");
+    navigate("/recommend");
   };
 
   const handleOpenConsultationGuide = () => {
     navigate("/safety");
   };
 
-  const handleStartRoutine = () => {
-    navigate("/care/first_focus_care");
+  const handleStartRoutine = async () => {
+    if (isStartingCourse) {
+      return;
+    }
+
+    try {
+      setIsStartingCourse(true);
+
+      /*
+       * 이미 진행 중인 코스가 있으면
+       * /api/courses/start를 다시 호출하지 않는다.
+       */
+      if (currentCourse) {
+        console.log("기존 집중 코스로 루틴 시작:", currentCourse.courseId);
+
+        navigate("/care/first_focus_care", {
+          state: {
+            courseId: currentCourse.courseId,
+          },
+        });
+
+        return;
+      }
+
+      /*
+       * 진행 중인 코스가 없는 경우에만
+       * 새 집중 코스 생성
+       */
+      const course = await courseApi.startCourse({
+        courseType: "FOCUS",
+      });
+
+      console.log("새 집중 코스 시작 성공:", course);
+
+      navigate("/care/first_focus_care", {
+        state: {
+          courseId: course.id,
+        },
+      });
+    } catch (error) {
+      console.error("집중 코스 시작 실패:", error);
+    } finally {
+      setIsStartingCourse(false);
+    }
   };
 
   return (
@@ -46,12 +130,10 @@ export default function Care() {
 
           <S.StatusTitle>시술 후 5일째</S.StatusTitle>
 
-          <S.StatusDescription>
-            피부 장벽 강화 단계 · 붉은기 완화 중
-          </S.StatusDescription>
+          <S.StatusDescription>{recoverySummary}</S.StatusDescription>
 
           <S.StatusNotice>
-            *이 정보는 관리 목적 안내이며 의료 진단이 아닙니다.
+            *피부 상태에 따라 회복 속도는 달라질 수 있어요.
           </S.StatusNotice>
         </S.StatusCard>
 

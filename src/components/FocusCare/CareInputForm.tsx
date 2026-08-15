@@ -1,8 +1,8 @@
-import { useEffect, useRef, useState } from "react";
+import {  useRef, useState } from "react";
 
 import AnalysisLoading from "./AnalysisLoading";
 import ImageUploadErrorModal from "./ImageUploadErrorModal";
-
+import { diagnosisApi } from "../../api/diagnosis";
 import * as S from "../../styles/FocusCare/CareInputForm.styles";
 import * as ModalS from "../../styles/FocusCare/ImageAnalysisModal.styles";
 
@@ -19,7 +19,7 @@ interface CareInputFormProps {
 
   skinImages: File[];
   onChangeImages: (files: File[]) => void;
-
+  onChangePhotoId: (photoId: string | null) => void;
   additionalSymptom: string;
   onChangeAdditionalSymptom: (value: string) => void;
 }
@@ -32,12 +32,11 @@ export default function CareInputForm({
   onChangeImages,
   additionalSymptom,
   onChangeAdditionalSymptom,
+  onChangePhotoId,
 }: CareInputFormProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const uploadToastRef = useRef<HTMLDivElement>(null);
 
   const pendingImagesRef = useRef<File[]>([]);
-  const uploadAttemptRef = useRef(0);
 
   const [isAnalyzingImage, setIsAnalyzingImage] = useState(false);
   const [isUploadErrorOpen, setIsUploadErrorOpen] = useState(false);
@@ -46,32 +45,32 @@ export default function CareInputForm({
   const isDaily = variant === "daily";
   const hasImages = skinImages.length > 0;
 
-  useEffect(() => {
-    if (!isUploadToastVisible) {
+  const handleOpenImagePicker = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleChangeImage = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const selectedFiles = Array.from(event.target.files ?? []);
+
+    event.target.value = "";
+
+    if (selectedFiles.length === 0) {
       return;
     }
 
-    const animationFrame = requestAnimationFrame(() => {
-      uploadToastRef.current?.scrollIntoView({
-        behavior: "smooth",
-        block: "end",
-      });
-    });
+    const selectedFile = selectedFiles[0];
 
-    return () => cancelAnimationFrame(animationFrame);
-  }, [isUploadToastVisible]);
-  const handleCompleteImageAnalysis = () => {
-    setIsAnalyzingImage(false);
+    pendingImagesRef.current = [selectedFile];
 
-    uploadAttemptRef.current += 1;
+    try {
+      setIsAnalyzingImage(true);
 
-    // 테스트용
-    // 홀수 번째: 실패
-    // 짝수 번째: 성공
-    const isSuccess = uploadAttemptRef.current % 2 === 0;
+      const result = await diagnosisApi.checkPhoto(selectedFile);
 
-    if (isSuccess) {
-      onChangeImages([...skinImages, ...pendingImagesRef.current]);
+      onChangeImages([...skinImages, selectedFile]);
+      onChangePhotoId(result.photoId);
 
       pendingImagesRef.current = [];
 
@@ -80,30 +79,15 @@ export default function CareInputForm({
       window.setTimeout(() => {
         setIsUploadToastVisible(false);
       }, 2000);
+    } catch (error) {
+      console.error("사진 품질 확인 실패:", error);
 
-      return;
+      pendingImagesRef.current = [];
+      onChangePhotoId(null);
+      setIsUploadErrorOpen(true);
+    } finally {
+      setIsAnalyzingImage(false);
     }
-
-    pendingImagesRef.current = [];
-    setIsUploadErrorOpen(true);
-  };
-
-  const handleOpenImagePicker = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleChangeImage = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFiles = Array.from(event.target.files ?? []);
-
-    if (selectedFiles.length === 0) {
-      return;
-    }
-
-    pendingImagesRef.current = selectedFiles;
-
-    setIsAnalyzingImage(true);
-
-    event.target.value = "";
   };
 
   const handleCancelReupload = () => {
@@ -124,8 +108,11 @@ export default function CareInputForm({
     const nextImages = skinImages.filter((_, index) => index !== indexToRemove);
 
     onChangeImages(nextImages);
-  };
 
+    if (nextImages.length === 0) {
+      onChangePhotoId(null);
+    }
+  };
   return (
     <>
       <S.Section>
@@ -214,7 +201,6 @@ export default function CareInputForm({
           ref={fileInputRef}
           type="file"
           accept="image/*"
-          multiple
           onChange={handleChangeImage}
         />
       </S.Section>
@@ -252,7 +238,7 @@ export default function CareInputForm({
         </S.Notice>
 
         {isUploadToastVisible && (
-          <S.UploadToast ref={uploadToastRef}>
+          <S.UploadToast>
             <S.CheckIcon
               src="/assets/CheckIcon.svg"
               alt=""
@@ -270,7 +256,7 @@ export default function CareInputForm({
             <AnalysisLoading
               variant={variant}
               type="image"
-              onComplete={handleCompleteImageAnalysis}
+              onComplete={() => {}}
             />
           </ModalS.Modal>
         </ModalS.Overlay>
