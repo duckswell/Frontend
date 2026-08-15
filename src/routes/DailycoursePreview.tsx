@@ -73,7 +73,7 @@ const DailycoursePreview: React.FC = () => {
     try {
       await courseApi.startCourse(payload);
 
-      navigate("/care/first_daily_care");
+      navigate("/");
     } catch (error) {
       console.error("데일리 코스 시작 실패:", error);
 
@@ -82,7 +82,7 @@ const DailycoursePreview: React.FC = () => {
         if (current?.courseId) {
           await courseApi.endCourse(current.courseId);
           await courseApi.startCourse(payload);
-          navigate("/care/first_daily_care");
+          navigate("/");
           return;
         }
       } catch (retryError) {
@@ -141,7 +141,7 @@ const DailycoursePreview: React.FC = () => {
           disabled={!selectedId || isSubmitting}
           onClick={handleSubmit}
         >
-          {isSubmitting ? "시작하는 중..." : "이 루틴으로 시작하기"}
+          {isSubmitting ? "변경하는 중..." : "이 루틴으로 변경하기"}
         </S.SubmitButton>
       </S.Container>
     </>

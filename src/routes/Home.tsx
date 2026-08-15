@@ -33,13 +33,12 @@ const Home: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabType>("home");
 
   const [currentVersion, setCurrentVersion] = useState<"focus" | "daily">(
-    "focus",
+    "daily",
   );
 
   const [currentProcedures, setCurrentProcedures] = useState<ProcedureItem[]>(
     [],
   );
-
   const [recoveryData, setRecoveryData] = useState<RecoveryBannerData | null>(
     null,
   );
@@ -62,6 +61,31 @@ const Home: React.FC = () => {
   ]);
 
   const isFocus = currentVersion === "focus";
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const checkCurrentCourse = async () => {
+      try {
+        const course = await courseApi.getCurrentCourse();
+        if (!isMounted) return;
+
+        if (course && course.courseType === "FOCUS") {
+          setCurrentVersion("focus");
+        } else {
+          setCurrentVersion("daily");
+        }
+      } catch (error) {
+        console.error("현재 코스 상태 조회 실패:", error);
+      }
+    };
+
+    checkCurrentCourse();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -201,12 +225,12 @@ const Home: React.FC = () => {
 
   const getFocusBadgeText = () => {
     if (recoveryData?.dDay !== undefined && recoveryData.dDay !== null) {
-      return `시술 D+${recoveryData.dDay}`;
+      return `D+${recoveryData.dDay}`;
     }
 
     const calculatedDay = calculateDDay(latestProcedure?.procedureDate);
     if (calculatedDay !== null) {
-      return `시술 D+${calculatedDay}`;
+      return `D+${calculatedDay}`;
     }
 
     return "-";
@@ -352,9 +376,7 @@ const Home: React.FC = () => {
               />
               <div>
                 <div className="desc">새로운 시술을 받으셨나요?</div>
-                <div className="title">
-                  {isFocus ? "시술 정보 수정/추가하기" : "시술 정보 등록하기"}
-                </div>
+                <div className="title">시술 내역 등록하기</div>
               </div>
             </div>
             <div className="arrow">

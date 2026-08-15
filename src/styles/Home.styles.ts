@@ -75,7 +75,7 @@ export const StatGrid = styled.div`
 export const StatItem = styled.div`
   background-color: ${colorPalette.OffWhite};
   border-radius: 8px;
-  padding: 12px 13px;
+  padding: 10px 13px 12px 13px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;

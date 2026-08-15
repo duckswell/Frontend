@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import * as S from "../styles/NewProcedure.styles";
 import { NavBar } from "../components/NavBar";
 import { procedureApi } from "../api/procedure";
+import { courseApi } from "../api/course";
 import { isAxiosError } from "axios";
 
 interface ProcedureData {
@@ -255,6 +256,24 @@ const NewProcedure: React.FC = () => {
     const newProcedures = procedures.filter((p) => p.isNew);
 
     try {
+      if (newProcedures.length > 0) {
+        try {
+          const currentCourse = await courseApi.getCurrentCourse();
+          if (!currentCourse || currentCourse.courseType !== "FOCUS") {
+            if (currentCourse?.courseId) {
+              await courseApi.endCourse(currentCourse.courseId);
+            }
+            await courseApi.startCourse({ courseType: "FOCUS" });
+          }
+        } catch (courseError) {
+          console.warn(
+            "집중 코스 전환 시도 중 오류 (기존 집중 코스 재시작 시도):",
+            courseError,
+          );
+          await courseApi.restartFocusCourse().catch(() => {});
+        }
+      }
+
       const promises: Promise<unknown>[] = [];
 
       existingProcedures.forEach((item) => {
@@ -299,10 +318,7 @@ const NewProcedure: React.FC = () => {
       console.error("시술 정보 저장 실패:", error);
 
       if (isAxiosError(error)) {
-        alert(
-          error.response?.data?.message ||
-            "시술 저장에 실패했습니다. (진행 중인 집중 코스가 있는지 확인해주세요)",
-        );
+        alert(error.response?.data?.message || "시술 저장에 실패했습니다.");
       } else {
         alert("알 수 없는 오류가 발생했습니다.");
       }
@@ -588,6 +604,14 @@ const NewProcedure: React.FC = () => {
                             <input
                               type="number"
                               placeholder="N"
+                              size={
+                                item.currentCount
+                                  ? Math.max(item.currentCount.length, 1)
+                                  : 1
+                              }
+                              style={{
+                                width: `${Math.max(item.currentCount ? item.currentCount.length : 1, 1)}ch`,
+                              }}
                               value={item.currentCount}
                               onChange={(e) =>
                                 updateProcedure(
@@ -607,6 +631,14 @@ const NewProcedure: React.FC = () => {
                             <input
                               type="number"
                               placeholder="N"
+                              size={
+                                item.totalCount
+                                  ? Math.max(item.totalCount.length, 1)
+                                  : 1
+                              }
+                              style={{
+                                width: `${Math.max(item.totalCount ? item.totalCount.length : 1, 1)}ch`,
+                              }}
                               value={item.totalCount}
                               onChange={(e) =>
                                 updateProcedure(
