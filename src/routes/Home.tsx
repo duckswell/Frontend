@@ -14,7 +14,6 @@ import {
   type WeatherFactor,
 } from "../api/dashboard";
 
-// 💡 시작 날짜(YYYY-MM-DD)로부터 D+N 일수를 계산하는 헬퍼 함수
 const calculateDDay = (dateStr?: string): number | null => {
   if (!dateStr) return null;
   const targetDate = new Date(dateStr.replace(/\./g, "-"));
@@ -37,7 +36,6 @@ const Home: React.FC = () => {
     "daily",
   );
 
-  // 💡 현재 코스 정보 상태 추가
   const [currentCourse, setCurrentCourse] =
     useState<CurrentCourseResponse | null>(null);
 
@@ -239,7 +237,6 @@ const Home: React.FC = () => {
 
   const latestProcedure = currentProcedures[0];
 
-  // 💡 집중 코스 배지 텍스트
   const getFocusBadgeText = () => {
     if (recoveryData?.dDay !== undefined && recoveryData.dDay !== null) {
       return `D+${recoveryData.dDay}`;
@@ -253,7 +250,6 @@ const Home: React.FC = () => {
     return "-";
   };
 
-  // 💡 데일리 코스 배지 텍스트 (예: "쿨다운 케어 D+1")
   const getDailyBadgeText = () => {
     if (currentCourse && currentCourse.courseType === "DAILY") {
       const label = currentCourse.label || "데일리 케어";
