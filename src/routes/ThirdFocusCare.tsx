@@ -12,7 +12,6 @@ import {
 import { NavBar } from "../components/NavBar";
 import CareButton from "../components/CareButton";
 import FocusProgress from "../components/FocusCare/FocusProgress";
-import type { Product } from "../components/FocusCare/RecommendedProductSection";
 import RoutineStepCard from "../components/FocusCare/RoutineStepCard";
 
 import * as S from "../styles/FocusCare/ThirdFocusCare.styles";
