@@ -443,7 +443,7 @@ export const PartChip = styled.button<{ $isSelected: boolean }>`
     $isSelected ? colorPalette.Black : colorPalette.OffWhite};
   color: ${({ $isSelected }) =>
     $isSelected ? colorPalette.OffWhite : colorPalette.Black};
-  ${applyTypography("Body1Bold")}
+  ${applyTypography("Body1")}
   font-size: 13px;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -501,7 +501,7 @@ export const SavedNotice = styled.div`
   box-sizing: border-box;
 
   background-color: ${colorPalette.OffWhite};
-  border: 1px solid ${colorPalette.Quaternary};
+  border: 0.5px solid ${colorPalette.Quaternary};
   border-radius: 12px;
 
   ${applyTypography("Body1Bold")}
