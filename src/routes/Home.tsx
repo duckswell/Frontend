@@ -5,6 +5,7 @@ import { TabBar, type TabType } from "../components/TabBar";
 import { AITodos } from "../components/Home/AITodos";
 import { Header } from "../components/Home/Header";
 import { courseApi } from "../api/course";
+import { procedureApi, type ProcedureItem } from "../api/procedure";
 import {
   dashboardApi,
   type WeatherBannerData,
@@ -13,12 +14,30 @@ import {
   type WeatherFactor,
 } from "../api/dashboard";
 
+const calculateDDay = (procedureDateStr?: string): number | null => {
+  if (!procedureDateStr) return null;
+  const procDate = new Date(procedureDateStr.replace(/\./g, "-"));
+  const today = new Date();
+
+  procDate.setHours(0, 0, 0, 0);
+  today.setHours(0, 0, 0, 0);
+
+  const diffTime = today.getTime() - procDate.getTime();
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+  return diffDays >= 0 ? diffDays + 1 : 1;
+};
+
 const Home: React.FC = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<TabType>("home");
 
   const [currentVersion, setCurrentVersion] = useState<"focus" | "daily">(
     "focus",
+  );
+
+  const [currentProcedures, setCurrentProcedures] = useState<ProcedureItem[]>(
+    [],
   );
 
   const [recoveryData, setRecoveryData] = useState<RecoveryBannerData | null>(
@@ -30,16 +49,14 @@ const Home: React.FC = () => {
   const [todos, setTodos] = useState<ChecklistItem[]>([
     {
       id: 1,
-      title: "물 자주 마시기",
-      description:
-        "물을 자주 마셔야하는 이유\n하루동안 물을 얼마나 마셔야하는지",
+      title: "-",
+      description: "-",
       checked: false,
     },
     {
       id: 2,
-      title: "자외선 차단제 바르기",
-      description:
-        "외출 전 반드시 꼼꼼히 도포하기\n실내에서도 3시간마다 덧발라주세요",
+      title: "-",
+      description: "-",
       checked: false,
     },
   ]);
@@ -52,8 +69,22 @@ const Home: React.FC = () => {
     const loadDashboardData = async () => {
       try {
         if (isFocus) {
-          const recoveryRes = await dashboardApi.getRecoveryBanner();
-          if (isMounted && recoveryRes) setRecoveryData(recoveryRes);
+          const [recoveryRes, procRes] = await Promise.allSettled([
+            dashboardApi.getRecoveryBanner(),
+            procedureApi.getCurrentProcedures(),
+          ]);
+
+          if (isMounted) {
+            if (recoveryRes.status === "fulfilled" && recoveryRes.value) {
+              setRecoveryData(recoveryRes.value);
+            }
+            if (
+              procRes.status === "fulfilled" &&
+              Array.isArray(procRes.value)
+            ) {
+              setCurrentProcedures(procRes.value);
+            }
+          }
         } else {
           const weatherRes = await dashboardApi.getWeatherBanner();
           if (isMounted && weatherRes) setWeatherData(weatherRes);
@@ -105,6 +136,10 @@ const Home: React.FC = () => {
   const handleRestartFocus = async () => {
     try {
       await courseApi.restartFocusCourse();
+      const updatedProcedures = await procedureApi.getCurrentProcedures();
+      if (Array.isArray(updatedProcedures)) {
+        setCurrentProcedures(updatedProcedures);
+      }
     } catch (error) {
       console.error("집중 코스 전환/재시작 요청 실패:", error);
     } finally {
@@ -162,6 +197,21 @@ const Home: React.FC = () => {
     );
   };
 
+  const latestProcedure = currentProcedures[0];
+
+  const getFocusBadgeText = () => {
+    if (recoveryData?.dDay !== undefined && recoveryData.dDay !== null) {
+      return `시술 D+${recoveryData.dDay}`;
+    }
+
+    const calculatedDay = calculateDDay(latestProcedure?.procedureDate);
+    if (calculatedDay !== null) {
+      return `시술 D+${calculatedDay}`;
+    }
+
+    return "-";
+  };
+
   return (
     <>
       <Header
@@ -173,18 +223,14 @@ const Home: React.FC = () => {
           <S.HeroCard $isFocus={isFocus}>
             <S.Badge $isFocus={isFocus}>
               {isFocus
-                ? recoveryData?.dDay !== undefined
-                  ? `시술 D+${recoveryData.dDay}`
-                  : "시술 D+3"
-                : weatherData?.triggerFactor || "쿨다운 루틴 D+1"}
+                ? getFocusBadgeText()
+                : weatherData?.triggerFactor || "-"}
             </S.Badge>
 
             <S.HeroTitle>
               {isFocus
-                ? recoveryData?.summaryMessage ||
-                  "지금은\n피부 회복에 집중할 때예요"
-                : weatherData?.summaryMessage ||
-                  "오늘은\n피부가 쉽게 건조해질 수 있어요"}
+                ? recoveryData?.summaryMessage || "-"
+                : weatherData?.summaryMessage || "-"}
             </S.HeroTitle>
 
             <S.StatGrid>
@@ -194,7 +240,7 @@ const Home: React.FC = () => {
                     <span className="label">붉은기</span>
                     <div className="value-wrap">
                       <span className="number">
-                        {recoveryData?.redness?.current ?? 28}
+                        {recoveryData?.redness?.current ?? "-"}
                       </span>
                       <span className="unit">%</span>
                       {renderDeltaArrow(recoveryData?.redness?.delta ?? 1)}
@@ -205,7 +251,7 @@ const Home: React.FC = () => {
                     <span className="label">요철</span>
                     <div className="value-wrap">
                       <span className="number">
-                        {recoveryData?.texture?.current ?? 28}
+                        {recoveryData?.texture?.current ?? "-"}
                       </span>
                       <span className="unit">%</span>
                       {renderDeltaArrow(recoveryData?.texture?.delta ?? -1)}
@@ -216,7 +262,7 @@ const Home: React.FC = () => {
                     <span className="label">잡티</span>
                     <div className="value-wrap">
                       <span className="number">
-                        {recoveryData?.blemish?.current ?? 28}
+                        {recoveryData?.blemish?.current ?? "-"}
                       </span>
                       <span className="unit">%</span>
                       {renderDeltaArrow(recoveryData?.blemish?.delta ?? -1)}
@@ -233,7 +279,7 @@ const Home: React.FC = () => {
                       )}
                     </div>
                     <p className="status-text">
-                      {weatherData?.uv?.cardStatus || "색소침착주의"}
+                      {weatherData?.uv?.cardStatus || "-"}
                     </p>
                   </S.DailyStatItem>
 
@@ -245,7 +291,7 @@ const Home: React.FC = () => {
                       )}
                     </div>
                     <p className="status-text">
-                      {weatherData?.humidity?.cardStatus || "괜찮아요"}
+                      {weatherData?.humidity?.cardStatus || "-"}
                     </p>
                   </S.DailyStatItem>
 
@@ -257,7 +303,7 @@ const Home: React.FC = () => {
                       )}
                     </div>
                     <p className="status-text">
-                      {weatherData?.dust?.cardStatus || "트러블주의"}
+                      {weatherData?.dust?.cardStatus || "-"}
                     </p>
                   </S.DailyStatItem>
                 </>
@@ -306,7 +352,9 @@ const Home: React.FC = () => {
               />
               <div>
                 <div className="desc">새로운 시술을 받으셨나요?</div>
-                <div className="title">시술 정보 등록하기</div>
+                <div className="title">
+                  {isFocus ? "시술 정보 수정/추가하기" : "시술 정보 등록하기"}
+                </div>
               </div>
             </div>
             <div className="arrow">

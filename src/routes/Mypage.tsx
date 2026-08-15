@@ -20,27 +20,13 @@ const Mypage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabType>("my");
   const navigate = useNavigate();
 
-  const [procedures, setProcedures] = useState<ProcedureItem[]>([
-    {
-      id: 1,
-      procedureType: "ACNE",
-      procedureTypeName: "여드름 압출",
-      procedureDate: "2026-06-10",
-      currentCount: 1,
-      totalCount: 5,
-      areas: ["얼굴 전체"],
-    },
-  ]);
+  const [procedures, setProcedures] = useState<ProcedureItem[]>([]);
   const [currentCourse, setCurrentCourse] =
-    useState<CurrentCourseResponse | null>({
-      courseId: 1,
-      courseType: "FOCUS",
-      label: "집중 코스 진행 중",
-      startedAt: "2026-08-11",
-      streakDays: 3,
-    });
+    useState<CurrentCourseResponse | null>(null);
 
   useEffect(() => {
+    let isMounted = true;
+
     const fetchMypageData = async () => {
       try {
         const [procRes, courseRes] = await Promise.allSettled([
@@ -48,11 +34,13 @@ const Mypage: React.FC = () => {
           courseApi.getCurrentCourse(),
         ]);
 
-        if (procRes.status === "fulfilled" && procRes.value?.length > 0) {
-          setProcedures(procRes.value);
-        }
-        if (courseRes.status === "fulfilled" && courseRes.value) {
-          setCurrentCourse(courseRes.value);
+        if (isMounted) {
+          if (procRes.status === "fulfilled" && Array.isArray(procRes.value)) {
+            setProcedures(procRes.value);
+          }
+          if (courseRes.status === "fulfilled") {
+            setCurrentCourse(courseRes.value);
+          }
         }
       } catch (error) {
         console.error("마이페이지 데이터 조회 실패:", error);
@@ -60,6 +48,10 @@ const Mypage: React.FC = () => {
     };
 
     fetchMypageData();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const latestProcedure = procedures[0];
@@ -112,8 +104,8 @@ const Mypage: React.FC = () => {
             <S.TreatmentCard onClick={() => navigate("/add")}>
               <div className="card-top">
                 <div className="info">
-                  <h4>등록된 시술이 없습니다</h4>
-                  <p>새 시술 정보를 등록해보세요</p>
+                  <h4>-</h4>
+                  <p>-</p>
                 </div>
               </div>
             </S.TreatmentCard>
@@ -134,13 +126,11 @@ const Mypage: React.FC = () => {
                 alt="코스 아이콘"
               />
               <div>
-                <div className="desc">
-                  {currentCourse?.label || "진행 중인 코스"}
-                </div>
+                <div className="desc">{currentCourse?.label || "-"}</div>
                 <div className="title">
                   {currentCourse?.streakDays !== undefined
                     ? `연속 ${currentCourse.streakDays}일째`
-                    : "진행 중인 코스 없음"}
+                    : "-"}
                 </div>
               </div>
             </div>

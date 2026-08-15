@@ -12,19 +12,19 @@ const applyTypography = (type: keyof typeof typography) => css`
 const slideUpDown = keyframes`
   0% {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translate(-50%, 15px);
   }
   15% {
     opacity: 1;
-    transform: translateY(0);
+    transform: translate(-50%, 0);
   }
   85% {
     opacity: 1;
-    transform: translateY(0);
+    transform: translate(-50%, 0);
   }
   100% {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translate(-50%, 15px);
   }
 `;
 
@@ -486,20 +486,34 @@ export const AddButton = styled.button`
 `;
 
 export const SavedNotice = styled.div`
+  position: absolute;
+  bottom: calc(100% + 12px);
+  left: 50%;
+  transform: translateX(-50%);
+
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
+
+  width: calc(100% - 32px);
+  max-width: 370px;
   padding: 16px;
+  box-sizing: border-box;
+
   background-color: ${colorPalette.OffWhite};
-  border: 0.5px solid ${colorPalette.Quaternary};
-  border-radius: 16px;
+  border: 1px solid ${colorPalette.Quaternary};
+  border-radius: 12px;
+
   ${applyTypography("Body1Bold")}
   color: ${colorPalette.Black};
-  margin-bottom: 16px;
+
+  pointer-events: none;
+  z-index: 25;
 
   animation: ${slideUpDown} 2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 
   .check-icon {
+    flex-shrink: 0;
     width: 20px;
     height: 20px;
     border-radius: 50%;
@@ -508,7 +522,8 @@ export const SavedNotice = styled.div`
     display: flex;
     align-items: center;
     justify-content: center;
-    ${applyTypography("Body2Bold")}
+    font-size: 12px;
+    font-weight: 700;
   }
 `;
 

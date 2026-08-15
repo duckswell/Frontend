@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState } from "react";
 import * as S from "../styles/NewProcedure.styles";
 import { NavBar } from "../components/NavBar";
 import { procedureApi } from "../api/procedure";
@@ -58,18 +58,8 @@ const BODY_PARTS = ["얼굴 전체", "T존", "나비존", "턱", "볼"];
 const WEEKDAYS = ["월", "화", "수", "목", "금", "토", "일"];
 
 const NewProcedure: React.FC = () => {
-  const [procedures, setProcedures] = useState<ProcedureData[]>([
-    {
-      id: 1,
-      isOpen: true,
-      type: "",
-      date: "",
-      currentCount: "",
-      totalCount: "",
-      selectedParts: [],
-      isNew: true,
-    },
-  ]);
+  const [procedures, setProcedures] = useState<ProcedureData[]>([]);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const [openSelectId, setOpenSelectId] = useState<number | null>(null);
   const [openDatePickerId, setOpenDatePickerId] = useState<number | null>(null);
@@ -86,64 +76,77 @@ const NewProcedure: React.FC = () => {
   const [isSaved, setIsSaved] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const fetchProcedures = useCallback(async () => {
-    try {
-      const data = await procedureApi.getAllProcedures();
-      if (data && data.length > 0) {
-        const mappedList: ProcedureData[] = data.map((item, index) => {
-          const displayType =
-            REVERSE_PROCEDURE_MAP[item.procedureType] ||
-            item.procedureTypeName ||
-            item.procedureType;
-
-          return {
-            id: item.id,
-            isOpen: index === 0,
-            type: displayType,
-            date: item.procedureDate
-              ? item.procedureDate.replace(/-/g, ".")
-              : "",
-            currentCount: String(item.currentCount ?? ""),
-            totalCount: String(item.totalCount ?? ""),
-            selectedParts: (item.areas || []).map(
-              (area) => REVERSE_BODY_PART_MAP[area] || area,
-            ),
-            isNew: false,
-          };
-        });
-        setProcedures(mappedList);
-      } else {
-        setProcedures([
-          {
-            id: Date.now(),
-            isOpen: true,
-            type: "",
-            date: "",
-            currentCount: "",
-            totalCount: "",
-            selectedParts: [],
-            isNew: true,
-          },
-        ]);
-      }
-    } catch (error) {
-      console.error("기존 시술 목록 불러오기 실패:", error);
-    }
-  }, []);
-
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    fetchProcedures();
-  }, [fetchProcedures]);
+    let isMounted = true;
 
-  const isFormValid = procedures.every(
-    (item) =>
-      item.type.trim() !== "" &&
-      item.date.trim() !== "" &&
-      item.currentCount.trim() !== "" &&
-      item.totalCount.trim() !== "" &&
-      item.selectedParts.length > 0,
-  );
+    const loadProcedures = async () => {
+      try {
+        const data = await procedureApi.getAllProcedures();
+        if (!isMounted) return;
+
+        if (data && data.length > 0) {
+          const sortedData = [...data].sort(
+            (a, b) => Number(a.id) - Number(b.id),
+          );
+
+          const mappedList: ProcedureData[] = sortedData.map((item) => {
+            const displayType =
+              REVERSE_PROCEDURE_MAP[item.procedureType] ||
+              item.procedureTypeName ||
+              item.procedureType;
+
+            return {
+              id: item.id,
+              isOpen: false,
+              type: displayType,
+              date: item.procedureDate
+                ? item.procedureDate.replace(/-/g, ".")
+                : "",
+              currentCount: String(item.currentCount ?? ""),
+              totalCount: String(item.totalCount ?? ""),
+              selectedParts: (item.areas || []).map(
+                (area) => REVERSE_BODY_PART_MAP[area] || area,
+              ),
+              isNew: false,
+            };
+          });
+          setProcedures(mappedList);
+        } else {
+          setProcedures([
+            {
+              id: Date.now(),
+              isOpen: true,
+              type: "",
+              date: "",
+              currentCount: "",
+              totalCount: "",
+              selectedParts: [],
+              isNew: true,
+            },
+          ]);
+        }
+      } catch (error) {
+        console.error("기존 시술 목록 불러오기 실패:", error);
+      }
+    };
+
+    loadProcedures();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [refreshKey]);
+
+  const isFormValid =
+    procedures.length > 0 &&
+    procedures.every(
+      (item) =>
+        item.type.trim() !== "" &&
+        item.date.trim() !== "" &&
+        item.currentCount.trim() !== "" &&
+        item.totalCount.trim() !== "" &&
+        item.selectedParts.length > 0,
+    );
 
   const updateProcedure = <K extends keyof ProcedureData>(
     id: number,
@@ -214,7 +217,7 @@ const NewProcedure: React.FC = () => {
     try {
       await procedureApi.deleteProcedure(item.id);
       alert("삭제되었습니다.");
-      await fetchProcedures();
+      setRefreshKey((prev) => prev + 1);
     } catch (error: unknown) {
       console.error("시술 정보 삭제 실패:", error);
       if (isAxiosError(error)) {
@@ -291,7 +294,7 @@ const NewProcedure: React.FC = () => {
         setIsSaved(false);
       }, 3000);
 
-      await fetchProcedures();
+      setRefreshKey((prev) => prev + 1);
     } catch (error: unknown) {
       console.error("시술 정보 저장 실패:", error);
 
@@ -315,14 +318,8 @@ const NewProcedure: React.FC = () => {
       <S.Container>
         <S.FormCardGroup>
           {procedures.map((item, index) => {
-            const isSingle = procedures.length === 1;
-
             const hasValue = Boolean(item.type && item.type.trim() !== "");
-            const displayText = hasValue
-              ? item.type
-              : isSingle
-                ? "시술 이름"
-                : "작성 중";
+            const displayText = hasValue ? item.type : "작성 중";
 
             const isSelectOpen = openSelectId === item.id;
             const isDatePickerOpen = openDatePickerId === item.id;
@@ -330,29 +327,14 @@ const NewProcedure: React.FC = () => {
             return (
               <S.FormCard key={item.id}>
                 <S.AccordionHeader
-                  $isSingle={isSingle}
-                  onClick={() => {
-                    if (!isSingle) {
-                      toggleAccordion(item.id);
-                    }
-                  }}
+                  $isSingle={false}
+                  onClick={() => toggleAccordion(item.id)}
                 >
                   <div className="title">
-                    {isSingle ? (
-                      <>
-                        시술 정보 -{" "}
-                        <span className={hasValue ? "has-value" : "is-editing"}>
-                          {displayText}
-                        </span>
-                      </>
-                    ) : (
-                      <>
-                        시술 정보 {index + 1} -{" "}
-                        <span className={hasValue ? "has-value" : "is-editing"}>
-                          {displayText}
-                        </span>
-                      </>
-                    )}
+                    시술 정보 {index + 1} -{" "}
+                    <span className={hasValue ? "has-value" : "is-editing"}>
+                      {displayText}
+                    </span>
                   </div>
 
                   <div
@@ -379,13 +361,11 @@ const NewProcedure: React.FC = () => {
                       삭제
                     </button>
 
-                    {!isSingle && (
-                      <img
-                        className={`arrow-icon ${item.isOpen ? "open" : ""}`}
-                        src="/assets/ChevronDown.svg"
-                        alt="더보기"
-                      />
-                    )}
+                    <img
+                      className={`arrow-icon ${item.isOpen ? "open" : ""}`}
+                      src="/assets/ChevronDown.svg"
+                      alt="더보기"
+                    />
                   </div>
                 </S.AccordionHeader>
 
