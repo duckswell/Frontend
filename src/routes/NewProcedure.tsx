@@ -588,6 +588,14 @@ const NewProcedure: React.FC = () => {
                             <input
                               type="number"
                               placeholder="N"
+                              size={
+                                item.currentCount
+                                  ? Math.max(item.currentCount.length, 1)
+                                  : 1
+                              }
+                              style={{
+                                width: `${Math.max(item.currentCount ? item.currentCount.length : 1, 1)}ch`,
+                              }}
                               value={item.currentCount}
                               onChange={(e) =>
                                 updateProcedure(
@@ -607,6 +615,14 @@ const NewProcedure: React.FC = () => {
                             <input
                               type="number"
                               placeholder="N"
+                              size={
+                                item.totalCount
+                                  ? Math.max(item.totalCount.length, 1)
+                                  : 1
+                              }
+                              style={{
+                                width: `${Math.max(item.totalCount ? item.totalCount.length : 1, 1)}ch`,
+                              }}
                               value={item.totalCount}
                               onChange={(e) =>
                                 updateProcedure(

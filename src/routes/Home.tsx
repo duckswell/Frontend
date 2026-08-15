@@ -32,7 +32,6 @@ const Home: React.FC = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<TabType>("home");
 
-  // 💡 기본값을 daily로 두고, API 조회 결과에 따라 focus / daily로 전환
   const [currentVersion, setCurrentVersion] = useState<"focus" | "daily">(
     "daily",
   );
@@ -63,7 +62,6 @@ const Home: React.FC = () => {
 
   const isFocus = currentVersion === "focus";
 
-  // 1. GET /api/courses/current 로 현재 코스 상태 조회하여 버전(focus/daily) 결정
   useEffect(() => {
     let isMounted = true;
 
@@ -89,7 +87,6 @@ const Home: React.FC = () => {
     };
   }, []);
 
-  // 2. 현재 결정된 버전(focus / daily)에 맞춰 대시보드 데이터 로드
   useEffect(() => {
     let isMounted = true;
 

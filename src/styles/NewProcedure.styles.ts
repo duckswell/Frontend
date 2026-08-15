@@ -380,22 +380,27 @@ export const CountGrid = styled.div`
 `;
 
 export const InputBoxWrapper = styled.div`
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   background-color: ${colorPalette.OffWhite};
   border: 0.5px solid ${colorPalette.Quaternary};
   border-radius: 12px;
-  padding: 12px 12px 12px 0;
-  width: 40px;
-  transition: border-color 0.15s ease;
+  padding: 10px 14px;
+  min-width: 52px;
+  width: auto;
+  box-sizing: border-box;
+  transition:
+    border-color 0.15s ease,
+    width 0.15s ease;
 
   &:focus-within {
     border: 0.5px solid ${colorPalette.Black};
   }
 
   input {
-    width: 32px;
+    min-width: 1.2ch;
+    width: auto;
     border: none;
     background: transparent;
     text-align: right;
@@ -423,7 +428,7 @@ export const InputBoxWrapper = styled.div`
     ${applyTypography("Body1Bold")}
     color: ${colorPalette.Black};
     margin-left: 4px;
-    margin-right: 11px;
+    white-space: nowrap;
   }
 `;
 
