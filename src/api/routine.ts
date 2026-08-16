@@ -1,4 +1,5 @@
 import { api } from "../lib/api";
+
 import type { ApiResponse } from "./dashboard";
 import type { Difficulty } from "./diagnosis";
 
@@ -50,6 +51,7 @@ export interface RoutineCompletionData {
 
 export interface RecommendedRoutineProduct {
   ingredientName: string;
+
   product: {
     id: number;
     name: string;

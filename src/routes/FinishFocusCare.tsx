@@ -1,10 +1,17 @@
+import axios from "axios";
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+
+import {
+  courseApi,
+  type RoutineTypeCode,
+  type SymptomSummaryResponse,
+} from "../api/course";
 
 import CareButton from "../components/CareButton";
-import FocusConfetti from "../components/FocusCare/FocusConfetti";
 import { RoutineCard } from "../components/DailycoursePreview/RoutineCard";
-import { courseApi } from "../api/course";
+import FocusConfetti from "../components/FocusCare/FocusConfetti";
+
 import * as S from "../styles/FocusCare/FinishFocusCare.styles";
 
 type PageStep = "intro" | "indicator" | "concern" | "routine";
@@ -21,6 +28,10 @@ type SkinConcern =
   | "트러블";
 
 type RoutineId = "calm" | "clear" | "sebum" | "moisture";
+
+interface FinishFocusCareLocationState {
+  courseId: number;
+}
 
 interface RoutineOption {
   id: RoutineId;
@@ -43,15 +54,32 @@ const SKIN_CONCERNS: SkinConcern[] = [
   "붓기",
   "트러블",
 ];
-const ROUTINE_TYPE_CODE_MAP: Record<
-  RoutineId,
-  "COOLDOWN" | "CLEAR_UP" | "SEBUM_CONTROL" | "HYDRATION"
-> = {
+
+const SYMPTOM_LABEL_MAP: Record<string, SkinConcern> = {
+  REDNESS: "붉은기",
+  HEAT: "열감",
+  STINGING: "따가움",
+  DRYNESS: "건조함",
+  FLAKING: "각질",
+  OILINESS: "번들거림",
+  ITCHINESS: "가려움",
+  SWELLING: "붓기",
+};
+
+const ROUTINE_TYPE_CODE_MAP: Record<RoutineId, RoutineTypeCode> = {
   calm: "COOLDOWN",
   clear: "CLEAR_UP",
   sebum: "SEBUM_CONTROL",
   moisture: "HYDRATION",
 };
+
+const ROUTINE_ID_BY_TYPE_CODE: Record<RoutineTypeCode, RoutineId> = {
+  COOLDOWN: "calm",
+  CLEAR_UP: "clear",
+  SEBUM_CONTROL: "sebum",
+  HYDRATION: "moisture",
+};
+
 const ROUTINE_OPTIONS: RoutineOption[] = [
   {
     id: "calm",
@@ -85,23 +113,86 @@ const ROUTINE_OPTIONS: RoutineOption[] = [
 
 export default function FinishFocusCare() {
   const navigate = useNavigate();
-  const [isStartingDailyCourse, setIsStartingDailyCourse] = useState(false);
+  const location = useLocation();
+
+  const state = location.state as FinishFocusCareLocationState | null;
+  const courseId = state?.courseId;
+
   const [currentStep, setCurrentStep] = useState<PageStep>("intro");
 
-  const PRIMARY_CONCERNS: SkinConcern[] = ["붉은기", "열감"];
-  const SECONDARY_CONCERNS = SKIN_CONCERNS.filter(
-    (concern) => !PRIMARY_CONCERNS.includes(concern)
-  );
+  const [symptomSummary, setSymptomSummary] =
+    useState<SymptomSummaryResponse | null>(null);
+
   const [selectedRoutine, setSelectedRoutine] = useState<RoutineId | null>(
     null
   );
-  const isRoutineSelected = selectedRoutine !== null;
+
+  const [isStartingDailyCourse, setIsStartingDailyCourse] = useState(false);
+
   const [shouldAutoAdvanceIndicator, setShouldAutoAdvanceIndicator] =
     useState(false);
 
   const touchStartY = useRef<number | null>(null);
   const isWheelLocked = useRef(false);
   const routineScreenRef = useRef<HTMLElement | null>(null);
+
+  const primaryConcerns: SkinConcern[] =
+    symptomSummary?.topSymptoms
+      .map((item) => SYMPTOM_LABEL_MAP[item.symptom])
+      .filter((concern): concern is SkinConcern => Boolean(concern)) ?? [];
+
+  const secondaryConcerns = SKIN_CONCERNS.filter(
+    (concern) => !primaryConcerns.includes(concern)
+  );
+
+  const recommendedRoutineId =
+    symptomSummary?.recommendedRoutineTypeCode !== null &&
+    symptomSummary?.recommendedRoutineTypeCode !== undefined
+      ? ROUTINE_ID_BY_TYPE_CODE[symptomSummary.recommendedRoutineTypeCode]
+      : null;
+
+  const recommendedBadgeText =
+    primaryConcerns.length > 0
+      ? `${primaryConcerns.join("·")} 맞춤 추천`
+      : "맞춤 추천";
+
+  const isRoutineSelected = selectedRoutine !== null;
+
+  useEffect(() => {
+    if (courseId === undefined) {
+      console.error("증상 요약 조회에 필요한 courseId가 없습니다.");
+      return;
+    }
+
+    const targetCourseId = courseId;
+
+    async function fetchSymptomSummary() {
+      try {
+        const summary = await courseApi.getSymptomSummary(targetCourseId);
+
+        console.log("7일 증상 요약 조회 성공:", summary);
+
+        setSymptomSummary(summary);
+
+        if (summary.recommendedRoutineTypeCode) {
+          const recommendedId =
+            ROUTINE_ID_BY_TYPE_CODE[summary.recommendedRoutineTypeCode];
+
+          setSelectedRoutine(recommendedId);
+        }
+      } catch (error) {
+        console.error("7일 증상 요약 조회 실패:", error);
+
+        if (axios.isAxiosError(error)) {
+          console.error("HTTP Status:", error.response?.status);
+          console.error("API Error Response:", error.response?.data);
+          console.error("요청 URL:", error.config?.url);
+        }
+      }
+    }
+
+    fetchSymptomSummary();
+  }, [courseId]);
 
   function handleMoveToNextStep() {
     const currentIndex = PAGE_STEPS.indexOf(currentStep);
@@ -145,7 +236,6 @@ export default function FinishFocusCare() {
     }
 
     const touchEndY = event.changedTouches[0].clientY;
-
     const swipeDistance = touchStartY.current - touchEndY;
 
     if (swipeDistance >= 50) {
@@ -162,6 +252,7 @@ export default function FinishFocusCare() {
   function handleSelectRoutine(routineId: RoutineId) {
     setSelectedRoutine(routineId);
   }
+
   async function handleStartDailyCourse() {
     if (!selectedRoutine || isStartingDailyCourse) {
       return;
@@ -182,6 +273,12 @@ export default function FinishFocusCare() {
       navigate("/care/finish_select_routine");
     } catch (error) {
       console.error("데일리 코스 시작 실패:", error);
+
+      if (axios.isAxiosError(error)) {
+        console.error("HTTP Status:", error.response?.status);
+        console.error("API Error Response:", error.response?.data);
+        console.error("요청 URL:", error.config?.url);
+      }
     } finally {
       setIsStartingDailyCourse(false);
     }
@@ -213,6 +310,7 @@ export default function FinishFocusCare() {
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, [currentStep]);
+
   useEffect(() => {
     function handleWheel(event: WheelEvent) {
       if (event.ctrlKey || event.metaKey) {
@@ -274,6 +372,7 @@ export default function FinishFocusCare() {
       window.removeEventListener("wheel", handleWheel);
     };
   }, [currentStep]);
+
   useEffect(() => {
     if (currentStep !== "indicator" || !shouldAutoAdvanceIndicator) {
       return;
@@ -281,7 +380,6 @@ export default function FinishFocusCare() {
 
     const timer = window.setTimeout(() => {
       setCurrentStep("concern");
-
       setShouldAutoAdvanceIndicator(false);
     }, 1900);
 
@@ -328,21 +426,26 @@ export default function FinishFocusCare() {
             </S.SectionTitle>
 
             <S.SectionDescription>
-              데일리 코스에서 {PRIMARY_CONCERNS[0]}와 {PRIMARY_CONCERNS[1]}를 좀
-              더 케어해볼까요?
+              {primaryConcerns.length >= 2
+                ? `데일리 코스에서 ${primaryConcerns[0]}와 ${primaryConcerns[1]}를 좀 더 케어해볼까요?`
+                : primaryConcerns.length === 1
+                ? `데일리 코스에서 ${primaryConcerns[0]}를 좀 더 케어해볼까요?`
+                : "최근 피부 기록을 바탕으로 데일리 케어를 시작해볼까요?"}
             </S.SectionDescription>
 
             <S.ConcernArea>
-              <S.PrimaryConcernList>
-                {PRIMARY_CONCERNS.map((concern) => (
-                  <S.PrimaryConcernChip key={concern}>
-                    {concern}
-                  </S.PrimaryConcernChip>
-                ))}
-              </S.PrimaryConcernList>
+              {primaryConcerns.length > 0 && (
+                <S.PrimaryConcernList>
+                  {primaryConcerns.map((concern) => (
+                    <S.PrimaryConcernChip key={concern}>
+                      {concern}
+                    </S.PrimaryConcernChip>
+                  ))}
+                </S.PrimaryConcernList>
+              )}
 
               <S.SecondaryConcernList>
-                {SECONDARY_CONCERNS.map((concern) => (
+                {secondaryConcerns.map((concern) => (
                   <S.SecondaryConcernChip key={concern}>
                     {concern}
                   </S.SecondaryConcernChip>
@@ -367,24 +470,35 @@ export default function FinishFocusCare() {
             </S.RoutineHeader>
 
             <S.RoutineList>
-              {ROUTINE_OPTIONS.map((routine) => (
-                <RoutineCard
-                  key={routine.id}
-                  id={routine.id}
-                  title={routine.title}
-                  description={routine.description}
-                  tags={routine.tags}
-                  iconSrc={routine.iconSrc}
-                  isSelected={selectedRoutine === routine.id}
-                  onClick={() => handleSelectRoutine(routine.id)}
-                />
-              ))}
+              {ROUTINE_OPTIONS.map((routine) => {
+                const isRecommended = recommendedRoutineId === routine.id;
+
+                return (
+                  <S.RoutineCardWrapper key={routine.id}>
+                    {isRecommended && (
+                      <S.RecommendedBadge>
+                        {recommendedBadgeText}
+                      </S.RecommendedBadge>
+                    )}
+
+                    <RoutineCard
+                      id={routine.id}
+                      title={routine.title}
+                      description={routine.description}
+                      tags={routine.tags}
+                      iconSrc={routine.iconSrc}
+                      isSelected={selectedRoutine === routine.id}
+                      onClick={() => handleSelectRoutine(routine.id)}
+                    />
+                  </S.RoutineCardWrapper>
+                );
+              })}
             </S.RoutineList>
 
             <S.ButtonWrapper>
               <CareButton
                 variant="black"
-                disabled={!isRoutineSelected}
+                disabled={!isRoutineSelected || isStartingDailyCourse}
                 onClick={handleStartDailyCourse}
               >
                 나의 데일리 코스 시작하기

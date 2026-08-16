@@ -24,6 +24,7 @@ const dotFadeIn = keyframes`
     transform: translateY(0) scale(1);
   }
 `;
+
 const slideUpFadeIn = keyframes`
   from {
     opacity: 0;
@@ -35,6 +36,7 @@ const slideUpFadeIn = keyframes`
     transform: translateY(0);
   }
 `;
+
 export const Page = styled.div`
   width: 100%;
   min-height: 100dvh;
@@ -177,7 +179,7 @@ export const IndicatorDot = styled.span<{
 `;
 
 /* =========================
-   2. 피부 고민 선택
+   2. 피부 고민
 ========================= */
 
 export const ConcernContent = styled.div`
@@ -189,6 +191,7 @@ export const ConcernContent = styled.div`
 
   animation: ${slideUpFadeIn} 0.6s cubic-bezier(0.22, 1, 0.36, 1);
 `;
+
 export const SectionTitle = styled.h2`
   ${typography.H3};
 
@@ -204,6 +207,7 @@ export const SectionDescription = styled.p`
 
   color: ${colorPalette.Black};
 `;
+
 export const ConcernArea = styled.div`
   display: flex;
   flex-direction: column;
@@ -229,9 +233,9 @@ export const PrimaryConcernChip = styled.div`
   align-items: center;
   justify-content: center;
 
-  padding: 8px 17px;
-
   box-sizing: border-box;
+
+  padding: 8px 17px;
 
   border: 1px solid ${colorPalette.FocusPrimary};
   border-radius: 999px;
@@ -261,9 +265,9 @@ export const SecondaryConcernChip = styled.div`
   align-items: center;
   justify-content: center;
 
-  padding: 7px 14px;
-
   box-sizing: border-box;
+
+  padding: 7px 14px;
 
   border: 0.6px solid ${colorPalette.Quaternary};
   border-radius: 999px;
@@ -291,6 +295,7 @@ export const RoutineScreen = styled.section`
 
   background-color: ${colorPalette.OffWhite};
 `;
+
 export const RoutineContent = styled.div`
   box-sizing: border-box;
 
@@ -317,16 +322,42 @@ export const RoutineList = styled.div`
   display: flex;
   flex-direction: column;
 
-  gap: 12px;
+  gap: 20px;
 
   width: 100%;
   max-width: 370px;
+`;
 
-  > * {
-    box-sizing: border-box;
-    width: 100%;
-    max-width: 370px;
-  }
+export const RoutineCardWrapper = styled.div`
+  position: relative;
+
+  box-sizing: border-box;
+
+  width: 100%;
+  max-width: 370px;
+`;
+
+export const RecommendedBadge = styled.div`
+  ${typography.Body2Bold};
+
+  position: absolute;
+  z-index: 3;
+
+  top: -14px;
+  left: 20px;
+
+  width: fit-content;
+
+  padding: 6px 12px;
+
+  border-radius: 999px;
+
+  background-color: ${colorPalette.FocusTertiary};
+  color: ${colorPalette.FocusPrimary};
+
+  white-space: nowrap;
+
+  pointer-events: none;
 `;
 
 export const ButtonWrapper = styled.div`

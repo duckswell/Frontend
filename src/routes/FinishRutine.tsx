@@ -12,6 +12,7 @@ import RoutineRecordCard from "../components/FocusCare/RoutineRecordCard";
 import * as S from "../styles/FocusCare/FinishRoutine.styles";
 
 interface FinishRoutineLocationState {
+  courseId: number;
   routineId: number;
   completionData: RoutineCompletionData;
   recommendedProducts: Product[];
@@ -22,7 +23,9 @@ export default function FinishRoutine() {
   const location = useLocation();
 
   const state = location.state as FinishRoutineLocationState | null;
+
   console.log("FinishRoutine state:", state);
+
   const completionData = state?.completionData;
   const recommendedProducts = state?.recommendedProducts ?? [];
 
@@ -31,7 +34,16 @@ export default function FinishRoutine() {
   }
 
   function handleMoveToDaily() {
-    navigate("/care/finish_focus_care");
+    if (!state?.courseId) {
+      console.error("FinishFocusCare 이동에 필요한 courseId가 없습니다.");
+      return;
+    }
+
+    navigate("/care/finish_focus_care", {
+      state: {
+        courseId: state.courseId,
+      },
+    });
   }
 
   return (

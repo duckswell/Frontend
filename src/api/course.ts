@@ -1,9 +1,17 @@
 import { api } from "../lib/api";
 import type { ApiResponse } from "./dashboard";
 
+export type CourseType = "FOCUS" | "DAILY";
+
+export type RoutineTypeCode =
+  | "COOLDOWN"
+  | "CLEAR_UP"
+  | "SEBUM_CONTROL"
+  | "HYDRATION";
+
 export interface CurrentCourseResponse {
   courseId: number;
-  courseType: "FOCUS" | "DAILY" | string;
+  courseType: CourseType | string;
   label: string;
   startedAt: string;
   streakDays: number;
@@ -11,33 +19,23 @@ export interface CurrentCourseResponse {
 
 export interface PastCourseHistoryItem {
   id: number;
-  courseType: "FOCUS" | "DAILY" | string;
-  routineTypeCode: string;
-  routineTypeName: string;
+  courseType: CourseType | string;
+  routineTypeCode: RoutineTypeCode | null;
+  routineTypeName: string | null;
   startedAt: string;
   endedAt: string;
   status: string;
 }
 
 export interface StartCourseRequest {
-  courseType: "FOCUS" | "DAILY";
-  routineTypeCode?:
-    | "COOLDOWN"
-    | "CLEAR_UP"
-    | "SEBUM_CONTROL"
-    | "HYDRATION"
-    | null;
+  courseType: CourseType;
+  routineTypeCode?: RoutineTypeCode | null;
 }
 
 export interface StartCourseResponse {
   id: number;
-  courseType: "FOCUS" | "DAILY";
-  routineTypeCode:
-    | "COOLDOWN"
-    | "CLEAR_UP"
-    | "SEBUM_CONTROL"
-    | "HYDRATION"
-    | null;
+  courseType: CourseType;
+  routineTypeCode: RoutineTypeCode | null;
   routineTypeName: string | null;
   startedAt: string;
   endedAt: string | null;
@@ -47,36 +45,58 @@ export interface StartCourseResponse {
 export interface RecoverySummaryResponse {
   recoveryStageSummaryText: string;
 }
+
 export interface EndCourseResponse {
   id: number;
-  courseType: "FOCUS" | "DAILY";
-  routineTypeCode:
-    | "COOLDOWN"
-    | "CLEAR_UP"
-    | "SEBUM_CONTROL"
-    | "HYDRATION"
-    | null;
+  courseType: CourseType;
+  routineTypeCode: RoutineTypeCode | null;
   routineTypeName: string | null;
   startedAt: string;
   endedAt: string;
   status: "COMPLETED";
 }
+
+export type SymptomCode =
+  | "REDNESS"
+  | "HEAT"
+  | "STINGING"
+  | "DRYNESS"
+  | "FLAKING"
+  | "OILINESS"
+  | "ITCHINESS"
+  | "SWELLING";
+
+export interface SymptomSummaryItem {
+  symptom: SymptomCode;
+  count: number;
+}
+
+export interface SymptomSummaryResponse {
+  topSymptoms: SymptomSummaryItem[];
+  recommendedRoutineTypeCode: RoutineTypeCode | null;
+  recommendedRoutineTypeName: string | null;
+}
+
 export const courseApi = {
-  getCurrentCourse: async () => {
+  getCurrentCourse: async (): Promise<CurrentCourseResponse> => {
     const response = await api.get<ApiResponse<CurrentCourseResponse>>(
       "/api/courses/current"
     );
+
     return response.data.data;
   },
 
-  getCourseHistory: async () => {
+  getCourseHistory: async (): Promise<PastCourseHistoryItem[]> => {
     const response = await api.get<ApiResponse<PastCourseHistoryItem[]>>(
       "/api/courses/history"
     );
+
     return response.data.data;
   },
 
-  startCourse: async (data: StartCourseRequest) => {
+  startCourse: async (
+    data: StartCourseRequest
+  ): Promise<StartCourseResponse> => {
     const response = await api.post<ApiResponse<StartCourseResponse>>(
       "/api/courses/start",
       data
@@ -85,7 +105,7 @@ export const courseApi = {
     return response.data.data;
   },
 
-  endCourse: async (courseId: number | string) => {
+  endCourse: async (courseId: number | string): Promise<EndCourseResponse> => {
     const response = await api.post<ApiResponse<EndCourseResponse>>(
       `/api/courses/${courseId}/end`
     );
@@ -93,16 +113,29 @@ export const courseApi = {
     return response.data.data;
   },
 
-  restartFocusCourse: async () => {
+  restartFocusCourse: async (): Promise<CurrentCourseResponse> => {
     const response = await api.post<ApiResponse<CurrentCourseResponse>>(
       "/api/courses/restart-focus"
     );
+
     return response.data.data;
   },
 
-  getRecoverySummary: async (courseId: number | string) => {
+  getRecoverySummary: async (
+    courseId: number | string
+  ): Promise<RecoverySummaryResponse> => {
     const response = await api.get<ApiResponse<RecoverySummaryResponse>>(
       `/api/courses/${courseId}/recovery-summary`
+    );
+
+    return response.data.data;
+  },
+
+  getSymptomSummary: async (
+    courseId: number | string
+  ): Promise<SymptomSummaryResponse> => {
+    const response = await api.get<ApiResponse<SymptomSummaryResponse>>(
+      `/api/courses/${courseId}/symptom-summary`
     );
 
     return response.data.data;

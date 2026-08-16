@@ -63,26 +63,22 @@ export default function ThirdFocusCare() {
 
       console.log("루틴 완료 성공:", completionData);
 
-      // 2. 추천 제품 조회
+      // 2. 루틴 기반 추천 제품 조회
       const recommendedProductResponse =
         await routineApi.getRecommendedProducts(routine.routineId);
 
       console.log("추천 제품 조회 성공:", recommendedProductResponse);
 
-      // RecommendedProductSection에서 사용하는 Product[] 형태로 변환
       const recommendedProducts = recommendedProductResponse.map((item) => ({
         id: item.product.id,
         brand: item.product.brand,
         name: item.product.name,
-
-        // 화면의 태그에는 추천 성분명을 표시
         categories: [item.ingredientName],
-
         imageUrl: item.product.imageUrl,
         linkUrl: item.product.linkUrl,
       }));
 
-      // 3. 현재 진행 중인 코스 조회
+      // 3. 현재 진행 중인 집중 코스 조회
       const currentCourse = await courseApi.getCurrentCourse();
 
       console.log("현재 코스:", currentCourse);
@@ -93,9 +89,11 @@ export default function ThirdFocusCare() {
 
       console.log("집중 코스 종료 성공:", endedCourse);
 
-      // 5. 완료 페이지 이동 + 필요한 데이터 전달
+      // 5. 루틴 완료 페이지 이동
+      // symptom-summary 조회에 필요하므로 종료된 courseId도 함께 전달
       navigate("/care/finish_routine", {
         state: {
+          courseId: endedCourse.id,
           routineId: routine.routineId,
           completionData,
           recommendedProducts,
@@ -257,6 +255,7 @@ export default function ThirdFocusCare() {
           <S.CompleteButtonWrapper>
             <CareButton
               variant="focus"
+              disabled={isCompleting}
               onClick={handleCompleteFocusCareRoutine}
             >
               루틴 완료
