@@ -279,6 +279,14 @@ export default function FinishFocusCare() {
 
       console.log("데일리 코스 시작 성공:", course);
 
+      sessionStorage.setItem(
+        "currentDailyCourse",
+        JSON.stringify({
+          courseId: course.id,
+          routineTypeCode,
+        })
+      );
+
       navigate("/care/finish_select_routine", {
         state: {
           courseId: course.id,

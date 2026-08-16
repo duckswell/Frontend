@@ -26,7 +26,25 @@ interface RoutineOption {
   tags: string[];
   iconSrc: string;
 }
+interface StoredDailyCourse {
+  courseId: number;
+  routineTypeCode: RoutineTypeCode;
+}
 
+function getStoredDailyCourse(): StoredDailyCourse | null {
+  try {
+    const stored = sessionStorage.getItem("currentDailyCourse");
+
+    if (!stored) {
+      return null;
+    }
+
+    return JSON.parse(stored) as StoredDailyCourse;
+  } catch (error) {
+    console.error("저장된 데일리 코스 정보 읽기 실패:", error);
+    return null;
+  }
+}
 const ROUTINES: RoutineOption[] = [
   {
     id: "cooldown",
@@ -61,41 +79,6 @@ const ROUTINES: RoutineOption[] = [
     iconSrc: "/assets/Daily_barrier.png",
   },
 ];
-
-function getRoutineTypeCodeFromLabel(label: string): RoutineTypeCode | null {
-  const normalizedLabel = label.replace(/\s/g, "");
-
-  if (normalizedLabel.includes("쿨다운") || normalizedLabel.includes("진정")) {
-    return "COOLDOWN";
-  }
-
-  if (
-    normalizedLabel.includes("클리어업") ||
-    normalizedLabel.includes("피부톤") ||
-    normalizedLabel.includes("흔적") ||
-    normalizedLabel.includes("미백")
-  ) {
-    return "CLEAR_UP";
-  }
-
-  if (
-    normalizedLabel.includes("피지") ||
-    normalizedLabel.includes("트러블") ||
-    normalizedLabel.includes("기름")
-  ) {
-    return "SEBUM_CONTROL";
-  }
-
-  if (
-    normalizedLabel.includes("수분") ||
-    normalizedLabel.includes("보습") ||
-    normalizedLabel.includes("건조")
-  ) {
-    return "HYDRATION";
-  }
-
-  return null;
-}
 
 function wait(ms: number) {
   return new Promise((resolve) => {
@@ -156,8 +139,13 @@ export default function RoutineChange() {
 
         setCurrentCourse(course);
 
+        const stored = getStoredDailyCourse();
+
         const routineTypeCode =
-          state?.routineTypeCode ?? getRoutineTypeCodeFromLabel(course.label);
+          state?.routineTypeCode ??
+          (stored?.courseId === course.courseId
+            ? stored.routineTypeCode
+            : null);
 
         if (!routineTypeCode) {
           console.error(
@@ -262,6 +250,14 @@ export default function RoutineChange() {
     if (selectedRoutineTypeCode === currentRoutineTypeCode) {
       console.log("현재 루틴과 동일 - DailyCare로 이동");
 
+      sessionStorage.setItem(
+        "currentDailyCourse",
+        JSON.stringify({
+          courseId: currentCourse.courseId,
+          routineTypeCode: currentRoutineTypeCode,
+        })
+      );
+
       navigate("/care/daily_care", {
         replace: true,
         state: {
@@ -295,7 +291,13 @@ export default function RoutineChange() {
        * 2. 새 데일리 코스 시작
        */
       const newCourse = await startNewDailyCourse(selectedRoutineTypeCode);
-
+      sessionStorage.setItem(
+        "currentDailyCourse",
+        JSON.stringify({
+          courseId: newCourse.id,
+          routineTypeCode: selectedRoutineTypeCode,
+        })
+      );
       console.log("새 데일리 코스 시작 성공:", newCourse);
 
       const newRoutineTypeCode =

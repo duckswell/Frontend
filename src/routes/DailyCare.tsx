@@ -18,6 +18,11 @@ interface DailyCareLocationState {
   routineTypeCode?: RoutineTypeCode;
 }
 
+interface StoredDailyCourse {
+  courseId: number;
+  routineTypeCode: RoutineTypeCode;
+}
+
 interface DailyRoutineInfo {
   title: string;
   description: string;
@@ -50,44 +55,19 @@ const DAILY_ROUTINE_INFO: Record<RoutineTypeCode, DailyRoutineInfo> = {
   },
 };
 
-/*
- * /api/courses/current 응답에는 routineTypeCode가 없고
- * DAILY인 경우 label에 루틴 타입 이름이 들어오기 때문에
- * 새로고침 등 location.state가 없는 상황에서 label을 이용해 복구한다.
- */
-function getRoutineTypeCodeFromLabel(label: string): RoutineTypeCode | null {
-  const normalizedLabel = label.replace(/\s/g, "");
+function getStoredDailyCourse(): StoredDailyCourse | null {
+  try {
+    const stored = sessionStorage.getItem("currentDailyCourse");
 
-  if (normalizedLabel.includes("쿨다운") || normalizedLabel.includes("진정")) {
-    return "COOLDOWN";
+    if (!stored) {
+      return null;
+    }
+
+    return JSON.parse(stored) as StoredDailyCourse;
+  } catch (error) {
+    console.error("저장된 데일리 코스 정보 읽기 실패:", error);
+    return null;
   }
-
-  if (
-    normalizedLabel.includes("클리어업") ||
-    normalizedLabel.includes("피부톤") ||
-    normalizedLabel.includes("흔적") ||
-    normalizedLabel.includes("미백")
-  ) {
-    return "CLEAR_UP";
-  }
-
-  if (
-    normalizedLabel.includes("피지") ||
-    normalizedLabel.includes("트러블") ||
-    normalizedLabel.includes("기름")
-  ) {
-    return "SEBUM_CONTROL";
-  }
-
-  if (
-    normalizedLabel.includes("수분") ||
-    normalizedLabel.includes("보습") ||
-    normalizedLabel.includes("건조")
-  ) {
-    return "HYDRATION";
-  }
-
-  return null;
 }
 
 const ROUTINE_STEPS = [
@@ -119,35 +99,26 @@ export default function DailyCare() {
     useState<CurrentCourseResponse | null>(null);
 
   const [currentRoutineTypeCode, setCurrentRoutineTypeCode] =
-    useState<RoutineTypeCode | null>(state?.routineTypeCode ?? null);
+    useState<RoutineTypeCode | null>(
+      state?.routineTypeCode ?? getStoredDailyCourse()?.routineTypeCode ?? null
+    );
 
   const [isLoadingCourse, setIsLoadingCourse] = useState(true);
 
   useEffect(() => {
-    const fetchCurrentCourse = async () => {
+    async function fetchCurrentCourse() {
       try {
         setIsLoadingCourse(true);
 
         const course = await courseApi.getCurrentCourse();
 
-        /*
-         * 백엔드는 진행 중인 코스가 없으면
-         * success: true만 보내고 data를 생략할 수 있음.
-         */
         if (!course) {
           console.error("현재 진행 중인 코스가 없습니다.");
 
           setCurrentCourse(null);
-          setCurrentRoutineTypeCode(null);
-
           return;
         }
 
-        console.log("현재 진행 중인 코스 조회 성공:", course);
-
-        /*
-         * DailyCare에서는 DAILY 코스만 사용한다.
-         */
         if (course.courseType !== "DAILY") {
           console.error(
             "DailyCare 페이지인데 현재 진행 중인 코스가 DAILY가 아닙니다.",
@@ -155,39 +126,54 @@ export default function DailyCare() {
           );
 
           setCurrentCourse(null);
-          setCurrentRoutineTypeCode(null);
-
           return;
         }
 
         setCurrentCourse(course);
 
         /*
-         * location.state에 routineTypeCode가 있으면 우선 활용하고,
-         * 새로고침 등으로 state가 없다면 label에서 복구한다.
+         * 중요:
+         * 백엔드 label은 루틴 판별에 사용하지 않는다.
+         *
+         * 1. navigate state
+         * 2. sessionStorage
          */
-        const routineTypeCode =
-          state?.routineTypeCode ?? getRoutineTypeCodeFromLabel(course.label);
+        const stored = getStoredDailyCourse();
 
-        if (routineTypeCode) {
-          setCurrentRoutineTypeCode(routineTypeCode);
-        } else {
-          console.warn(
-            "현재 DAILY 코스의 routineTypeCode를 판단하지 못했습니다.",
-            course.label
-          );
+        let routineTypeCode: RoutineTypeCode | null =
+          state?.routineTypeCode ?? null;
 
-          setCurrentRoutineTypeCode(null);
+        if (!routineTypeCode && stored && stored.courseId === course.courseId) {
+          routineTypeCode = stored.routineTypeCode;
         }
+
+        console.log("DailyCare 현재 course:", course);
+        console.log("DailyCare 전달 state:", state);
+        console.log("DailyCare 저장 정보:", stored);
+        console.log("DailyCare 최종 routineTypeCode:", routineTypeCode);
+
+        if (!routineTypeCode) {
+          console.error("현재 데일리 루틴 코드를 확인할 수 없습니다.");
+          return;
+        }
+
+        setCurrentRoutineTypeCode(routineTypeCode);
+
+        sessionStorage.setItem(
+          "currentDailyCourse",
+          JSON.stringify({
+            courseId: course.courseId,
+            routineTypeCode,
+          })
+        );
       } catch (error) {
-        console.error("현재 진행 중인 코스 조회 실패:", error);
+        console.error("현재 DAILY 코스 조회 실패:", error);
 
         setCurrentCourse(null);
-        setCurrentRoutineTypeCode(null);
       } finally {
         setIsLoadingCourse(false);
       }
-    };
+    }
 
     fetchCurrentCourse();
   }, [state?.routineTypeCode]);
@@ -197,8 +183,11 @@ export default function DailyCare() {
       ? DAILY_ROUTINE_INFO[currentRoutineTypeCode]
       : null;
 
-  const routineTitle =
-    currentRoutine?.title ?? currentCourse?.label ?? "데일리 루틴";
+  /*
+   * 절대 currentCourse.label로 fallback하지 않는다.
+   * 우리 서비스의 4개 루틴 이름만 보여준다.
+   */
+  const routineTitle = currentRoutine?.title ?? "데일리 루틴";
 
   const routineDescription =
     currentRoutine?.description ?? "오늘의 데일리 케어를 시작해보세요";
@@ -226,7 +215,6 @@ export default function DailyCare() {
       !currentRoutineTypeCode
     ) {
       console.error("루틴 변경에 필요한 DAILY 코스 정보가 없습니다.");
-
       return;
     }
 
@@ -245,7 +233,6 @@ export default function DailyCare() {
       !currentRoutineTypeCode
     ) {
       console.error("데일리 케어 시작에 필요한 코스 정보가 없습니다.");
-
       return;
     }
 

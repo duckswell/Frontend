@@ -78,12 +78,15 @@ export interface SymptomSummaryResponse {
 }
 
 export const courseApi = {
-  getCurrentCourse: async (): Promise<CurrentCourseResponse> => {
-    const response = await api.get<ApiResponse<CurrentCourseResponse>>(
-      "/api/courses/current"
-    );
+  getCurrentCourse: async (): Promise<CurrentCourseResponse | null> => {
+    const response = await api.get<{
+      success: boolean;
+      data?: CurrentCourseResponse;
+      errorCode?: string;
+      message?: string;
+    }>("/api/courses/current");
 
-    return response.data.data;
+    return response.data.data ?? null;
   },
 
   getCourseHistory: async (): Promise<PastCourseHistoryItem[]> => {
