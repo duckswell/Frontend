@@ -336,7 +336,7 @@ export default function DailyCare() {
           disabled={!canUseDailyCourse}
           onClick={handleStartRoutine}
         >
-          데일리 코스 살펴보기
+          루틴 시작하기
         </CareButton>
       </S.BottomArea>
 

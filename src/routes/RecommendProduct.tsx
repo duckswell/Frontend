@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useSearchParams } from "react-router-dom";
 
@@ -75,10 +75,10 @@ function getIngredientCategoryLabel(category: DisplayIngredientCategory) {
 function getIngredientImage(category: DisplayIngredientCategory) {
   switch (category) {
     case "VITAMIN":
-      return "/assets/Ingridient_pink.svg";
+      return "/assets/Ingridient_yellow.svg";
 
     case "MOISTURE":
-      return "/assets/Ingridient_yellow.svg";
+      return "/assets/Ingridient_pink.svg";
 
     case "PLANT_EXTRACT":
       return "/assets/Ingridient_clover.svg";
@@ -110,7 +110,8 @@ export default function RecommendProduct() {
   const scrollEndTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   /*
-   * 자동 중앙 정렬 때문에 발생한 scroll 이벤트인지 구분
+   * 무한 캐러셀 위치 보정처럼
+   * 코드가 직접 발생시킨 스크롤인지 구분
    */
   const isProgrammaticScrollRef = useRef(false);
 
@@ -153,6 +154,26 @@ export default function RecommendProduct() {
 
   const [showScrollTopButton, setShowScrollTopButton] = useState(false);
 
+  /*
+   * 실제 데이터는 건드리지 않고
+   * 화면에 렌더링할 카드만 3세트 만든다.
+   *
+   * 실제:
+   * [1, 2, 3]
+   *
+   * 화면:
+   * [1, 2, 3] [1, 2, 3] [1, 2, 3]
+   *
+   * 사용자는 가운데 세트에서 움직인다.
+   */
+  const loopedIngredients = useMemo(() => {
+    if (ingredients.length <= 1) {
+      return ingredients;
+    }
+
+    return [...ingredients, ...ingredients, ...ingredients];
+  }, [ingredients]);
+
   const selectedProduct =
     products.find((product) => product.id === selectedProductId) ?? null;
 
@@ -182,7 +203,7 @@ export default function RecommendProduct() {
 
           /*
            * Third 페이지에서 넘어왔다면
-           * URL의 성분을 최소 한 장 표시
+           * URL의 성분 최소 한 장 표시
            */
           const stepIngredient: DisplayIngredient = {
             id: initialIngredientId,
@@ -218,9 +239,7 @@ export default function RecommendProduct() {
 
           /*
            * TOP3에는 없지만
-           * Third 페이지에서 이름까지 전달됨
-           *
-           * STEP 성분 + 추천 성분으로 최대 3개 구성
+           * Third 페이지에서 이름까지 전달된 경우
            */
           if (requestedIngredientName) {
             const stepIngredient: DisplayIngredient = {
@@ -263,6 +282,13 @@ export default function RecommendProduct() {
 
   /*
    * 선택 성분 + 제품 카테고리 기준 제품 조회
+   *
+   * 중요:
+   * loopedIngredients가 아닌
+   * selectedIngredientId만 기준으로 API 호출한다.
+   *
+   * 그래서 화면에 동일 카드가 3세트 있어도
+   * API가 반복 호출되지 않는다.
    */
   useEffect(() => {
     if (selectedIngredientId === null) {
@@ -296,11 +322,43 @@ export default function RecommendProduct() {
   const visibleProducts = selectedIngredientId === null ? [] : products;
 
   /*
-   * 처음 진입하거나 Third 페이지에서 넘어온 경우
-   * 선택된 성분 카드만 중앙 정렬
+   * 특정 카드를 가운데로 이동시키는 공통 함수
+   */
+  function scrollCardToCenter(
+    card: HTMLElement,
+    behavior: ScrollBehavior = "auto"
+  ) {
+    const container = ingredientScrollRef.current;
+
+    if (!container) {
+      return;
+    }
+
+    const targetScrollLeft =
+      card.offsetLeft + card.offsetWidth / 2 - container.clientWidth / 2;
+
+    isProgrammaticScrollRef.current = true;
+
+    container.scrollTo({
+      left: targetScrollLeft,
+      behavior,
+    });
+
+    window.setTimeout(() => {
+      isProgrammaticScrollRef.current = false;
+    }, 120);
+  }
+
+  /*
+   * 성분 데이터가 처음 들어왔을 때
+   * 가운데 세트의 선택 성분으로 위치시킨다.
    *
-   * 자동 scroll 이벤트가 다시 성분 변경을 일으키지 않도록
-   * isProgrammaticScrollRef 사용
+   * 중요:
+   * selectedIngredientId가 바뀔 때마다 실행하지 않는다.
+   *
+   * 사용자가 스와이프해서 성분을 바꿀 때
+   * 여기서 다시 강제로 스크롤시키면
+   * 이전에 발생했던 무한 API 호출 문제가 생길 수 있음.
    */
   useEffect(() => {
     const container = ingredientScrollRef.current;
@@ -317,30 +375,62 @@ export default function RecommendProduct() {
       container.querySelectorAll<HTMLElement>("[data-ingredient-id]")
     );
 
+    if (cards.length === 0) {
+      return;
+    }
+
+    /*
+     * 카드가 1장뿐이면 그대로 가운데 정렬
+     */
+    if (ingredients.length === 1) {
+      const targetCard = cards.find(
+        (card) => Number(card.dataset.ingredientId) === selectedIngredientId
+      );
+
+      if (targetCard) {
+        scrollCardToCenter(targetCard);
+      }
+
+      return;
+    }
+
+    /*
+     * 3세트 중 가운데 세트 범위
+     *
+     * 예:
+     * ingredients.length = 3
+     *
+     * 0 1 2 / 3 4 5 / 6 7 8
+     *         ↑ 가운데 세트
+     */
+    const ingredientCount = ingredients.length;
+
+    const middleStart = ingredientCount;
+
+    const middleEnd = ingredientCount * 2;
+
     const targetCard = cards.find(
-      (card) => Number(card.dataset.ingredientId) === selectedIngredientId
+      (card, index) =>
+        index >= middleStart &&
+        index < middleEnd &&
+        Number(card.dataset.ingredientId) === selectedIngredientId
     );
 
     if (!targetCard) {
       return;
     }
 
-    const targetScrollLeft =
-      targetCard.offsetLeft +
-      targetCard.offsetWidth / 2 -
-      container.clientWidth / 2;
-
-    isProgrammaticScrollRef.current = true;
-
-    container.scrollTo({
-      left: targetScrollLeft,
-      behavior: "auto",
+    /*
+     * DOM이 완전히 배치된 다음 이동
+     */
+    const animationFrame = window.requestAnimationFrame(() => {
+      scrollCardToCenter(targetCard);
     });
 
-    window.setTimeout(() => {
-      isProgrammaticScrollRef.current = false;
-    }, 150);
-  }, [ingredients, selectedIngredientId]);
+    return () => {
+      window.cancelAnimationFrame(animationFrame);
+    };
+  }, [ingredients]);
 
   /*
    * 모달 열릴 때 페이지 스크롤 잠금
@@ -398,8 +488,7 @@ export default function RecommendProduct() {
   }
 
   /*
-   * 스크롤이 멈췄을 때
-   * 화면 중앙에 가장 가까운 성분 선택
+   * 현재 화면 중앙에 가장 가까운 카드 찾기
    */
   function updateSelectedIngredient() {
     const container = ingredientScrollRef.current;
@@ -422,9 +511,11 @@ export default function RecommendProduct() {
 
     let closestCard = cards[0];
 
+    let closestCardIndex = 0;
+
     let closestDistance = Infinity;
 
-    cards.forEach((card) => {
+    cards.forEach((card, index) => {
       const cardRect = card.getBoundingClientRect();
 
       const cardCenter = cardRect.left + cardRect.width / 2;
@@ -435,6 +526,8 @@ export default function RecommendProduct() {
         closestDistance = distance;
 
         closestCard = card;
+
+        closestCardIndex = index;
       }
     });
 
@@ -446,20 +539,86 @@ export default function RecommendProduct() {
 
     const nextIngredientId = Number(ingredientId);
 
+    /*
+     * 실제 성분이 바뀐 경우에만
+     * 제품 API를 새로 호출하게 한다.
+     *
+     * 같은 1번 카드라도
+     * 첫 세트 1번 → 가운데 세트 1번으로
+     * 위치만 순간이동한 경우에는
+     * selectedIngredientId가 안 바뀐다.
+     */
     if (nextIngredientId !== selectedIngredientId) {
       setSelectedIngredientId(nextIngredientId);
 
       /*
-       * 사용자가 직접 다른 성분으로 넘긴 경우
-       * 제품 카테고리는 전체보기로
+       * 다른 성분으로 넘어가면
+       * 제품 카테고리는 전체보기로 복구
        */
       setSelectedProductCategory(null);
+    }
+
+    /*
+     * 카드가 한 장이면
+     * 무한 캐러셀 위치 보정 필요 없음
+     */
+    if (ingredients.length <= 1) {
+      return;
+    }
+
+    const ingredientCount = ingredients.length;
+
+    /*
+     * 현재 카드가 첫 번째 복제 세트에 있다면
+     * 가운데 세트의 동일 위치로 순간이동
+     *
+     * 예:
+     *
+     * [1 2 3] [1 2 3] [1 2 3]
+     *      ↑
+     *
+     * 첫 세트 3
+     * → 가운데 세트 3으로 이동
+     */
+    if (closestCardIndex < ingredientCount) {
+      const equivalentIndex = closestCardIndex + ingredientCount;
+
+      const equivalentCard = cards[equivalentIndex];
+
+      if (equivalentCard) {
+        scrollCardToCenter(equivalentCard);
+      }
+
+      return;
+    }
+
+    /*
+     * 현재 카드가 마지막 복제 세트에 있다면
+     * 가운데 세트의 동일 위치로 순간이동
+     *
+     * 예:
+     *
+     * [1 2 3] [1 2 3] [1 2 3]
+     *                   ↑
+     *
+     * 마지막 세트 1
+     * → 가운데 세트 1로 이동
+     */
+    if (closestCardIndex >= ingredientCount * 2) {
+      const equivalentIndex = closestCardIndex - ingredientCount;
+
+      const equivalentCard = cards[equivalentIndex];
+
+      if (equivalentCard) {
+        scrollCardToCenter(equivalentCard);
+      }
     }
   }
 
   function handleIngredientScroll() {
     /*
-     * 자동 중앙 정렬에서 발생한 scroll은 무시
+     * 코드가 직접 발생시킨 위치 보정 스크롤은
+     * 성분 변경 이벤트로 처리하지 않는다.
      */
     if (isProgrammaticScrollRef.current) {
       return;
@@ -469,9 +628,13 @@ export default function RecommendProduct() {
       clearTimeout(scrollEndTimerRef.current);
     }
 
+    /*
+     * 손을 놓고 스크롤이 거의 멈춘 뒤
+     * 중앙 카드 판별
+     */
     scrollEndTimerRef.current = setTimeout(() => {
       updateSelectedIngredient();
-    }, 150);
+    }, 120);
   }
 
   function handleScrollToTop() {
@@ -505,10 +668,11 @@ export default function RecommendProduct() {
             ref={ingredientScrollRef}
             onScroll={handleIngredientScroll}
           >
-            {ingredients.map((ingredient, index) => (
+            {loopedIngredients.map((ingredient, index) => (
               <S.IngredientCardWrapper
                 key={`${ingredient.id}-${index}`}
                 data-ingredient-id={ingredient.id}
+                data-loop-index={index}
               >
                 <RecommendedIngredientCard
                   category={getIngredientCategoryLabel(ingredient.category)}
