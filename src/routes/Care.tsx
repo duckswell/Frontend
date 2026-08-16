@@ -5,6 +5,7 @@ import { NavBar } from "../components/NavBar";
 import { TabBar } from "../components/TabBar";
 import CareButton from "../components/CareButton";
 
+import { dashboardApi } from "../api/dashboard";
 import { courseApi, type CurrentCourseResponse } from "../api/course";
 
 import * as S from "../styles/FocusCare/Care.styles";
@@ -33,7 +34,9 @@ export default function Care() {
   const [currentCourse, setCurrentCourse] =
     useState<CurrentCourseResponse | null>(null);
 
+  const [recoveryDayText, setRecoveryDayText] = useState("");
   const [recoverySummary, setRecoverySummary] = useState("");
+
   const [isStartingCourse, setIsStartingCourse] = useState(false);
 
   useEffect(() => {
@@ -52,7 +55,7 @@ export default function Care() {
         } catch (error) {
           console.error("회복 단계 요약 조회 실패:", error);
 
-          // recovery-summary가 500이어도
+          // recovery-summary가 실패해도
           // 현재 코스 정보 자체는 유지
           setRecoverySummary("");
         }
@@ -60,10 +63,39 @@ export default function Care() {
         console.error("현재 진행 중인 코스 조회 실패:", error);
 
         setCurrentCourse(null);
+        setRecoverySummary("");
       }
     };
 
     fetchCurrentCourse();
+  }, []);
+
+  useEffect(() => {
+    const fetchRecoveryBanner = async () => {
+      try {
+        const banner = await dashboardApi.getRecoveryBannerDetail();
+
+        console.log("회복 배너 조회 성공:", banner);
+
+        if (!banner) {
+          setRecoveryDayText("");
+          return;
+        }
+
+        const firstLine = banner.summaryMessage
+          .split("\n")[0]
+          .replace(",", "")
+          .trim();
+
+        setRecoveryDayText(firstLine);
+      } catch (error) {
+        console.error("회복 배너 조회 실패:", error);
+
+        setRecoveryDayText("");
+      }
+    };
+
+    fetchRecoveryBanner();
   }, []);
 
   const handleMoveToProductRecommendation = () => {
@@ -126,9 +158,13 @@ export default function Care() {
 
       <S.Content>
         <S.StatusCard>
-          <S.CourseBadge>집중 코스 진행 중</S.CourseBadge>
+          {currentCourse?.courseType === "FOCUS" && (
+            <S.CourseBadge>집중 코스 진행 중</S.CourseBadge>
+          )}
 
-          <S.StatusTitle>시술 후 5일째</S.StatusTitle>
+          <S.StatusTitle>
+            {recoveryDayText || "시술 후 경과 확인 중"}
+          </S.StatusTitle>
 
           <S.StatusDescription>{recoverySummary}</S.StatusDescription>
 

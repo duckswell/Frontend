@@ -62,6 +62,10 @@ export interface RecommendedRoutineProduct {
   };
 }
 
+export interface TodayRoutineResponse {
+  routineId: number;
+}
+
 export const routineApi = {
   selectDifficulty: async (
     routineId: number,
@@ -100,6 +104,14 @@ export const routineApi = {
     );
 
     return response.data.data;
+  },
+
+  getTodayRoutine: async (): Promise<number | null> => {
+    const response = await api.get<ApiResponse<TodayRoutineResponse>>(
+      "/api/routines/today"
+    );
+
+    return response.data.data?.routineId ?? null;
   },
 
   getRecommendedProducts: async (

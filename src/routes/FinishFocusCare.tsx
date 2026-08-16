@@ -258,6 +258,15 @@ export default function FinishFocusCare() {
       return;
     }
 
+    const selectedRoutineOption = ROUTINE_OPTIONS.find(
+      (routine) => routine.id === selectedRoutine
+    );
+
+    if (!selectedRoutineOption) {
+      console.error("선택한 루틴 정보를 찾을 수 없습니다.");
+      return;
+    }
+
     try {
       setIsStartingDailyCourse(true);
 
@@ -270,7 +279,16 @@ export default function FinishFocusCare() {
 
       console.log("데일리 코스 시작 성공:", course);
 
-      navigate("/care/finish_select_routine");
+      navigate("/care/finish_select_routine", {
+        state: {
+          courseId: course.id,
+          routineTypeCode,
+          routineTypeName: course.routineTypeName,
+          routineTitle: selectedRoutineOption.title,
+          routineImage: selectedRoutineOption.iconSrc,
+          routineCategories: selectedRoutineOption.tags,
+        },
+      });
     } catch (error) {
       console.error("데일리 코스 시작 실패:", error);
 

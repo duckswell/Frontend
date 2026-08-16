@@ -26,7 +26,6 @@ export const Content = styled.main`
 
   overflow: hidden;
 `;
-
 export const CompletionSection = styled.section`
   position: relative;
 
@@ -37,7 +36,8 @@ export const CompletionSection = styled.section`
   flex-shrink: 0;
 
   width: 100%;
-  height: 420px;
+
+  padding-top: 160px;
 `;
 
 export const IntroTextArea = styled.div`
@@ -47,18 +47,6 @@ export const IntroTextArea = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-
-  text-align: center;
-`;
-
-export const Title = styled.h1`
-  margin: 0;
-
-  color: #1f2937;
-
-  font-size: 24px;
-  font-weight: 600;
-  line-height: 1.35;
 
   text-align: center;
 `;
@@ -81,6 +69,20 @@ export const IntroSection = styled.section`
   align-items: center;
 
   width: 100%;
+
+  margin-top: 36px;
+`;
+
+export const Title = styled.h1`
+  margin: 0;
+
+  color: #1f2937;
+
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.35;
+
+  text-align: center;
 `;
 
 export const RoutineCard = styled.div`
@@ -97,7 +99,7 @@ export const RoutineCard = styled.div`
   border: 0.5px solid ${colorPalette.Quaternary};
   border-radius: 12px;
 
-  background-color: ${colorPalette.White};
+  background-color: transparent;
 `;
 
 export const RoutineImage = styled.img`
@@ -141,7 +143,7 @@ export const Category = styled.span`
   border: 0.5px solid ${colorPalette.Quaternary};
   border-radius: 9999px;
 
-  background-color: rgba(251, 251, 251, 0.8);
+  background-color: transparent;
   color: ${colorPalette.Black};
 
   white-space: nowrap;
@@ -151,12 +153,12 @@ export const ProductSection = styled.div`
   width: 100%;
   max-width: 370px;
 
-  margin-top: 72px;
+  margin-top: 62px;
 `;
 
 export const ButtonArea = styled.div`
   width: 100%;
   max-width: 370px;
 
-  margin-top: 72px;
+  margin-top: 32px;
 `;
