@@ -301,3 +301,11 @@ export const ExternalWebsiteArea = styled.div`
 
   ${typography.Body2};
 `;
+export const ExternalWebsiteFrame = styled.iframe`
+  width: 100%;
+  height: 100%;
+
+  border: none;
+
+  background-color: ${colorPalette.White};
+`;

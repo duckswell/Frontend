@@ -8,7 +8,7 @@ export const Card = styled.section`
   width: 100%;
   max-width: 370px;
 
-  padding: 12px;
+  padding: 16px;
 
   border: 0.5px solid ${colorPalette.Quaternary};
   border-radius: 12px;
@@ -19,14 +19,14 @@ export const Card = styled.section`
 export const Title = styled.h2`
   ${typography.H3};
 
-  margin: 0 0 8px;
+  margin: 0 0 10px;
   color: ${colorPalette.Black};
 `;
 
 export const Description = styled.p`
   ${typography.Body1};
 
-  margin: 0 0 8px;
+  margin: 0 0 10px;
   color: ${colorPalette.Black};
 `;
 
@@ -35,7 +35,7 @@ export const IngredientRow = styled.div`
   align-items: center;
   gap: 4px;
 
-  margin-bottom: 6px;
+  margin-bottom: 10px;
 `;
 
 export const RecommendIcon = styled.img`

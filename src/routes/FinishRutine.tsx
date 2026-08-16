@@ -22,7 +22,7 @@ export default function FinishRoutine() {
   const location = useLocation();
 
   const state = location.state as FinishRoutineLocationState | null;
-
+  console.log("FinishRoutine state:", state);
   const completionData = state?.completionData;
   const recommendedProducts = state?.recommendedProducts ?? [];
 

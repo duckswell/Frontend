@@ -49,25 +49,60 @@ export default function ThirdFocusCare() {
   }, [routine]);
 
   async function handleCompleteFocusCareRoutine() {
-    if (isCompleting) {
+    if (isCompleting || !routine) {
       return;
     }
 
     try {
       setIsCompleting(true);
 
+      // 1. 루틴 완료
+      const completionData = await routineApi.completeRoutine(
+        routine.routineId
+      );
+
+      console.log("루틴 완료 성공:", completionData);
+
+      // 2. 추천 제품 조회
+      const recommendedProductResponse =
+        await routineApi.getRecommendedProducts(routine.routineId);
+
+      console.log("추천 제품 조회 성공:", recommendedProductResponse);
+
+      // RecommendedProductSection에서 사용하는 Product[] 형태로 변환
+      const recommendedProducts = recommendedProductResponse.map((item) => ({
+        id: item.product.id,
+        brand: item.product.brand,
+        name: item.product.name,
+
+        // 화면의 태그에는 추천 성분명을 표시
+        categories: [item.ingredientName],
+
+        imageUrl: item.product.imageUrl,
+        linkUrl: item.product.linkUrl,
+      }));
+
+      // 3. 현재 진행 중인 코스 조회
       const currentCourse = await courseApi.getCurrentCourse();
 
       console.log("현재 코스:", currentCourse);
       console.log("종료할 courseId:", currentCourse.courseId);
 
+      // 4. 집중 코스 종료
       const endedCourse = await courseApi.endCourse(currentCourse.courseId);
 
       console.log("집중 코스 종료 성공:", endedCourse);
 
-      navigate("/care");
+      // 5. 완료 페이지 이동 + 필요한 데이터 전달
+      navigate("/care/finish_routine", {
+        state: {
+          routineId: routine.routineId,
+          completionData,
+          recommendedProducts,
+        },
+      });
     } catch (error) {
-      console.error("집중 코스 종료 실패:", error);
+      console.error("루틴 완료 처리 실패:", error);
 
       if (axios.isAxiosError(error)) {
         console.error("HTTP Status:", error.response?.status);

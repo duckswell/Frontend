@@ -11,15 +11,26 @@ export const Card = styled.article`
   min-width: 0;
 `;
 
-export const ProductImagePlaceholder = styled.div`
+interface ProductImagePlaceholderProps {
+  $imageUrl?: string | null;
+}
+
+export const ProductImagePlaceholder = styled.div<ProductImagePlaceholderProps>`
   width: 100%;
 
   aspect-ratio: 177 / 154;
 
   border-radius: 4px;
-  background-color: #d9d9d9;
-`;
 
+  background-color: #d9d9d9;
+
+  background-image: ${({ $imageUrl }) =>
+    $imageUrl ? `url("${$imageUrl}")` : "none"};
+
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+`;
 export const ProductInfo = styled.div`
   display: flex;
   flex-direction: column;
