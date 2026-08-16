@@ -1,172 +1,243 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useSearchParams } from "react-router-dom";
 
+import {
+  productApi,
+  type ProductCategory,
+  type RecommendedIngredient,
+  type RecommendedProduct,
+} from "../api/product";
+
 import { NavBar } from "../components/NavBar";
-import { TabBar } from "../components/TabBar";
 import ProductCard from "../components/ProductCard";
 import RecommendedIngredientCard from "../components/RecommendedIngredientCard";
-import { createPortal } from "react-dom";
+import { TabBar } from "../components/TabBar";
+
 import * as S from "../styles/RecommendProduct.styles";
 
-const INGREDIENTS = [
-  {
-    id: "hyaluronic-acid",
-    category: "진정",
-    ingredient: "히알루론산",
-    description: "히알루론산이 어디에 어떻게 좋은지에 대한 설명",
-    image: "/assets/Ingridient_pink.svg",
-  },
-  {
-    id: "panthenol",
-    category: ["진정", "진정"],
-    ingredient: "판테놀",
-    description: "판테놀이 어디에 어떻게 좋은지에 대한 설명",
-    image: "/assets/Ingridient_clover.svg",
-  },
-  {
-    id: "ceramide",
-    category: "장벽",
-    ingredient: "세라마이드",
-    description: "세라마이드가 어디에 어떻게 좋은지에 대한 설명",
-    image: "/assets/Ingridient_yellow.svg",
-  },
-];
-
 const PRODUCT_CATEGORIES = [
-  "전체보기",
-  "클렌저",
-  "스킨/토너",
-  "앰플/세럼/에센스",
-  "크림",
-  "미스트/오일",
-];
+  {
+    label: "전체보기",
+    value: null,
+  },
+  {
+    label: "클렌저",
+    value: "CLEANSER",
+  },
+  {
+    label: "스킨/토너",
+    value: "SKIN_TONER",
+  },
+  {
+    label: "앰플/세럼/에센스",
+    value: "AMPOULE_SERUM",
+  },
+  {
+    label: "크림",
+    value: "CREAM",
+  },
+  {
+    label: "미스트/오일",
+    value: "MIST_OIL",
+  },
+] as const;
 
-const PRODUCTS_BY_INGREDIENT = {
-  "hyaluronic-acid": [
-    {
-      id: 1,
-      brand: "Pith",
-      name: "베리어 크림",
-      categories: ["히알루론산"],
-    },
-    {
-      id: 2,
-      brand: "Pith",
-      name: "수분 앰플",
-      categories: ["히알루론산"],
-    },
-    {
-      id: 3,
-      brand: "Pith",
-      name: "수분 세럼",
-      categories: ["히알루론산"],
-    },
-    {
-      id: 4,
-      brand: "Pith",
-      name: "수분 크림",
-      categories: ["히알루론산"],
-    },
-    {
-      id: 5,
-      brand: "Pith",
-      name: "수분 미스트",
-      categories: ["히알루론산"],
-    },
-    {
-      id: 6,
-      brand: "Pith",
-      name: "수분 토너",
-      categories: ["히알루론산"],
-    },
-  ],
+function getIngredientCategoryLabel(category: string) {
+  switch (category) {
+    case "VITAMIN":
+      return "비타민";
 
-  panthenol: [
-    {
-      id: 7,
-      brand: "Pith",
-      name: "판테놀 크림",
-      categories: ["판테놀"],
-    },
-    {
-      id: 8,
-      brand: "Pith",
-      name: "진정 세럼",
-      categories: ["판테놀"],
-    },
-    {
-      id: 9,
-      brand: "Pith",
-      name: "진정 토너",
-      categories: ["판테놀"],
-    },
-    {
-      id: 10,
-      brand: "Pith",
-      name: "진정 미스트",
-      categories: ["판테놀"],
-    },
-  ],
+    case "MOISTURE":
+      return "보습";
 
-  ceramide: [
-    {
-      id: 11,
-      brand: "Pith",
-      name: "세라마이드 크림",
-      categories: ["세라마이드"],
-    },
-    {
-      id: 12,
-      brand: "Pith",
-      name: "장벽 세럼",
-      categories: ["세라마이드"],
-    },
-    {
-      id: 13,
-      brand: "Pith",
-      name: "장벽 토너",
-      categories: ["세라마이드"],
-    },
-    {
-      id: 14,
-      brand: "Pith",
-      name: "장벽 크림",
-      categories: ["세라마이드"],
-    },
-  ],
-};
-const LOOPED_INGREDIENTS =
-  INGREDIENTS.length >= 3
-    ? [...INGREDIENTS, ...INGREDIENTS, ...INGREDIENTS]
-    : INGREDIENTS;
+    case "PLANT_EXTRACT":
+      return "식물추출";
+
+    default:
+      return category;
+  }
+}
+
+function getIngredientImage(category: string) {
+  switch (category) {
+    case "VITAMIN":
+      return "/assets/Ingridient_pink.svg";
+
+    case "MOISTURE":
+      return "/assets/Ingridient_yellow.svg";
+
+    case "PLANT_EXTRACT":
+      return "/assets/Ingridient_clover.svg";
+
+    default:
+      return "/assets/Ingridient_pink.svg";
+  }
+}
 
 export default function RecommendProduct() {
   const [searchParams] = useSearchParams();
 
   const pageRef = useRef<HTMLDivElement>(null);
   const ingredientScrollRef = useRef<HTMLDivElement>(null);
+
   const scrollEndTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const [selectedIngredientId, setSelectedIngredientId] = useState(
-    INGREDIENTS[0].id
-  );
-
-  const [selectedProductCategory, setSelectedProductCategory] =
-    useState("전체보기");
-
-  const [showScrollTopButton, setShowScrollTopButton] = useState(false);
 
   const fromCare = searchParams.get("from") === "care";
 
-  const products =
-    PRODUCTS_BY_INGREDIENT[
-      selectedIngredientId as keyof typeof PRODUCTS_BY_INGREDIENT
-    ] ?? [];
+  const requestedIngredientId = searchParams.get("ingredientId");
+  const requestedCategory = searchParams.get("category");
+
+  const initialIngredientId = requestedIngredientId
+    ? Number(requestedIngredientId)
+    : null;
+
+  const [ingredients, setIngredients] = useState<RecommendedIngredient[]>([]);
+
+  const [selectedIngredientId, setSelectedIngredientId] = useState<
+    number | null
+  >(initialIngredientId);
+
+  const [selectedProductCategory, setSelectedProductCategory] =
+    useState<ProductCategory | null>(
+      requestedCategory ? (requestedCategory as ProductCategory) : null
+    );
+
+  const [products, setProducts] = useState<RecommendedProduct[]>([]);
+
   const [selectedProductId, setSelectedProductId] = useState<number | null>(
     null
   );
+
+  const [showScrollTopButton, setShowScrollTopButton] = useState(false);
+
+  const loopedIngredients = useMemo(() => {
+    if (ingredients.length >= 3) {
+      return [...ingredients, ...ingredients, ...ingredients];
+    }
+
+    return ingredients;
+  }, [ingredients]);
+
   const selectedProduct =
     products.find((product) => product.id === selectedProductId) ?? null;
+
+  useEffect(() => {
+    async function fetchIngredients() {
+      try {
+        const response = await productApi.getRecommendedIngredients();
+
+        setIngredients(response);
+
+        if (response.length === 0) {
+          setSelectedIngredientId(null);
+          return;
+        }
+
+        // ThirdFocusCare에서 ingredientId를 넘겨온 경우
+        if (initialIngredientId !== null) {
+          const matchedIngredient = response.find(
+            (ingredient) => ingredient.id === initialIngredientId
+          );
+
+          if (matchedIngredient) {
+            setSelectedIngredientId(matchedIngredient.id);
+            return;
+          }
+        }
+
+        // ingredientId가 없거나 목록에 없는 경우
+        setSelectedIngredientId(response[0].id);
+      } catch (error) {
+        console.error("추천 성분 조회 실패:", error);
+      }
+    }
+
+    fetchIngredients();
+  }, [initialIngredientId]);
+
+  useEffect(() => {
+    if (selectedIngredientId === null) {
+      setProducts([]);
+      return;
+    }
+
+    async function fetchProducts() {
+      try {
+        const response = await productApi.getRecommendedProducts(
+          selectedIngredientId,
+          selectedProductCategory ?? undefined
+        );
+
+        setProducts(response);
+      } catch (error) {
+        console.error("추천 제품 조회 실패:", error);
+
+        setProducts([]);
+      }
+    }
+
+    fetchProducts();
+  }, [selectedIngredientId, selectedProductCategory]);
+
+  /*
+   * API 성분 목록이 로딩된 뒤
+   * 현재 선택된 ingredientId 카드를 중앙으로 이동
+   */
+  useEffect(() => {
+    const container = ingredientScrollRef.current;
+
+    if (
+      !container ||
+      ingredients.length === 0 ||
+      selectedIngredientId === null
+    ) {
+      return;
+    }
+
+    const cards = Array.from(
+      container.querySelectorAll<HTMLElement>("[data-ingredient-id]")
+    );
+
+    if (cards.length === 0) {
+      return;
+    }
+
+    /*
+     * 무한루프용 3묶음 중 가운데 묶음에서
+     * ingredientId가 같은 카드 찾기
+     */
+    let targetCard: HTMLElement | undefined;
+
+    if (ingredients.length >= 3) {
+      const middleCards = cards.slice(
+        ingredients.length,
+        ingredients.length * 2
+      );
+
+      targetCard = middleCards.find(
+        (card) => Number(card.dataset.ingredientId) === selectedIngredientId
+      );
+    } else {
+      targetCard = cards.find(
+        (card) => Number(card.dataset.ingredientId) === selectedIngredientId
+      );
+    }
+
+    if (!targetCard) {
+      return;
+    }
+
+    const targetScrollLeft =
+      targetCard.offsetLeft +
+      targetCard.offsetWidth / 2 -
+      container.clientWidth / 2;
+
+    container.scrollTo({
+      left: targetScrollLeft,
+      behavior: "auto",
+    });
+  }, [ingredients, selectedIngredientId]);
 
   useEffect(() => {
     const page = pageRef.current;
@@ -187,35 +258,15 @@ export default function RecommendProduct() {
   }, [selectedProduct]);
 
   useEffect(() => {
-    const container = ingredientScrollRef.current;
-
-    if (!container || INGREDIENTS.length < 3) {
-      return;
-    }
-
-    const cards = Array.from(
-      container.querySelectorAll<HTMLElement>("[data-ingredient-id]")
-    );
-
-    const firstMiddleCard = cards[INGREDIENTS.length];
-
-    if (!firstMiddleCard) {
-      return;
-    }
-
-    container.scrollLeft =
-      firstMiddleCard.offsetLeft +
-      firstMiddleCard.offsetWidth / 2 -
-      container.clientWidth / 2;
-
     return () => {
       if (scrollEndTimerRef.current) {
         clearTimeout(scrollEndTimerRef.current);
       }
     };
   }, []);
+
   function handleProductCategoryClick(
-    category: string,
+    category: ProductCategory | null,
     event: React.MouseEvent<HTMLButtonElement>
   ) {
     setSelectedProductCategory(category);
@@ -226,6 +277,7 @@ export default function RecommendProduct() {
       inline: "nearest",
     });
   }
+
   function handlePageScroll() {
     const page = pageRef.current;
 
@@ -235,6 +287,7 @@ export default function RecommendProduct() {
 
     setShowScrollTopButton(page.scrollTop > 10);
   }
+
   function updateSelectedIngredient() {
     const container = ingredientScrollRef.current;
 
@@ -243,17 +296,23 @@ export default function RecommendProduct() {
     }
 
     const containerRect = container.getBoundingClientRect();
+
     const containerCenter = containerRect.left + containerRect.width / 2;
 
     const cards = Array.from(
       container.querySelectorAll<HTMLElement>("[data-ingredient-id]")
     );
 
+    if (cards.length === 0) {
+      return;
+    }
+
     let closestCard = cards[0];
     let closestDistance = Infinity;
 
     cards.forEach((card) => {
       const cardRect = card.getBoundingClientRect();
+
       const cardCenter = cardRect.left + cardRect.width / 2;
 
       const distance = Math.abs(containerCenter - cardCenter);
@@ -264,17 +323,23 @@ export default function RecommendProduct() {
       }
     });
 
-    const ingredientId = closestCard?.dataset.ingredientId;
+    const ingredientId = closestCard.dataset.ingredientId;
 
     if (ingredientId) {
-      setSelectedIngredientId(ingredientId);
+      setSelectedIngredientId(Number(ingredientId));
+
+      /*
+       * 성분 변경 시 상품 카테고리는
+       * 전체보기로 초기화
+       */
+      setSelectedProductCategory(null);
     }
   }
 
   function repositionIngredientLoop() {
     const container = ingredientScrollRef.current;
 
-    if (!container || INGREDIENTS.length < 3) {
+    if (!container || ingredients.length < 3) {
       return;
     }
 
@@ -289,6 +354,7 @@ export default function RecommendProduct() {
 
     cards.forEach((card, index) => {
       const cardCenter = card.offsetLeft + card.offsetWidth / 2;
+
       const distance = Math.abs(containerCenter - cardCenter);
 
       if (distance < closestDistance) {
@@ -299,10 +365,10 @@ export default function RecommendProduct() {
 
     let targetIndex: number;
 
-    if (closestIndex < INGREDIENTS.length) {
-      targetIndex = closestIndex + INGREDIENTS.length;
-    } else if (closestIndex >= INGREDIENTS.length * 2) {
-      targetIndex = closestIndex - INGREDIENTS.length;
+    if (closestIndex < ingredients.length) {
+      targetIndex = closestIndex + ingredients.length;
+    } else if (closestIndex >= ingredients.length * 2) {
+      targetIndex = closestIndex - ingredients.length;
     } else {
       return;
     }
@@ -372,16 +438,16 @@ export default function RecommendProduct() {
             ref={ingredientScrollRef}
             onScroll={handleIngredientScroll}
           >
-            {LOOPED_INGREDIENTS.map((ingredient, index) => (
+            {loopedIngredients.map((ingredient, index) => (
               <S.IngredientCardWrapper
                 key={`${ingredient.id}-${index}`}
                 data-ingredient-id={ingredient.id}
               >
                 <RecommendedIngredientCard
-                  category={ingredient.category}
-                  ingredient={ingredient.ingredient}
-                  description={ingredient.description}
-                  image={ingredient.image}
+                  category={getIngredientCategoryLabel(ingredient.category)}
+                  ingredient={ingredient.name}
+                  description={`${ingredient.name} 성분을 활용한 맞춤 제품을 확인해보세요.`}
+                  image={getIngredientImage(ingredient.category)}
                 />
               </S.IngredientCardWrapper>
             ))}
@@ -391,18 +457,18 @@ export default function RecommendProduct() {
         <S.ProductSection>
           <S.ProductCategoryScroll>
             {PRODUCT_CATEGORIES.map((category) => {
-              const isSelected = selectedProductCategory === category;
+              const isSelected = selectedProductCategory === category.value;
 
               return (
                 <S.ProductCategoryButton
-                  key={category}
+                  key={category.label}
                   type="button"
                   $selected={isSelected}
                   onClick={(event) =>
-                    handleProductCategoryClick(category, event)
+                    handleProductCategoryClick(category.value, event)
                   }
                 >
-                  {category}
+                  {category.label}
                 </S.ProductCategoryButton>
               );
             })}
@@ -412,13 +478,19 @@ export default function RecommendProduct() {
             {products.map((product) => (
               <ProductCard
                 key={product.id}
-                product={product}
+                product={{
+                  id: product.id,
+                  brand: product.brand,
+                  name: product.name,
+                  imageUrl: product.imageUrl,
+                }}
                 onClick={() => setSelectedProductId(product.id)}
               />
             ))}
           </S.ProductGrid>
         </S.ProductSection>
       </S.Content>
+
       {selectedProduct &&
         createPortal(
           <S.ProductModalOverlay
@@ -438,12 +510,16 @@ export default function RecommendProduct() {
               </S.ProductModalHeader>
 
               <S.ExternalWebsiteArea>
-                나중에 외부 웹사이트를 띄울 공간
+                <S.ExternalWebsiteFrame
+                  src={selectedProduct.linkUrl}
+                  title={`${selectedProduct.name} 외부 웹사이트`}
+                />
               </S.ExternalWebsiteArea>
             </S.ProductModalContainer>
           </S.ProductModalOverlay>,
           document.body
         )}
+
       {showScrollTopButton && !selectedProduct && (
         <S.ScrollTopButton
           type="button"

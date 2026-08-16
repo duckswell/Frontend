@@ -54,7 +54,7 @@ export const InformationSection = styled.div`
 
   width: 100%;
 
-  margin-bottom: 44px;
+  margin-bottom: 36px;
 `;
 export const DailyCard = styled.button`
   box-sizing: border-box;
@@ -124,5 +124,5 @@ export const GotoIcon = styled.img`
 export const ButtonWrapper = styled.div`
   width: 100%;
 
-  margin-top: 20px;
+  margin-top: 16px;
 `;

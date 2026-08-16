@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 
 import * as S from "../../styles/FocusCare/RecommendedProductSection.styles";
@@ -22,65 +24,103 @@ export default function RecommendedProductSection({
 }: RecommendedProductSectionProps) {
   const navigate = useNavigate();
 
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+
   function handleMoveToRecommend() {
     navigate("/recommend?from=care");
   }
 
-  function handleProductClick(linkUrl?: string) {
-    if (!linkUrl) {
+  function handleProductClick(product: Product) {
+    if (!product.linkUrl) {
       return;
     }
 
-    window.open(linkUrl, "_blank", "noopener,noreferrer");
+    setSelectedProduct(product);
   }
 
+  function handleCloseModal() {
+    setSelectedProduct(null);
+  }
+
+  useEffect(() => {
+    if (!selectedProduct) {
+      return;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [selectedProduct]);
+
   return (
-    <S.Section>
-      <S.Header>
-        <S.Title>{title}</S.Title>
+    <>
+      <S.Section>
+        <S.Header>
+          <S.Title>{title}</S.Title>
 
-        <S.MoreButton type="button" onClick={handleMoveToRecommend}>
-          <S.MoreText>더보기</S.MoreText>
+          <S.MoreButton type="button" onClick={handleMoveToRecommend}>
+            <S.MoreText>더보기</S.MoreText>
 
-          <S.MoreIcon src="/assets/GotoGray.svg" alt="" aria-hidden="true" />
-        </S.MoreButton>
-      </S.Header>
+            <S.MoreIcon src="/assets/GotoGray.svg" alt="" aria-hidden="true" />
+          </S.MoreButton>
+        </S.Header>
 
-      <S.ProductScroll>
-        {products.map((product, index) => (
-          <S.ProductCard
-            key={`${product.id}-${index}`}
-            onClick={() => handleProductClick(product.linkUrl)}
-          >
-            <S.ProductImagePlaceholder
-              style={
-                product.imageUrl
-                  ? {
-                      backgroundImage: `url("${product.imageUrl}")`,
-                      backgroundSize: "cover",
-                      backgroundPosition: "center",
-                      backgroundRepeat: "no-repeat",
-                    }
-                  : undefined
-              }
-            />
+        <S.ProductScroll>
+          {products.map((product, index) => (
+            <S.ProductCard
+              key={`${product.id}-${index}`}
+              type="button"
+              onClick={() => handleProductClick(product)}
+            >
+              <S.ProductImagePlaceholder $imageUrl={product.imageUrl} />
 
-            <S.ProductInfo>
-              <S.Brand>{product.brand}</S.Brand>
+              <S.ProductInfo>
+                <S.Brand>{product.brand}</S.Brand>
 
-              <S.ProductName>{product.name}</S.ProductName>
+                <S.ProductName>{product.name}</S.ProductName>
 
-              <S.CategoryList>
-                {product.categories.map((category) => (
-                  <S.Category key={`${product.id}-${category}`}>
-                    {category}
-                  </S.Category>
-                ))}
-              </S.CategoryList>
-            </S.ProductInfo>
-          </S.ProductCard>
-        ))}
-      </S.ProductScroll>
-    </S.Section>
+                <S.CategoryList>
+                  {product.categories.map((category) => (
+                    <S.Category key={`${product.id}-${category}`}>
+                      {category}
+                    </S.Category>
+                  ))}
+                </S.CategoryList>
+              </S.ProductInfo>
+            </S.ProductCard>
+          ))}
+        </S.ProductScroll>
+      </S.Section>
+
+      {selectedProduct?.linkUrl &&
+        createPortal(
+          <S.ProductModalOverlay onClick={handleCloseModal}>
+            <S.ProductModalContainer
+              onClick={(event) => event.stopPropagation()}
+            >
+              <S.ProductModalHeader>
+                <S.ProductModalCloseButton
+                  type="button"
+                  onClick={handleCloseModal}
+                >
+                  닫기
+                </S.ProductModalCloseButton>
+              </S.ProductModalHeader>
+
+              <S.ExternalWebsiteArea>
+                <S.ExternalWebsiteFrame
+                  src={selectedProduct.linkUrl}
+                  title={`${selectedProduct.name} 외부 웹사이트`}
+                />
+              </S.ExternalWebsiteArea>
+            </S.ProductModalContainer>
+          </S.ProductModalOverlay>,
+          document.body
+        )}
+    </>
   );
 }
