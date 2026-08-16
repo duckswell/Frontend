@@ -43,7 +43,25 @@ const PRODUCT_CATEGORIES = [
   },
 ] as const;
 
-function getIngredientCategoryLabel(category: string) {
+/*
+ * API에서 내려오는 RecommendedIngredient의 category는
+ * VITAMIN / MOISTURE / PLANT_EXTRACT만 존재한다.
+ *
+ * ThirdFocusCare / ThirdDailyCare에서 바로 넘어온 성분은
+ * 화면 표시용으로 ROUTINE_STEP을 사용할 수 있도록
+ * 별도의 타입을 만든다.
+ */
+type DisplayIngredientCategory =
+  | RecommendedIngredient["category"]
+  | "ROUTINE_STEP";
+
+interface DisplayIngredient {
+  id: number;
+  name: string;
+  category: DisplayIngredientCategory;
+}
+
+function getIngredientCategoryLabel(category: DisplayIngredientCategory) {
   switch (category) {
     case "VITAMIN":
       return "비타민";
@@ -54,12 +72,15 @@ function getIngredientCategoryLabel(category: string) {
     case "PLANT_EXTRACT":
       return "식물추출";
 
+    case "ROUTINE_STEP":
+      return "추천 성분";
+
     default:
       return category;
   }
 }
 
-function getIngredientImage(category: string) {
+function getIngredientImage(category: DisplayIngredientCategory) {
   switch (category) {
     case "VITAMIN":
       return "/assets/Ingridient_pink.svg";
@@ -70,9 +91,22 @@ function getIngredientImage(category: string) {
     case "PLANT_EXTRACT":
       return "/assets/Ingridient_clover.svg";
 
+    case "ROUTINE_STEP":
+      return "/assets/Ingridient_clover.svg";
+
     default:
       return "/assets/Ingridient_pink.svg";
   }
+}
+
+function isProductCategory(value: string | null): value is ProductCategory {
+  return (
+    value === "CLEANSER" ||
+    value === "SKIN_TONER" ||
+    value === "AMPOULE_SERUM" ||
+    value === "CREAM" ||
+    value === "MIST_OIL"
+  );
 }
 
 export default function RecommendProduct() {
@@ -85,23 +119,44 @@ export default function RecommendProduct() {
 
   const fromCare = searchParams.get("from") === "care";
 
-  const requestedIngredientId = searchParams.get("ingredientId");
+  /*
+   * ThirdFocusCare / ThirdDailyCare에서 넘어오는 값
+   *
+   * 예:
+   * /recommend
+   * ?from=care
+   * &category=SKIN_TONER
+   * &ingredientId=6
+   * &ingredientName=센텔라
+   */
+  const requestedIngredientIdText = searchParams.get("ingredientId");
+
+  const requestedIngredientName = searchParams.get("ingredientName");
+
   const requestedCategory = searchParams.get("category");
 
-  const initialIngredientId = requestedIngredientId
-    ? Number(requestedIngredientId)
+  const parsedIngredientId =
+    requestedIngredientIdText !== null
+      ? Number(requestedIngredientIdText)
+      : null;
+
+  const initialIngredientId =
+    parsedIngredientId !== null && Number.isFinite(parsedIngredientId)
+      ? parsedIngredientId
+      : null;
+
+  const initialProductCategory = isProductCategory(requestedCategory)
+    ? requestedCategory
     : null;
 
-  const [ingredients, setIngredients] = useState<RecommendedIngredient[]>([]);
+  const [ingredients, setIngredients] = useState<DisplayIngredient[]>([]);
 
   const [selectedIngredientId, setSelectedIngredientId] = useState<
     number | null
   >(initialIngredientId);
 
   const [selectedProductCategory, setSelectedProductCategory] =
-    useState<ProductCategory | null>(
-      requestedCategory ? (requestedCategory as ProductCategory) : null
-    );
+    useState<ProductCategory | null>(initialProductCategory);
 
   const [products, setProducts] = useState<RecommendedProduct[]>([]);
 
@@ -111,6 +166,10 @@ export default function RecommendProduct() {
 
   const [showScrollTopButton, setShowScrollTopButton] = useState(false);
 
+  /*
+   * 성분 카드가 3개 이상이면
+   * 무한 스크롤처럼 보이도록 3번 반복한다.
+   */
   const loopedIngredients = useMemo(() => {
     if (ingredients.length >= 3) {
       return [...ingredients, ...ingredients, ...ingredients];
@@ -122,63 +181,161 @@ export default function RecommendProduct() {
   const selectedProduct =
     products.find((product) => product.id === selectedProductId) ?? null;
 
+  /*
+   * 맞춤 성분 조회
+   */
   useEffect(() => {
     async function fetchIngredients() {
       try {
         const response = await productApi.getRecommendedIngredients();
 
-        setIngredients(response);
-
+        /*
+         * 추천 성분 자체가 하나도 없는 경우
+         */
         if (response.length === 0) {
-          setSelectedIngredientId(null);
+          /*
+           * 일반 추천 페이지 진입이면
+           * 보여줄 성분이 없음
+           */
+          if (initialIngredientId === null || !requestedIngredientName) {
+            setIngredients([]);
+            setSelectedIngredientId(null);
+
+            return;
+          }
+
+          /*
+           * Third 페이지 STEP 카드에서 넘어왔다면
+           * ingredientId + ingredientName을 알고 있으므로
+           * 해당 성분 카드 한 장은 표시
+           */
+          const stepIngredient: DisplayIngredient = {
+            id: initialIngredientId,
+            name: requestedIngredientName,
+            category: "ROUTINE_STEP",
+          };
+
+          setIngredients([stepIngredient]);
+
+          setSelectedIngredientId(initialIngredientId);
+
           return;
         }
 
-        // ThirdFocusCare에서 ingredientId를 넘겨온 경우
+        /*
+         * STEP 카드에서 ingredientId가 전달된 경우
+         */
         if (initialIngredientId !== null) {
           const matchedIngredient = response.find(
             (ingredient) => ingredient.id === initialIngredientId
           );
 
+          /*
+           * STEP 성분이 추천 TOP3 안에도 있으면
+           * API 응답 그대로 사용
+           */
           if (matchedIngredient) {
+            setIngredients(response);
+
             setSelectedIngredientId(matchedIngredient.id);
+
+            return;
+          }
+
+          /*
+           * STEP 성분이 TOP3에는 없지만
+           * ingredientName까지 전달받았다면
+           *
+           * STEP 성분을 첫 번째에 넣고
+           * 나머지 추천 성분을 붙여 총 3개 유지
+           */
+          if (requestedIngredientName) {
+            const stepIngredient: DisplayIngredient = {
+              id: initialIngredientId,
+              name: requestedIngredientName,
+              category: "ROUTINE_STEP",
+            };
+
+            const nextIngredients: DisplayIngredient[] = [
+              stepIngredient,
+              ...response.filter(
+                (ingredient) => ingredient.id !== initialIngredientId
+              ),
+            ].slice(0, 3);
+
+            setIngredients(nextIngredients);
+
+            setSelectedIngredientId(initialIngredientId);
+
             return;
           }
         }
 
-        // ingredientId가 없거나 목록에 없는 경우
+        /*
+         * 일반 추천 페이지 진입
+         *
+         * 첫 번째 성분을 기본 선택
+         */
+        setIngredients(response);
+
         setSelectedIngredientId(response[0].id);
       } catch (error) {
         console.error("추천 성분 조회 실패:", error);
+
+        setIngredients([]);
+        setSelectedIngredientId(null);
       }
     }
 
     fetchIngredients();
-  }, [initialIngredientId]);
+  }, [initialIngredientId, requestedIngredientName]);
 
+  /*
+   * 선택된 성분 + 제품 카테고리 기준
+   * 추천 제품 조회
+   */
   useEffect(() => {
+    /*
+     * 여기서 setProducts([])를 바로 호출하면
+     * set-state-in-effect 경고가 발생할 수 있으므로
+     * 그냥 API 호출을 생략한다.
+     */
     if (selectedIngredientId === null) {
       return;
     }
 
-    const ingredientId = selectedIngredientId;
-
     async function fetchProducts() {
       try {
         const response = await productApi.getRecommendedProducts(
-          ingredientId,
+          selectedIngredientId,
           selectedProductCategory ?? undefined
         );
 
         setProducts(response);
       } catch (error) {
         console.error("추천 제품 조회 실패:", error);
+
+        /*
+         * await 이후 실행되는 비동기 처리이므로
+         * 이 setState는 괜찮다.
+         */
         setProducts([]);
       }
     }
 
     fetchProducts();
   }, [selectedIngredientId, selectedProductCategory]);
+
+  /*
+   * selectedIngredientId가 null이면
+   * 기존 products state가 남아 있어도
+   * 화면에는 노출하지 않는다.
+   */
+  const visibleProducts = selectedIngredientId === null ? [] : products;
+
+  /*
+   * 선택된 성분 카드를 가운데로 배치
+   */
   useEffect(() => {
     const container = ingredientScrollRef.current;
 
@@ -198,12 +355,12 @@ export default function RecommendProduct() {
       return;
     }
 
-    /*
-     * 무한루프용 3묶음 중 가운데 묶음에서
-     * ingredientId가 같은 카드 찾기
-     */
     let targetCard: HTMLElement | undefined;
 
+    /*
+     * 3개 이상이면 가운데 반복 영역에서
+     * 선택된 성분을 찾는다.
+     */
     if (ingredients.length >= 3) {
       const middleCards = cards.slice(
         ingredients.length,
@@ -234,6 +391,10 @@ export default function RecommendProduct() {
     });
   }, [ingredients, selectedIngredientId]);
 
+  /*
+   * 제품 상세 모달 오픈 중에는
+   * 페이지 스크롤 잠금
+   */
   useEffect(() => {
     const page = pageRef.current;
 
@@ -252,6 +413,9 @@ export default function RecommendProduct() {
     };
   }, [selectedProduct]);
 
+  /*
+   * debounce timer 정리
+   */
   useEffect(() => {
     return () => {
       if (scrollEndTimerRef.current) {
@@ -283,6 +447,10 @@ export default function RecommendProduct() {
     setShowScrollTopButton(page.scrollTop > 10);
   }
 
+  /*
+   * 현재 화면 중앙에 가장 가까운
+   * 성분 카드를 selectedIngredient로 설정
+   */
   function updateSelectedIngredient() {
     const container = ingredientScrollRef.current;
 
@@ -303,6 +471,7 @@ export default function RecommendProduct() {
     }
 
     let closestCard = cards[0];
+
     let closestDistance = Infinity;
 
     cards.forEach((card) => {
@@ -314,23 +483,41 @@ export default function RecommendProduct() {
 
       if (distance < closestDistance) {
         closestDistance = distance;
+
         closestCard = card;
       }
     });
 
     const ingredientId = closestCard.dataset.ingredientId;
 
-    if (ingredientId) {
-      setSelectedIngredientId(Number(ingredientId));
+    if (!ingredientId) {
+      return;
+    }
 
-      /*
-       * 성분 변경 시 상품 카테고리는
-       * 전체보기로 초기화
-       */
+    const nextIngredientId = Number(ingredientId);
+
+    /*
+     * 실제 사용자가 다른 성분으로 이동했을 때만
+     * 선택 성분을 변경한다.
+     *
+     * 이때 제품 카테고리는 전체보기로 초기화.
+     *
+     * Third 페이지에서 처음 자동 중앙 정렬되는 경우
+     * ingredientId가 이미 같으므로
+     * category가 유지된다.
+     */
+    if (nextIngredientId !== selectedIngredientId) {
+      setSelectedIngredientId(nextIngredientId);
+
       setSelectedProductCategory(null);
     }
   }
 
+  /*
+   * 3세트 반복된 성분 카드가
+   * 양 끝 영역으로 이동했을 경우
+   * 동일한 가운데 세트로 순간 이동
+   */
   function repositionIngredientLoop() {
     const container = ingredientScrollRef.current;
 
@@ -354,6 +541,7 @@ export default function RecommendProduct() {
 
       if (distance < closestDistance) {
         closestDistance = distance;
+
         closestIndex = index;
       }
     });
@@ -470,7 +658,7 @@ export default function RecommendProduct() {
           </S.ProductCategoryScroll>
 
           <S.ProductGrid>
-            {products.map((product) => (
+            {visibleProducts.map((product) => (
               <ProductCard
                 key={product.id}
                 product={{

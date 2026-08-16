@@ -154,6 +154,10 @@ export default function ThirdFocusCare() {
 
     if (step.ingredientId !== null) {
       searchParams.set("ingredientId", String(step.ingredientId));
+
+      if (step.ingredientName) {
+        searchParams.set("ingredientName", step.ingredientName);
+      }
     }
 
     navigate(`/recommend?${searchParams.toString()}`);

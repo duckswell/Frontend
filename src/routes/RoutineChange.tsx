@@ -97,6 +97,12 @@ function getRoutineTypeCodeFromLabel(label: string): RoutineTypeCode | null {
   return null;
 }
 
+function wait(ms: number) {
+  return new Promise((resolve) => {
+    window.setTimeout(resolve, ms);
+  });
+}
+
 export default function RoutineChange() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -123,10 +129,6 @@ export default function RoutineChange() {
 
         const course = await courseApi.getCurrentCourse();
 
-        /*
-         * 진행 중인 코스가 없으면
-         * 백엔드에서 data가 빠질 수 있다.
-         */
         if (!course) {
           console.error("현재 진행 중인 코스가 없습니다.");
 
@@ -141,7 +143,7 @@ export default function RoutineChange() {
 
         if (course.courseType !== "DAILY") {
           console.error(
-            "루틴 변경 페이지인데 현재 진행 중인 코스가 DAILY가 아닙니다.",
+            "루틴 변경 페이지인데 현재 코스가 DAILY가 아닙니다.",
             course
           );
 
@@ -154,10 +156,6 @@ export default function RoutineChange() {
 
         setCurrentCourse(course);
 
-        /*
-         * state가 있으면 state 사용,
-         * 새로고침으로 state가 사라졌다면 label에서 복구
-         */
         const routineTypeCode =
           state?.routineTypeCode ?? getRoutineTypeCodeFromLabel(course.label);
 
@@ -174,19 +172,20 @@ export default function RoutineChange() {
         }
 
         setCurrentRoutineTypeCode(routineTypeCode);
+
         setSelectedRoutineTypeCode(routineTypeCode);
       } catch (error) {
         console.error("현재 진행 중인 코스 조회 실패:", error);
 
         if (axios.isAxiosError(error)) {
           console.error("HTTP Status:", error.response?.status);
+
           console.error("API Error Response:", error.response?.data);
+
           console.error("요청 URL:", error.config?.url);
         }
 
         setCurrentCourse(null);
-        setCurrentRoutineTypeCode(null);
-        setSelectedRoutineTypeCode(null);
       } finally {
         setIsLoadingCourse(false);
       }
@@ -204,8 +203,40 @@ export default function RoutineChange() {
       return;
     }
 
+    console.log("새로 선택한 routineTypeCode:", routineTypeCode);
+
     setSelectedRoutineTypeCode(routineTypeCode);
   };
+
+  async function startNewDailyCourse(routineTypeCode: RoutineTypeCode) {
+    try {
+      return await courseApi.startCourse({
+        courseType: "DAILY",
+        routineTypeCode,
+      });
+    } catch (error) {
+      /*
+       * 기존 course end 직후 DB 반영 타이밍 때문에
+       * CO003이 순간적으로 발생할 가능성에 대비해서
+       * 잠깐 기다린 뒤 한 번만 재시도한다.
+       */
+      if (axios.isAxiosError(error) && error.response?.status === 409) {
+        console.warn(
+          "새 DAILY 코스 시작 409 발생 - 잠시 후 재시도합니다.",
+          error.response?.data
+        );
+
+        await wait(300);
+
+        return await courseApi.startCourse({
+          courseType: "DAILY",
+          routineTypeCode,
+        });
+      }
+
+      throw error;
+    }
+  }
 
   const handleStartRoutine = async () => {
     if (
@@ -214,15 +245,25 @@ export default function RoutineChange() {
       !selectedRoutineTypeCode ||
       isChangingRoutine
     ) {
+      console.error("루틴 변경에 필요한 정보가 없습니다.", {
+        currentCourse,
+        currentRoutineTypeCode,
+        selectedRoutineTypeCode,
+        isChangingRoutine,
+      });
+
       return;
     }
 
     /*
-     * 현재 사용 중인 루틴을 다시 선택한 경우
-     * 종료/재생성하지 않고 DailyCare로 복귀
+     * 현재 루틴 그대로 선택한 경우에는
+     * API 호출 없이 DailyCare로 복귀
      */
     if (selectedRoutineTypeCode === currentRoutineTypeCode) {
-      navigate("/care/daily", {
+      console.log("현재 루틴과 동일 - DailyCare로 이동");
+
+      navigate("/care/daily_care", {
+        replace: true,
         state: {
           courseId: currentCourse.courseId,
           routineTypeCode: currentRoutineTypeCode,
@@ -232,126 +273,60 @@ export default function RoutineChange() {
       return;
     }
 
-    const previousRoutineTypeCode = currentRoutineTypeCode;
-
     try {
       setIsChangingRoutine(true);
 
+      console.log("===== 데일리 루틴 변경 시작 =====");
+
+      console.log("기존 courseId:", currentCourse.courseId);
+
+      console.log("기존 routineTypeCode:", currentRoutineTypeCode);
+
+      console.log("새 routineTypeCode:", selectedRoutineTypeCode);
+
       /*
-       * 1. 현재 DAILY 코스 종료
+       * 1. 기존 데일리 코스 종료
        */
       const endedCourse = await courseApi.endCourse(currentCourse.courseId);
 
       console.log("기존 데일리 코스 종료 성공:", endedCourse);
 
-      try {
-        /*
-         * 2. 선택한 루틴 타입으로
-         *    새로운 DAILY 코스 시작
-         */
-        const newCourse = await courseApi.startCourse({
-          courseType: "DAILY",
-          routineTypeCode: selectedRoutineTypeCode,
-        });
-
-        console.log("새 데일리 코스 시작 성공:", newCourse);
-
-        /*
-         * 3. 새 courseId와 routineTypeCode로
-         *    DailyCare 이동
-         */
-        navigate("/care/daily", {
-          replace: true,
-          state: {
-            courseId: newCourse.id,
-            routineTypeCode:
-              newCourse.routineTypeCode ?? selectedRoutineTypeCode,
-          },
-        });
-      } catch (startError) {
-        console.error("새 데일리 코스 시작 실패:", startError);
-
-        if (axios.isAxiosError(startError)) {
-          console.error("HTTP Status:", startError.response?.status);
-          console.error("API Error Response:", startError.response?.data);
-          console.error("요청 URL:", startError.config?.url);
-        }
-
-        /*
-         * 기존 코스는 이미 종료되었기 때문에
-         * 새 코스 시작이 실제로 실패했다면
-         * 기존 routineTypeCode로 DAILY 코스 복구를 시도한다.
-         *
-         * 만약 서버에서는 새 코스 시작에 성공했는데
-         * 네트워크 응답만 실패한 상황이라면
-         * 이 요청은 CO003(이미 진행 중인 코스)로 실패할 수 있다.
-         * 그 경우 아래 getCurrentCourse로 실제 서버 상태를 다시 확인한다.
-         */
-        try {
-          const restoredCourse = await courseApi.startCourse({
-            courseType: "DAILY",
-            routineTypeCode: previousRoutineTypeCode,
-          });
-
-          console.log("기존 데일리 코스 복구 성공:", restoredCourse);
-
-          navigate("/care/daily", {
-            replace: true,
-            state: {
-              courseId: restoredCourse.id,
-              routineTypeCode:
-                restoredCourse.routineTypeCode ?? previousRoutineTypeCode,
-            },
-          });
-
-          return;
-        } catch (restoreError) {
-          console.error("기존 데일리 코스 복구 요청 실패:", restoreError);
-        }
-
-        /*
-         * 새 start가 서버에서는 성공했지만
-         * 클라이언트가 응답을 받지 못했을 수도 있으므로
-         * 현재 서버 상태를 마지막으로 재확인한다.
-         */
-        try {
-          const activeCourse = await courseApi.getCurrentCourse();
-
-          if (activeCourse && activeCourse.courseType === "DAILY") {
-            const activeRoutineTypeCode = getRoutineTypeCodeFromLabel(
-              activeCourse.label
-            );
-
-            if (activeRoutineTypeCode) {
-              navigate("/care/daily", {
-                replace: true,
-                state: {
-                  courseId: activeCourse.courseId,
-                  routineTypeCode: activeRoutineTypeCode,
-                },
-              });
-
-              return;
-            }
-          }
-        } catch (recheckError) {
-          console.error(
-            "루틴 변경 실패 후 현재 코스 재조회 실패:",
-            recheckError
-          );
-        }
-      }
-    } catch (error) {
       /*
-       * 이 catch는 기존 코스 end 자체가 실패했을 때
-       * 주로 실행된다.
+       * 2. 새 데일리 코스 시작
        */
-      console.error("기존 데일리 코스 종료 실패:", error);
+      const newCourse = await startNewDailyCourse(selectedRoutineTypeCode);
+
+      console.log("새 데일리 코스 시작 성공:", newCourse);
+
+      const newRoutineTypeCode =
+        newCourse.routineTypeCode ?? selectedRoutineTypeCode;
+
+      /*
+       * 3. 새 코스 정보로 DailyCare 이동
+       */
+      console.log("DailyCare 이동:", {
+        courseId: newCourse.id,
+        routineTypeCode: newRoutineTypeCode,
+      });
+
+      navigate("/care/daily_care", {
+        replace: true,
+        state: {
+          courseId: newCourse.id,
+          routineTypeCode: newRoutineTypeCode,
+        },
+      });
+    } catch (error) {
+      console.error("데일리 루틴 변경 실패:", error);
 
       if (axios.isAxiosError(error)) {
         console.error("HTTP Status:", error.response?.status);
+
         console.error("API Error Response:", error.response?.data);
+
         console.error("요청 URL:", error.config?.url);
+
+        console.error("보낸 데이터:", error.config?.data);
       }
     } finally {
       setIsChangingRoutine(false);

@@ -146,6 +146,10 @@ export default function ThirdDailyCare() {
 
     if (step.ingredientId !== null) {
       searchParams.set("ingredientId", String(step.ingredientId));
+
+      if (step.ingredientName) {
+        searchParams.set("ingredientName", step.ingredientName);
+      }
     }
 
     navigate(`/recommend?${searchParams.toString()}`);
