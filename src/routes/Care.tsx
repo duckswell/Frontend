@@ -59,9 +59,21 @@ export default function Care() {
 
         console.log("현재 진행 중인 코스:", course);
 
+        /*
+         * 진행 중인 코스가 없을 수 있으므로
+         * null을 먼저 처리한다.
+         */
+        if (!course) {
+          setCurrentCourse(null);
+          setRecoverySummary("");
+          return;
+        }
+
         setCurrentCourse(course);
 
-        // recovery-summary는 집중 코스에서만 조회
+        /*
+         * recovery-summary는 집중 코스에서만 조회
+         */
         if (course.courseType !== "FOCUS") {
           setRecoverySummary("");
           return;
@@ -74,8 +86,6 @@ export default function Care() {
         } catch (error) {
           console.error("회복 단계 요약 조회 실패:", error);
 
-          // recovery-summary가 실패하더라도
-          // 현재 코스 정보 자체는 유지
           setRecoverySummary("");
         }
       } catch (error) {
@@ -103,8 +113,10 @@ export default function Care() {
 
         console.log("회복 배너 조회 성공:", banner);
 
-        // 집중 코스가 아니거나 코스가 없으면
-        // 백엔드에서 data 자체를 생략할 수 있음
+        /*
+         * 집중 코스가 아니거나
+         * 진행 중인 코스가 없으면 data가 없을 수 있음
+         */
         if (!banner) {
           setRecoveryDayText("");
           return;
@@ -143,8 +155,7 @@ export default function Care() {
       setIsStartingCourse(true);
 
       /*
-       * 이미 집중 코스가 진행 중이라면
-       * 새 코스를 만들지 않고 기존 courseId 사용
+       * 이미 집중 코스 진행 중
        */
       if (currentCourse?.courseType === "FOCUS") {
         console.log("기존 집중 코스로 루틴 시작:", currentCourse.courseId);
@@ -159,9 +170,7 @@ export default function Care() {
       }
 
       /*
-       * DAILY 코스가 진행 중이면
-       * 백엔드 정책상 새 FOCUS 코스를 시작할 수 없음.
-       * DAILY courseId를 FOCUS 화면에 전달하면 안 됨.
+       * DAILY 진행 중이면 새 FOCUS 시작 불가
        */
       if (currentCourse?.courseType === "DAILY") {
         console.error(
@@ -173,8 +182,7 @@ export default function Care() {
       }
 
       /*
-       * 진행 중인 코스가 없는 경우에만
-       * 새 집중 코스 생성
+       * 진행 중인 코스 없음 → FOCUS 생성
        */
       const course = await courseApi.startCourse({
         courseType: "FOCUS",

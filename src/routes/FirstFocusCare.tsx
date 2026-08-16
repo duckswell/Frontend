@@ -54,20 +54,31 @@ export default function FirstFocusCare() {
 
   const getFocusCourseId = async (): Promise<number | null> => {
     /*
-     * Care 페이지에서 전달받은 courseId가 있으면
-     * 추가 API 요청 없이 그대로 사용
+     * Care에서 courseId를 전달했다면
+     * 추가 API 호출 없이 사용
      */
     if (state?.courseId !== undefined) {
       return state.courseId;
     }
 
     /*
-     * 새로고침 또는 URL 직접 접근 등으로
-     * location.state가 없는 경우에만 현재 코스를 다시 조회
+     * 새로고침 / URL 직접 접근 시에만
+     * 현재 코스 재조회
      */
     try {
       const currentCourse = await courseApi.getCurrentCourse();
 
+      /*
+       * 진행 중인 코스 자체가 없는 경우
+       */
+      if (!currentCourse) {
+        console.error("현재 진행 중인 코스가 없습니다.");
+        return null;
+      }
+
+      /*
+       * 현재 코스가 FOCUS인지 확인
+       */
       if (currentCourse.courseType !== "FOCUS") {
         console.error(
           "현재 진행 중인 코스가 집중 코스가 아닙니다:",
