@@ -63,20 +63,34 @@ export default function ThirdFocusCare() {
 
       console.log("루틴 완료 성공:", completionData);
 
-      // 2. 루틴 기반 추천 제품 조회
-      const recommendedProductResponse =
-        await routineApi.getRecommendedProducts(routine.routineId);
+      // 2. 추천 제품 조회
+      // 실패해도 코스 종료는 계속 진행
+      let recommendedProducts: {
+        id: number;
+        brand: string;
+        name: string;
+        categories: string[];
+        imageUrl: string;
+        linkUrl: string;
+      }[] = [];
 
-      console.log("추천 제품 조회 성공:", recommendedProductResponse);
+      try {
+        const recommendedProductResponse =
+          await routineApi.getRecommendedProducts(routine.routineId);
 
-      const recommendedProducts = recommendedProductResponse.map((item) => ({
-        id: item.product.id,
-        brand: item.product.brand,
-        name: item.product.name,
-        categories: [item.ingredientName],
-        imageUrl: item.product.imageUrl,
-        linkUrl: item.product.linkUrl,
-      }));
+        console.log("추천 제품 조회 성공:", recommendedProductResponse);
+
+        recommendedProducts = recommendedProductResponse.map((item) => ({
+          id: item.product.id,
+          brand: item.product.brand,
+          name: item.product.name,
+          categories: [item.ingredientName],
+          imageUrl: item.product.imageUrl,
+          linkUrl: item.product.linkUrl,
+        }));
+      } catch (error) {
+        console.error("추천 제품 조회 실패 - 코스 종료는 계속 진행:", error);
+      }
 
       // 3. 현재 진행 중인 집중 코스 조회
       const currentCourse = await courseApi.getCurrentCourse();
@@ -84,13 +98,21 @@ export default function ThirdFocusCare() {
       console.log("현재 코스:", currentCourse);
       console.log("종료할 courseId:", currentCourse.courseId);
 
+      if (currentCourse.courseType !== "FOCUS") {
+        console.error(
+          "현재 진행 중인 코스가 집중 코스가 아닙니다:",
+          currentCourse
+        );
+
+        return;
+      }
+
       // 4. 집중 코스 종료
       const endedCourse = await courseApi.endCourse(currentCourse.courseId);
 
       console.log("집중 코스 종료 성공:", endedCourse);
 
-      // 5. 루틴 완료 페이지 이동
-      // symptom-summary 조회에 필요하므로 종료된 courseId도 함께 전달
+      // 5. 완료 페이지 이동
       navigate("/care/finish_routine", {
         state: {
           courseId: endedCourse.id,

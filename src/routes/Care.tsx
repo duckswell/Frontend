@@ -5,10 +5,23 @@ import { NavBar } from "../components/NavBar";
 import { TabBar } from "../components/TabBar";
 import CareButton from "../components/CareButton";
 
-import { dashboardApi } from "../api/dashboard";
+import { api } from "../lib/api";
 import { courseApi, type CurrentCourseResponse } from "../api/course";
 
 import * as S from "../styles/FocusCare/Care.styles";
+
+interface RecoveryBannerMetric {
+  current: number;
+  previous: number;
+  delta: number;
+}
+
+interface RecoveryBannerResponse {
+  redness: RecoveryBannerMetric;
+  texture: RecoveryBannerMetric;
+  blemish: RecoveryBannerMetric;
+  summaryMessage: string;
+}
 
 const COURSE_STEPS = [
   {
@@ -48,6 +61,12 @@ export default function Care() {
 
         setCurrentCourse(course);
 
+        // recovery-summary는 집중 코스에서만 조회
+        if (course.courseType !== "FOCUS") {
+          setRecoverySummary("");
+          return;
+        }
+
         try {
           const summary = await courseApi.getRecoverySummary(course.courseId);
 
@@ -55,7 +74,7 @@ export default function Care() {
         } catch (error) {
           console.error("회복 단계 요약 조회 실패:", error);
 
-          // recovery-summary가 실패해도
+          // recovery-summary가 실패하더라도
           // 현재 코스 정보 자체는 유지
           setRecoverySummary("");
         }
@@ -73,10 +92,19 @@ export default function Care() {
   useEffect(() => {
     const fetchRecoveryBanner = async () => {
       try {
-        const banner = await dashboardApi.getRecoveryBannerDetail();
+        const response = await api.get<{
+          success: boolean;
+          data?: RecoveryBannerResponse;
+          errorCode?: string;
+          message?: string;
+        }>("/api/dashboard/recovery-banner");
+
+        const banner = response.data.data;
 
         console.log("회복 배너 조회 성공:", banner);
 
+        // 집중 코스가 아니거나 코스가 없으면
+        // 백엔드에서 data 자체를 생략할 수 있음
         if (!banner) {
           setRecoveryDayText("");
           return;
@@ -115,10 +143,10 @@ export default function Care() {
       setIsStartingCourse(true);
 
       /*
-       * 이미 진행 중인 코스가 있으면
-       * /api/courses/start를 다시 호출하지 않는다.
+       * 이미 집중 코스가 진행 중이라면
+       * 새 코스를 만들지 않고 기존 courseId 사용
        */
-      if (currentCourse) {
+      if (currentCourse?.courseType === "FOCUS") {
         console.log("기존 집중 코스로 루틴 시작:", currentCourse.courseId);
 
         navigate("/care/first_focus_care", {
@@ -126,6 +154,20 @@ export default function Care() {
             courseId: currentCourse.courseId,
           },
         });
+
+        return;
+      }
+
+      /*
+       * DAILY 코스가 진행 중이면
+       * 백엔드 정책상 새 FOCUS 코스를 시작할 수 없음.
+       * DAILY courseId를 FOCUS 화면에 전달하면 안 됨.
+       */
+      if (currentCourse?.courseType === "DAILY") {
+        console.error(
+          "데일리 코스가 진행 중이어서 집중 코스를 시작할 수 없습니다.",
+          currentCourse
+        );
 
         return;
       }
@@ -227,7 +269,9 @@ export default function Care() {
       </S.Content>
 
       <S.BottomArea>
-        <CareButton onClick={handleStartRoutine}>루틴 시작</CareButton>
+        <CareButton disabled={isStartingCourse} onClick={handleStartRoutine}>
+          루틴 시작
+        </CareButton>
       </S.BottomArea>
 
       <TabBar activeTab="care" />

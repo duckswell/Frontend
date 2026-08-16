@@ -1,8 +1,9 @@
-import {  useRef, useState } from "react";
+import { useRef, useState } from "react";
 
 import AnalysisLoading from "./AnalysisLoading";
 import ImageUploadErrorModal from "./ImageUploadErrorModal";
 import { diagnosisApi } from "../../api/diagnosis";
+
 import * as S from "../../styles/FocusCare/CareInputForm.styles";
 import * as ModalS from "../../styles/FocusCare/ImageAnalysisModal.styles";
 
@@ -20,6 +21,7 @@ interface CareInputFormProps {
   skinImages: File[];
   onChangeImages: (files: File[]) => void;
   onChangePhotoId: (photoId: string | null) => void;
+
   additionalSymptom: string;
   onChangeAdditionalSymptom: (value: string) => void;
 }
@@ -35,8 +37,6 @@ export default function CareInputForm({
   onChangePhotoId,
 }: CareInputFormProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const pendingImagesRef = useRef<File[]>([]);
 
   const [isAnalyzingImage, setIsAnalyzingImage] = useState(false);
   const [isUploadErrorOpen, setIsUploadErrorOpen] = useState(false);
@@ -62,17 +62,23 @@ export default function CareInputForm({
 
     const selectedFile = selectedFiles[0];
 
-    pendingImagesRef.current = [selectedFile];
-
     try {
       setIsAnalyzingImage(true);
 
+      /*
+       * 선택한 사진을 먼저 화면에 반영하지 않고
+       * photo-check를 통과한 경우에만 저장한다.
+       */
       const result = await diagnosisApi.checkPhoto(selectedFile);
 
-      onChangeImages([...skinImages, selectedFile]);
+      /*
+       * 백엔드 진단 API는 photoId 하나만 받으므로
+       * 사진도 항상 한 장만 유지한다.
+       *
+       * 새 사진을 올리면 기존 사진을 교체한다.
+       */
+      onChangeImages([selectedFile]);
       onChangePhotoId(result.photoId);
-
-      pendingImagesRef.current = [];
 
       setIsUploadToastVisible(true);
 
@@ -82,8 +88,13 @@ export default function CareInputForm({
     } catch (error) {
       console.error("사진 품질 확인 실패:", error);
 
-      pendingImagesRef.current = [];
-      onChangePhotoId(null);
+      /*
+       * 기존에 정상 등록된 사진이 있다면 그대로 유지한다.
+       *
+       * 여기서 onChangePhotoId(null)을 호출하면
+       * 화면에는 기존 정상 사진이 남아 있는데
+       * photoId만 사라지는 문제가 생길 수 있다.
+       */
       setIsUploadErrorOpen(true);
     } finally {
       setIsAnalyzingImage(false);
@@ -91,12 +102,10 @@ export default function CareInputForm({
   };
 
   const handleCancelReupload = () => {
-    pendingImagesRef.current = [];
     setIsUploadErrorOpen(false);
   };
 
   const handleReupload = () => {
-    pendingImagesRef.current = [];
     setIsUploadErrorOpen(false);
 
     window.setTimeout(() => {
@@ -104,15 +113,15 @@ export default function CareInputForm({
     }, 0);
   };
 
-  const handleRemoveImage = (indexToRemove: number) => {
-    const nextImages = skinImages.filter((_, index) => index !== indexToRemove);
-
-    onChangeImages(nextImages);
-
-    if (nextImages.length === 0) {
-      onChangePhotoId(null);
-    }
+  const handleRemoveImage = () => {
+    /*
+     * 현재는 사진 한 장만 관리하므로
+     * 삭제 시 이미지와 photoId를 함께 초기화한다.
+     */
+    onChangeImages([]);
+    onChangePhotoId(null);
   };
+
   return (
     <>
       <S.Section>
@@ -174,14 +183,14 @@ export default function CareInputForm({
                 >
                   <S.PreviewImage
                     src={imageUrl}
-                    alt={`피부 사진 ${index + 1}`}
+                    alt="피부 사진"
                     onLoad={() => URL.revokeObjectURL(imageUrl)}
                   />
 
                   <S.RemoveImageButton
                     type="button"
-                    aria-label={`${index + 1}번째 사진 삭제`}
-                    onClick={() => handleRemoveImage(index)}
+                    aria-label="피부 사진 삭제"
+                    onClick={handleRemoveImage}
                   >
                     <img src="/assets/X.svg" alt="" aria-hidden="true" />
                   </S.RemoveImageButton>
@@ -194,7 +203,7 @@ export default function CareInputForm({
         <S.UploadButton type="button" onClick={handleOpenImagePicker}>
           <S.PlusIcon src="/assets/Plus.svg" alt="" aria-hidden="true" />
 
-          <S.UploadText>사진 추가</S.UploadText>
+          <S.UploadText>{hasImages ? "사진 변경" : "사진 추가"}</S.UploadText>
         </S.UploadButton>
 
         <S.HiddenInput

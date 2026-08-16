@@ -1,11 +1,13 @@
+import axios from "axios";
 import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import CareButton from "../CareButton";
-import RoutineOptionCard from "./RoutineOptionCard";
-
+import type { RoutineTypeCode } from "../../api/course";
 import type { Difficulty, DifficultyOption } from "../../api/diagnosis";
 import { routineApi } from "../../api/routine";
+
+import CareButton from "../CareButton";
+import RoutineOptionCard from "./RoutineOptionCard";
 
 import * as S from "../../styles/FocusCare/RoutineBottomSheet.styles";
 
@@ -13,12 +15,14 @@ interface RoutineBottomSheetProps {
   variant?: "focus" | "daily";
   difficultyOptions: DifficultyOption[];
   routineId: number;
+  routineTypeCode?: RoutineTypeCode;
 }
 
 export default function RoutineBottomSheet({
   variant = "focus",
   difficultyOptions,
   routineId,
+  routineTypeCode,
 }: RoutineBottomSheetProps) {
   const navigate = useNavigate();
 
@@ -88,6 +92,7 @@ export default function RoutineBottomSheet({
         navigate("/care/third_daily_care", {
           state: {
             routine,
+            routineTypeCode,
           },
         });
 
@@ -100,7 +105,19 @@ export default function RoutineBottomSheet({
         },
       });
     } catch (error) {
-      console.error("루틴 난이도 선택 실패:", error);
+      if (axios.isAxiosError(error)) {
+        console.error("루틴 난이도 선택 실패");
+
+        console.error("status:", error.response?.status);
+
+        console.error("response data:", error.response?.data);
+
+        console.error("routineId:", routineId);
+
+        console.error("selectedRoutine:", selectedRoutine);
+      } else {
+        console.error("루틴 난이도 선택 실패:", error);
+      }
     } finally {
       setIsSubmitting(false);
     }

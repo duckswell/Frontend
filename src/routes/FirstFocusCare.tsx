@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import { courseApi } from "../api/course";
 import { diagnosisApi, SYMPTOM_CODE_MAP } from "../api/diagnosis";
@@ -12,8 +12,15 @@ import FocusProgress from "../components/FocusCare/FocusProgress";
 
 import * as S from "../styles/FocusCare/FirstFocusCare.styles";
 
+interface FirstFocusCareLocationState {
+  courseId?: number;
+}
+
 export default function FirstFocusCare() {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const state = location.state as FirstFocusCareLocationState | null;
 
   const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
 
@@ -45,6 +52,39 @@ export default function FirstFocusCare() {
     setAdditionalSymptom(value);
   };
 
+  const getFocusCourseId = async (): Promise<number | null> => {
+    /*
+     * Care 페이지에서 전달받은 courseId가 있으면
+     * 추가 API 요청 없이 그대로 사용
+     */
+    if (state?.courseId !== undefined) {
+      return state.courseId;
+    }
+
+    /*
+     * 새로고침 또는 URL 직접 접근 등으로
+     * location.state가 없는 경우에만 현재 코스를 다시 조회
+     */
+    try {
+      const currentCourse = await courseApi.getCurrentCourse();
+
+      if (currentCourse.courseType !== "FOCUS") {
+        console.error(
+          "현재 진행 중인 코스가 집중 코스가 아닙니다:",
+          currentCourse
+        );
+
+        return null;
+      }
+
+      return currentCourse.courseId;
+    } catch (error) {
+      console.error("현재 집중 코스 조회 실패:", error);
+
+      return null;
+    }
+  };
+
   const handleMoveToNext = async () => {
     if (!isNextEnabled || !photoId || isSubmitting) {
       return;
@@ -53,22 +93,29 @@ export default function FirstFocusCare() {
     try {
       setIsSubmitting(true);
 
-      const currentCourse = await courseApi.getCurrentCourse();
+      const courseId = await getFocusCourseId();
 
-      const symptoms = selectedConditions.map(
-        (condition) => SYMPTOM_CODE_MAP[condition]
-      );
+      if (courseId === null) {
+        console.error("진단에 사용할 집중 코스 courseId가 없습니다.");
+        return;
+      }
+
+      const symptoms = selectedConditions
+        .map((condition) => SYMPTOM_CODE_MAP[condition])
+        .filter(
+          (symptom): symptom is NonNullable<typeof symptom> =>
+            symptom !== undefined
+        );
 
       const requestData = {
-        courseId: currentCourse.courseId,
+        courseId,
         symptoms,
-        symptomNote: additionalSymptom || undefined,
+        symptomNote: additionalSymptom.trim() || undefined,
         photoId,
       };
 
       console.log("===== 진단 요청 =====");
-      console.log("현재 courseId:", currentCourse.courseId);
-      console.log("현재 courseType:", currentCourse.courseType);
+      console.log("courseId:", courseId);
       console.log("선택 증상:", selectedConditions);
       console.log("변환된 symptoms:", symptoms);
       console.log("photoId:", photoId);
