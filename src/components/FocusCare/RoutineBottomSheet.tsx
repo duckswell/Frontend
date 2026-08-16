@@ -27,13 +27,10 @@ export default function RoutineBottomSheet({
   const navigate = useNavigate();
 
   const [isExpanded, setIsExpanded] = useState(true);
-
   const [selectedRoutine, setSelectedRoutine] = useState<Difficulty | null>(
     null
   );
-
   const [isSubmitting, setIsSubmitting] = useState(false);
-
   const [dragOffset, setDragOffset] = useState(0);
 
   const isRoutineSelected = selectedRoutine !== null;
@@ -73,13 +70,18 @@ export default function RoutineBottomSheet({
     setSelectedRoutine(difficulty);
   };
 
-  async function handleMoveToNextCare() {
+  const handleMoveToNextCare = async () => {
     if (!selectedRoutine || isSubmitting) {
       return;
     }
 
     try {
       setIsSubmitting(true);
+
+      console.log("===== 난이도 선택 요청 =====");
+      console.log("variant:", variant);
+      console.log("routineId:", routineId);
+      console.log("selectedRoutine:", selectedRoutine);
 
       const routine = await routineApi.selectDifficulty(
         routineId,
@@ -89,6 +91,8 @@ export default function RoutineBottomSheet({
       console.log("루틴 난이도 선택 성공:", routine);
 
       if (variant === "daily") {
+        console.log("ThirdDailyCare 이동 직전");
+
         navigate("/care/third_daily_care", {
           state: {
             routine,
@@ -99,29 +103,27 @@ export default function RoutineBottomSheet({
         return;
       }
 
+      console.log("🔥 ThirdFocusCare 이동 직전");
+
       navigate("/care/third_focus_care", {
         state: {
           routine,
         },
       });
     } catch (error) {
+      console.error("루틴 난이도 선택 실패:", error);
+
       if (axios.isAxiosError(error)) {
-        console.error("루틴 난이도 선택 실패");
-
         console.error("status:", error.response?.status);
-
         console.error("response data:", error.response?.data);
-
+        console.error("요청 URL:", error.config?.url);
         console.error("routineId:", routineId);
-
         console.error("selectedRoutine:", selectedRoutine);
-      } else {
-        console.error("루틴 난이도 선택 실패:", error);
       }
     } finally {
       setIsSubmitting(false);
     }
-  }
+  };
 
   return (
     <S.BottomSheet $expanded={isExpanded} $dragOffset={dragOffset}>
