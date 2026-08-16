@@ -1,11 +1,13 @@
+import axios from "axios";
 import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import CareButton from "../CareButton";
-import RoutineOptionCard from "./RoutineOptionCard";
-
+import type { RoutineTypeCode } from "../../api/course";
 import type { Difficulty, DifficultyOption } from "../../api/diagnosis";
 import { routineApi } from "../../api/routine";
+
+import CareButton from "../CareButton";
+import RoutineOptionCard from "./RoutineOptionCard";
 
 import * as S from "../../styles/FocusCare/RoutineBottomSheet.styles";
 
@@ -13,23 +15,22 @@ interface RoutineBottomSheetProps {
   variant?: "focus" | "daily";
   difficultyOptions: DifficultyOption[];
   routineId: number;
+  routineTypeCode?: RoutineTypeCode;
 }
 
 export default function RoutineBottomSheet({
   variant = "focus",
   difficultyOptions,
   routineId,
+  routineTypeCode,
 }: RoutineBottomSheetProps) {
   const navigate = useNavigate();
 
   const [isExpanded, setIsExpanded] = useState(true);
-
   const [selectedRoutine, setSelectedRoutine] = useState<Difficulty | null>(
     null
   );
-
   const [isSubmitting, setIsSubmitting] = useState(false);
-
   const [dragOffset, setDragOffset] = useState(0);
 
   const isRoutineSelected = selectedRoutine !== null;
@@ -69,13 +70,18 @@ export default function RoutineBottomSheet({
     setSelectedRoutine(difficulty);
   };
 
-  async function handleMoveToNextCare() {
+  const handleMoveToNextCare = async () => {
     if (!selectedRoutine || isSubmitting) {
       return;
     }
 
     try {
       setIsSubmitting(true);
+
+      console.log("===== 난이도 선택 요청 =====");
+      console.log("variant:", variant);
+      console.log("routineId:", routineId);
+      console.log("selectedRoutine:", selectedRoutine);
 
       const routine = await routineApi.selectDifficulty(
         routineId,
@@ -85,14 +91,19 @@ export default function RoutineBottomSheet({
       console.log("루틴 난이도 선택 성공:", routine);
 
       if (variant === "daily") {
+        console.log("ThirdDailyCare 이동 직전");
+
         navigate("/care/third_daily_care", {
           state: {
             routine,
+            routineTypeCode,
           },
         });
 
         return;
       }
+
+      console.log("🔥 ThirdFocusCare 이동 직전");
 
       navigate("/care/third_focus_care", {
         state: {
@@ -101,10 +112,18 @@ export default function RoutineBottomSheet({
       });
     } catch (error) {
       console.error("루틴 난이도 선택 실패:", error);
+
+      if (axios.isAxiosError(error)) {
+        console.error("status:", error.response?.status);
+        console.error("response data:", error.response?.data);
+        console.error("요청 URL:", error.config?.url);
+        console.error("routineId:", routineId);
+        console.error("selectedRoutine:", selectedRoutine);
+      }
     } finally {
       setIsSubmitting(false);
     }
-  }
+  };
 
   return (
     <S.BottomSheet $expanded={isExpanded} $dragOffset={dragOffset}>

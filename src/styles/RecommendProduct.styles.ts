@@ -40,9 +40,6 @@ export const Page = styled.div<PageProps>`
 export const IngredientSection = styled.section`
   width: 100%;
 
-  /*
-   * Header/NavBar 아래에서 제목까지 16px
-   */
   padding-top: 16px;
 `;
 

@@ -19,6 +19,7 @@ export const Header = styled.div`
   align-items: center;
   justify-content: space-between;
 
+  height: 40px;
   margin-bottom: 16px;
 `;
 
@@ -61,12 +62,14 @@ export const ProductScroll = styled.div`
   box-sizing: border-box;
 
   display: flex;
+  align-items: flex-start;
   gap: 16px;
 
   width: 100%;
   max-width: 370px;
 
   overflow-x: auto;
+  overflow-y: hidden;
 
   scrollbar-width: none;
 
@@ -78,11 +81,16 @@ export const ProductScroll = styled.div`
 export const ProductCard = styled.button`
   box-sizing: border-box;
 
+  display: flex;
   flex: 0 0 140px;
+  flex-direction: column;
+  align-items: flex-start;
 
   width: 140px;
+  min-width: 140px;
 
   padding: 0;
+  margin: 0;
 
   border: none;
 
@@ -91,12 +99,20 @@ export const ProductCard = styled.button`
   font-family: inherit;
   text-align: left;
 
+  vertical-align: top;
+
   cursor: pointer;
 `;
 
 export const ProductImagePlaceholder = styled.div<ProductImagePlaceholderProps>`
+  box-sizing: border-box;
+
+  flex-shrink: 0;
+
   width: 140px;
   height: 122px;
+
+  margin: 0;
 
   border-radius: 4px;
 
@@ -111,9 +127,13 @@ export const ProductImagePlaceholder = styled.div<ProductImagePlaceholderProps>`
 `;
 
 export const ProductInfo = styled.div`
+  box-sizing: border-box;
+
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  align-items: flex-start;
+
+  width: 100%;
 
   margin-top: 8px;
 `;
@@ -121,17 +141,35 @@ export const ProductInfo = styled.div`
 export const Brand = styled.p`
   ${typography.Body1Bold};
 
+  width: 100%;
+  min-height: 24px;
+
   margin: 0;
 
   color: ${colorPalette.Black};
+
+  line-height: 24px;
 `;
 
 export const ProductName = styled.p`
   ${typography.Body1};
 
+  display: -webkit-box;
+
+  width: 100%;
+  min-height: 48px;
+  max-height: 48px;
+
   margin: 0;
 
+  overflow: hidden;
+
   color: ${colorPalette.Black};
+
+  line-height: 24px;
+
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 `;
 
 export const CategoryList = styled.div`
@@ -140,6 +178,8 @@ export const CategoryList = styled.div`
   gap: 4px;
 
   width: 100%;
+
+  margin-top: 4px;
 `;
 
 export const Category = styled.span`
@@ -157,7 +197,6 @@ export const Category = styled.span`
 
   white-space: nowrap;
 `;
-
 export const ProductModalOverlay = styled.div`
   position: fixed;
   z-index: 9999;

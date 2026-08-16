@@ -40,21 +40,32 @@ export interface ChecklistItem {
   description: string;
   checked: boolean;
 }
+export interface RecoveryBannerDetailMetric {
+  current: number;
+  previous: number;
+  delta: number;
+}
 
+export interface RecoveryBannerDetailData {
+  redness: RecoveryBannerDetailMetric;
+  texture: RecoveryBannerDetailMetric;
+  blemish: RecoveryBannerDetailMetric;
+  summaryMessage: string;
+}
 export const dashboardApi = {
   getWeatherBanner: async (coords?: { lat: number; lon: number }) => {
     const response = await api.get<ApiResponse<WeatherBannerData>>(
       "/api/dashboard/weather-banner",
       {
         params: coords ? { lat: coords.lat, lon: coords.lon } : undefined,
-      },
+      }
     );
     return response.data.data;
   },
 
   getRecoveryBanner: async () => {
     const response = await api.get<ApiResponse<RecoveryBannerData>>(
-      "/api/dashboard/recovery-banner",
+      "/api/dashboard/recovery-banner"
     );
     return response.data.data;
   },
@@ -64,15 +75,27 @@ export const dashboardApi = {
       "/api/dashboard/checklist",
       {
         params: coords ? { lat: coords.lat, lon: coords.lon } : undefined,
-      },
+      }
     );
     return response.data.data;
   },
 
   toggleChecklistItem: async (checklistItemId: number | string) => {
     const response = await api.patch<ApiResponse<ChecklistItem>>(
-      `/api/dashboard/checklist/${checklistItemId}/toggle`,
+      `/api/dashboard/checklist/${checklistItemId}/toggle`
     );
     return response.data.data;
   },
+
+  getRecoveryBannerDetail:
+    async (): Promise<RecoveryBannerDetailData | null> => {
+      const response = await api.get<{
+        success: boolean;
+        data?: RecoveryBannerDetailData;
+        errorCode?: string;
+        message?: string;
+      }>("/api/dashboard/recovery-banner");
+
+      return response.data.data ?? null;
+    },
 };

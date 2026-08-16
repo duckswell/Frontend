@@ -26,7 +26,6 @@ export const Content = styled.main`
 
   overflow: hidden;
 `;
-
 export const CompletionSection = styled.section`
   position: relative;
 
@@ -37,7 +36,8 @@ export const CompletionSection = styled.section`
   flex-shrink: 0;
 
   width: 100%;
-  height: 420px;
+
+  padding-top: 160px;
 `;
 
 export const IntroTextArea = styled.div`
@@ -47,18 +47,6 @@ export const IntroTextArea = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-
-  text-align: center;
-`;
-
-export const Title = styled.h1`
-  margin: 0;
-
-  color: #1f2937;
-
-  font-size: 24px;
-  font-weight: 600;
-  line-height: 1.35;
 
   text-align: center;
 `;
@@ -81,6 +69,20 @@ export const IntroSection = styled.section`
   align-items: center;
 
   width: 100%;
+
+  margin-top: 36px;
+`;
+
+export const Title = styled.h1`
+  margin: 0;
+
+  color: #1f2937;
+
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.35;
+
+  text-align: center;
 `;
 
 export const RoutineCard = styled.div`
@@ -90,16 +92,49 @@ export const RoutineCard = styled.div`
   flex-direction: column;
   align-items: center;
 
-  width: 208px;
+  width: fit-content;
+  min-width: 208px;
+  max-width: 100%;
 
   padding: 16px;
 
   border: 0.5px solid ${colorPalette.Quaternary};
   border-radius: 12px;
 
-  background-color: ${colorPalette.White};
+  background-color: transparent;
 `;
 
+export const CategoryList = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px;
+
+  width: fit-content;
+  max-width: 100%;
+
+  margin-top: 8px;
+`;
+
+export const Category = styled.span`
+  ${typography.Body2};
+
+  box-sizing: border-box;
+
+  flex-shrink: 0;
+
+  width: fit-content;
+
+  padding: 6px 12px;
+
+  border: 0.5px solid ${colorPalette.Quaternary};
+  border-radius: 9999px;
+
+  background-color: transparent;
+  color: ${colorPalette.Black};
+
+  white-space: nowrap;
+`;
 export const RoutineImage = styled.img`
   width: 42px;
   height: 42px;
@@ -119,44 +154,16 @@ export const RoutineName = styled.h2`
   line-height: 1.4;
 `;
 
-export const CategoryList = styled.div`
-  display: flex;
-  justify-content: center;
-  gap: 4px;
-
-  width: 100%;
-
-  margin-top: 8px;
-`;
-
-export const Category = styled.span`
-  ${typography.Body2};
-
-  box-sizing: border-box;
-
-  width: fit-content;
-
-  padding: 6px 12px;
-
-  border: 0.5px solid ${colorPalette.Quaternary};
-  border-radius: 9999px;
-
-  background-color: rgba(251, 251, 251, 0.8);
-  color: ${colorPalette.Black};
-
-  white-space: nowrap;
-`;
-
 export const ProductSection = styled.div`
   width: 100%;
   max-width: 370px;
 
-  margin-top: 72px;
+  margin-top: 62px;
 `;
 
 export const ButtonArea = styled.div`
   width: 100%;
   max-width: 370px;
 
-  margin-top: 72px;
+  margin-top: 32px;
 `;

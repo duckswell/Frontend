@@ -1,5 +1,7 @@
 import { api } from "../lib/api";
+
 import type { ApiResponse } from "./dashboard";
+import type { RoutineTypeCode } from "./course";
 import type { Difficulty } from "./diagnosis";
 
 export type ProductCategory =
@@ -50,6 +52,7 @@ export interface RoutineCompletionData {
 
 export interface RecommendedRoutineProduct {
   ingredientName: string;
+
   product: {
     id: number;
     name: string;
@@ -58,6 +61,10 @@ export interface RecommendedRoutineProduct {
     imageUrl: string;
     linkUrl: string;
   };
+}
+
+export interface TodayRoutineResponse {
+  routineId: number;
 }
 
 export const routineApi = {
@@ -100,11 +107,41 @@ export const routineApi = {
     return response.data.data;
   },
 
+  getTodayRoutine: async (): Promise<number | null> => {
+    const response = await api.get<ApiResponse<TodayRoutineResponse>>(
+      "/api/routines/today"
+    );
+
+    return response.data.data?.routineId ?? null;
+  },
+
+  /*
+   * 실제 생성된 routineId 기준 추천 제품
+   *
+   * FinishRoutine / TodayRoutineSummary 등에서 사용
+   */
   getRecommendedProducts: async (
     routineId: number
   ): Promise<RecommendedRoutineProduct[]> => {
     const response = await api.get<ApiResponse<RecommendedRoutineProduct[]>>(
       `/api/routines/${routineId}/recommended-products`
+    );
+
+    return response.data.data;
+  },
+
+  /*
+   * 데일리 루틴 타입 기준 추천 제품
+   *
+   * FinishFocusCare에서 DAILY course를 생성한 직후에는
+   * 아직 diagnosis를 하지 않아 routineId가 없으므로
+   * FinishSelectRoutine에서 이 API를 사용한다.
+   */
+  getRecommendedProductsByRoutineType: async (
+    routineTypeCode: RoutineTypeCode
+  ): Promise<RecommendedRoutineProduct[]> => {
+    const response = await api.get<ApiResponse<RecommendedRoutineProduct[]>>(
+      `/api/courses/routine-types/${routineTypeCode}/recommended-products`
     );
 
     return response.data.data;
