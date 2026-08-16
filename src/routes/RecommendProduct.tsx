@@ -158,32 +158,27 @@ export default function RecommendProduct() {
 
   useEffect(() => {
     if (selectedIngredientId === null) {
-      setProducts([]);
       return;
     }
+
+    const ingredientId = selectedIngredientId;
 
     async function fetchProducts() {
       try {
         const response = await productApi.getRecommendedProducts(
-          selectedIngredientId,
+          ingredientId,
           selectedProductCategory ?? undefined
         );
 
         setProducts(response);
       } catch (error) {
         console.error("추천 제품 조회 실패:", error);
-
         setProducts([]);
       }
     }
 
     fetchProducts();
   }, [selectedIngredientId, selectedProductCategory]);
-
-  /*
-   * API 성분 목록이 로딩된 뒤
-   * 현재 선택된 ingredientId 카드를 중앙으로 이동
-   */
   useEffect(() => {
     const container = ingredientScrollRef.current;
 
