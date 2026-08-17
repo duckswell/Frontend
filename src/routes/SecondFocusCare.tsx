@@ -41,7 +41,6 @@ export default function SecondFocusCare() {
   useEffect(() => {
     if (!diagnosisRequest) {
       console.error("집중 진단 요청에 필요한 diagnosisRequest가 없습니다.");
-
       return;
     }
 
@@ -51,19 +50,17 @@ export default function SecondFocusCare() {
 
     hasRequestedDiagnosis.current = true;
 
+    const request = diagnosisRequest;
+
     async function createDiagnosis() {
       try {
         console.log("===== SecondFocusCare AI 진단 시작 =====");
-        console.log("진단 요청 body:", diagnosisRequest);
+        console.log("진단 요청 body:", request);
 
-        const response = await diagnosisApi.createDiagnosis(diagnosisRequest);
+        const response = await diagnosisApi.createDiagnosis(request);
 
         console.log("집중 코스 AI 진단 완료:", response);
 
-        /*
-         * diagnosis가 저장되는 순간
-         * AnalysisLoading의 isComplete가 true가 된다.
-         */
         setDiagnosis(response);
       } catch (error) {
         console.error("집중 코스 AI 진단 실패:", error);

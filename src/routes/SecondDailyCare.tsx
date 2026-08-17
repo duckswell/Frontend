@@ -43,7 +43,6 @@ export default function SecondDailyCare() {
   useEffect(() => {
     if (!diagnosisRequest) {
       console.error("데일리 진단 요청에 필요한 diagnosisRequest가 없습니다.");
-
       return;
     }
 
@@ -53,19 +52,17 @@ export default function SecondDailyCare() {
 
     hasRequestedDiagnosis.current = true;
 
+    const request = diagnosisRequest;
+
     async function createDiagnosis() {
       try {
         console.log("===== SecondDailyCare AI 진단 시작 =====");
-        console.log("진단 요청 body:", diagnosisRequest);
+        console.log("진단 요청 body:", request);
 
-        const response = await diagnosisApi.createDiagnosis(diagnosisRequest);
+        const response = await diagnosisApi.createDiagnosis(request);
 
         console.log("데일리 코스 AI 진단 완료:", response);
 
-        /*
-         * 응답이 완료된 순간 diagnosis 저장
-         * → AnalysisLoading isComplete=true
-         */
         setDiagnosis(response);
       } catch (error) {
         console.error("데일리 코스 AI 진단 실패:", error);
