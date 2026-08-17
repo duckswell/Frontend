@@ -27,8 +27,6 @@ const formatDDay = (dateStr?: string): string | null => {
 
   if (diffDays < 0) {
     return `D${diffDays}`;
-  } else if (diffDays === 0) {
-    return "D-Day";
   } else {
     return `D+${diffDays + 1}`;
   }
