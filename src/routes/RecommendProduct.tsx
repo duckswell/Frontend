@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { createPortal } from "react-dom";
 import { useSearchParams } from "react-router-dom";
 
 import {
@@ -107,6 +106,8 @@ export default function RecommendProduct() {
   const pageRef = useRef<HTMLDivElement>(null);
   const ingredientScrollRef = useRef<HTMLDivElement>(null);
 
+  const productCategoryScrollRef = useRef<HTMLDivElement>(null);
+
   const scrollEndTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   /*
@@ -150,18 +151,38 @@ export default function RecommendProduct() {
   const [selectedProductCategory, setSelectedProductCategory] =
     useState<ProductCategory | null>(initialProductCategory);
 
-  const [products, setProducts] = useState<RecommendedProduct[]>([]);
+  useEffect(() => {
+    const container = productCategoryScrollRef.current;
 
-  const [selectedProductId, setSelectedProductId] = useState<number | null>(
-    null
-  );
+    if (!container) {
+      return;
+    }
+
+    const selectedButton = container.querySelector<HTMLElement>(
+      '[data-selected="true"]'
+    );
+
+    if (!selectedButton) {
+      return;
+    }
+
+    const animationFrame = window.requestAnimationFrame(() => {
+      selectedButton.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+        inline: "center",
+      });
+    });
+
+    return () => {
+      window.cancelAnimationFrame(animationFrame);
+    };
+  }, [selectedProductCategory]);
+
+  const [products, setProducts] = useState<RecommendedProduct[]>([]);
 
   const [showScrollTopButton, setShowScrollTopButton] = useState(false);
 
-  /*
-   * 무한 스크롤처럼 보이게
-   * 1,2,3 / 1,2,3 / 1,2,3 형태로 렌더링
-   */
   const loopedIngredients = useMemo(() => {
     if (ingredients.length <= 1) {
       return ingredients;
@@ -169,9 +190,6 @@ export default function RecommendProduct() {
 
     return [...ingredients, ...ingredients, ...ingredients];
   }, [ingredients]);
-
-  const selectedProduct =
-    products.find((product) => product.id === selectedProductId) ?? null;
 
   /*
    * 추천 성분 조회
@@ -479,28 +497,6 @@ export default function RecommendProduct() {
   }, [ingredients, selectedIngredientId]);
 
   /*
-   * 외부 제품 모달이 열렸을 때
-   * 뒤 페이지 스크롤 방지
-   */
-  useEffect(() => {
-    const page = pageRef.current;
-
-    if (!page) {
-      return;
-    }
-
-    if (selectedProduct) {
-      page.style.overflowY = "hidden";
-    } else {
-      page.style.overflowY = "auto";
-    }
-
-    return () => {
-      page.style.overflowY = "auto";
-    };
-  }, [selectedProduct]);
-
-  /*
    * 컴포넌트 제거 시 예약 timer 정리
    */
   useEffect(() => {
@@ -520,7 +516,7 @@ export default function RecommendProduct() {
     event.currentTarget.scrollIntoView({
       behavior: "smooth",
       block: "nearest",
-      inline: "nearest",
+      inline: "center",
     });
   }
 
@@ -721,7 +717,7 @@ export default function RecommendProduct() {
         </S.IngredientSection>
 
         <S.ProductSection>
-          <S.ProductCategoryScroll>
+          <S.ProductCategoryScroll ref={productCategoryScrollRef}>
             {PRODUCT_CATEGORIES.map((category) => {
               const isSelected = selectedProductCategory === category.value;
 
@@ -730,6 +726,7 @@ export default function RecommendProduct() {
                   key={category.label}
                   type="button"
                   $selected={isSelected}
+                  data-selected={isSelected}
                   onClick={(event) =>
                     handleProductCategoryClick(category.value, event)
                   }
@@ -749,44 +746,15 @@ export default function RecommendProduct() {
                   brand: product.brand,
                   name: product.name,
                   imageUrl: product.imageUrl,
+                  linkUrl: product.linkUrl,
                 }}
-                onClick={() => setSelectedProductId(product.id)}
               />
             ))}
           </S.ProductGrid>
         </S.ProductSection>
       </S.Content>
 
-      {selectedProduct &&
-        createPortal(
-          <S.ProductModalOverlay
-            $hasTabBar={!fromCare}
-            onClick={() => setSelectedProductId(null)}
-          >
-            <S.ProductModalContainer
-              onClick={(event) => event.stopPropagation()}
-            >
-              <S.ProductModalHeader>
-                <S.ProductModalCloseButton
-                  type="button"
-                  onClick={() => setSelectedProductId(null)}
-                >
-                  닫기
-                </S.ProductModalCloseButton>
-              </S.ProductModalHeader>
-
-              <S.ExternalWebsiteArea>
-                <S.ExternalWebsiteFrame
-                  src={selectedProduct.linkUrl}
-                  title={`${selectedProduct.name} 외부 웹사이트`}
-                />
-              </S.ExternalWebsiteArea>
-            </S.ProductModalContainer>
-          </S.ProductModalOverlay>,
-          document.body
-        )}
-
-      {showScrollTopButton && !selectedProduct && (
+      {showScrollTopButton && (
         <S.ScrollTopButton
           type="button"
           $hasTabBar={!fromCare}

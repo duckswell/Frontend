@@ -1,5 +1,6 @@
 import styled from "styled-components";
 
+import { colorPalette } from "../lib/colorPalette";
 import { typography } from "../lib/typography";
 
 export const Card = styled.article`
@@ -31,6 +32,7 @@ export const ProductImagePlaceholder = styled.div<ProductImagePlaceholderProps>`
   background-position: center;
   background-repeat: no-repeat;
 `;
+
 export const ProductInfo = styled.div`
   display: flex;
   flex-direction: column;
@@ -45,46 +47,51 @@ export const Brand = styled.p`
 
   margin: 0;
 
-  color: #1f2937;
+  color: ${colorPalette.Black};
 `;
 
 export const ProductName = styled.p`
   ${typography.Body1};
 
+  display: -webkit-box;
+
+  width: 100%;
+  min-height: 48px;
+  max-height: 48px;
+
   margin: 4px 0 0;
 
-  color: #1f2937;
+  overflow: hidden;
+
+  color: ${colorPalette.Black};
+
+  line-height: 24px;
+
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 `;
 
-export const ProductImageButton = styled.button`
-  display: block;
+export const ProductLinkButton = styled.button`
+  ${typography.Body2};
+
+  box-sizing: border-box;
 
   width: 100%;
 
-  padding: 0;
+  margin-top: 4px;
+  padding: 6px 0;
 
-  border: none;
+  border: 0.5px solid ${colorPalette.Quaternary};
+  border-radius: 4px;
 
-  background-color: transparent;
-
-  cursor: pointer;
-`;
-
-export const ProductTextButton = styled.button`
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-
-  width: 100%;
-
-  padding: 0;
-
-  border: none;
-
-  background-color: transparent;
+  background-color: ${colorPalette.OffWhite};
+  color: ${colorPalette.Black};
 
   font-family: inherit;
-  text-align: left;
 
   cursor: pointer;
+
+  &:disabled {
+    cursor: default;
+  }
 `;
