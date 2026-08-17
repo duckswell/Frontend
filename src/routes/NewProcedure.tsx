@@ -85,7 +85,8 @@ const NewProcedure: React.FC = () => {
 
     const loadProcedures = async () => {
       try {
-        const data = await procedureApi.getAllProcedures();
+        // 💡 GET /api/procedures/current 호출 (현재 진행 중인 집중 코스의 시술만 조회)
+        const data = await procedureApi.getCurrentProcedures();
         if (!isMounted) return;
 
         if (data && data.length > 0) {
@@ -101,7 +102,7 @@ const NewProcedure: React.FC = () => {
 
             return {
               id: item.id,
-              isOpen: idx === sortedData.length - 1,
+              isOpen: idx === sortedData.length - 1, // 가장 최근 항목만 펼침
               type: displayType,
               date: item.procedureDate
                 ? item.procedureDate.replace(/-/g, ".")
@@ -130,7 +131,7 @@ const NewProcedure: React.FC = () => {
           ]);
         }
       } catch (error) {
-        console.error("기존 시술 목록 불러오기 실패:", error);
+        console.error("현재 코스 시술 목록 불러오기 실패:", error);
       }
     };
 
