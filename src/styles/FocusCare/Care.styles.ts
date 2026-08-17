@@ -140,9 +140,6 @@ export const CourseCard = styled.div`
 
   width: 100%;
 
-  /*
-   * 제목 영역 아래 16px
-   */
   margin-top: 16px;
   padding: 24px;
 
@@ -157,7 +154,7 @@ export const CourseCard = styled.div`
 export const StepList = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 32px;
+  gap: 28px;
 `;
 
 export const StepItem = styled.div`
