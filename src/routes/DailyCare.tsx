@@ -131,13 +131,6 @@ export default function DailyCare() {
 
         setCurrentCourse(course);
 
-        /*
-         * 중요:
-         * 백엔드 label은 루틴 판별에 사용하지 않는다.
-         *
-         * 1. navigate state
-         * 2. sessionStorage
-         */
         const stored = getStoredDailyCourse();
 
         let routineTypeCode: RoutineTypeCode | null =
@@ -183,10 +176,6 @@ export default function DailyCare() {
       ? DAILY_ROUTINE_INFO[currentRoutineTypeCode]
       : null;
 
-  /*
-   * 절대 currentCourse.label로 fallback하지 않는다.
-   * 우리 서비스의 4개 루틴 이름만 보여준다.
-   */
   const routineTitle = currentRoutine?.title ?? "데일리 루틴";
 
   const routineDescription =
@@ -199,10 +188,6 @@ export default function DailyCare() {
     currentCourse?.courseType === "DAILY" &&
     courseId !== undefined &&
     currentRoutineTypeCode !== null;
-
-  const handleMoveToIngredientRecommendation = () => {
-    navigate("/recommend?from=care");
-  };
 
   const handleOpenConsultationGuide = () => {
     navigate("/safety");
@@ -294,13 +279,6 @@ export default function DailyCare() {
                 </S.StepItem>
               ))}
             </S.StepList>
-
-            <S.OutlinedButton
-              type="button"
-              onClick={handleMoveToIngredientRecommendation}
-            >
-              추천 성분이 담긴 제품 보기
-            </S.OutlinedButton>
           </S.CourseCard>
         </S.CourseSection>
 

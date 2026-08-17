@@ -102,7 +102,7 @@ const NewProcedure: React.FC = () => {
 
         if (data && data.length > 0) {
           const sortedData = [...data].sort(
-            (a, b) => Number(a.id) - Number(b.id),
+            (a, b) => Number(a.id) - Number(b.id)
           );
 
           const mappedList: ProcedureData[] = sortedData.map((item, idx) => {
@@ -121,7 +121,7 @@ const NewProcedure: React.FC = () => {
               currentCount: String(item.currentCount ?? ""),
               totalCount: String(item.totalCount ?? ""),
               selectedParts: (item.areas || []).map(
-                (area) => REVERSE_BODY_PART_MAP[area] || area,
+                (area) => REVERSE_BODY_PART_MAP[area] || area
               ),
               isNew: false,
             };
@@ -161,16 +161,16 @@ const NewProcedure: React.FC = () => {
         item.date.trim() !== "" &&
         item.currentCount.trim() !== "" &&
         item.totalCount.trim() !== "" &&
-        item.selectedParts.length > 0,
+        item.selectedParts.length > 0
     );
 
   const updateProcedure = <K extends keyof ProcedureData>(
     id: number,
     field: K,
-    value: ProcedureData[K],
+    value: ProcedureData[K]
   ) => {
     setProcedures((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, [field]: value } : item)),
+      prev.map((item) => (item.id === id ? { ...item, [field]: value } : item))
     );
   };
 
@@ -179,7 +179,7 @@ const NewProcedure: React.FC = () => {
       prev.map((item) => ({
         ...item,
         isOpen: item.id === id ? !item.isOpen : false,
-      })),
+      }))
     );
   };
 
@@ -194,7 +194,7 @@ const NewProcedure: React.FC = () => {
           : [...item.selectedParts, part];
 
         return { ...item, selectedParts: updatedParts };
-      }),
+      })
     );
   };
 
@@ -287,7 +287,7 @@ const NewProcedure: React.FC = () => {
         } catch (courseError) {
           console.warn(
             "집중 코스 전환 시도 중 오류 (기존 집중 코스 재시작 시도):",
-            courseError,
+            courseError
           );
           await courseApi.restartFocusCourse().catch(() => {});
         }
@@ -303,9 +303,9 @@ const NewProcedure: React.FC = () => {
             currentCount: Number(item.currentCount),
             totalCount: Number(item.totalCount),
             areas: item.selectedParts.map(
-              (part) => BODY_PART_MAP[part] || part,
+              (part) => BODY_PART_MAP[part] || part
             ),
-          }),
+          })
         );
       });
 
@@ -318,10 +318,10 @@ const NewProcedure: React.FC = () => {
               currentCount: Number(item.currentCount),
               totalCount: Number(item.totalCount),
               areas: item.selectedParts.map(
-                (part) => BODY_PART_MAP[part] || part,
+                (part) => BODY_PART_MAP[part] || part
               ),
             })),
-          }),
+          })
         );
       }
 
@@ -359,8 +359,8 @@ const NewProcedure: React.FC = () => {
             const displayText = hasValue
               ? item.type
               : isSingle
-                ? "시술 이름"
-                : "작성 중";
+              ? "시술 이름"
+              : "작성 중";
 
             const isSelectOpen = openSelectId === item.id;
             const isDatePickerOpen = openDatePickerId === item.id;
@@ -408,7 +408,9 @@ const NewProcedure: React.FC = () => {
                       <label>시술 종류</label>
                       <S.SelectBox>
                         <div
-                          className={`select-header ${!item.type ? "placeholder" : ""} ${isSelectOpen ? "focused" : ""}`}
+                          className={`select-header ${
+                            !item.type ? "placeholder" : ""
+                          } ${isSelectOpen ? "focused" : ""}`}
                           onClick={() => {
                             setOpenSelectId(isSelectOpen ? null : item.id);
                             setOpenDatePickerId(null);
@@ -416,7 +418,9 @@ const NewProcedure: React.FC = () => {
                         >
                           <span>{item.type || "시술 종류를 선택하세요"}</span>
                           <img
-                            className={`dropdown-icon ${isSelectOpen ? "open" : ""}`}
+                            className={`dropdown-icon ${
+                              isSelectOpen ? "open" : ""
+                            }`}
                             src="/assets/ChevronDown.svg"
                             alt="선택"
                           />
@@ -451,7 +455,7 @@ const NewProcedure: React.FC = () => {
                             setInitialDate(item.date);
                           }
                           setOpenDatePickerId(
-                            isDatePickerOpen ? null : item.id,
+                            isDatePickerOpen ? null : item.id
                           );
                           setOpenSelectId(null);
                         }}
@@ -462,7 +466,9 @@ const NewProcedure: React.FC = () => {
                           className="calendar-icon"
                         />
                         <span
-                          className={`date-text ${!item.date ? "placeholder" : ""}`}
+                          className={`date-text ${
+                            !item.date ? "placeholder" : ""
+                          }`}
                         >
                           {item.date || "시술날짜"}
                         </span>
@@ -512,19 +518,19 @@ const NewProcedure: React.FC = () => {
                                 (new Date(
                                   calendarYear,
                                   calendarMonth - 1,
-                                  1,
+                                  1
                                 ).getDay() +
                                   6) %
                                 7;
                               const totalDays = new Date(
                                 calendarYear,
                                 calendarMonth,
-                                0,
+                                0
                               ).getDate();
                               const prevMonthTotalDays = new Date(
                                 calendarYear,
                                 calendarMonth - 1,
-                                0,
+                                0
                               ).getDate();
 
                               const cells = [];
@@ -541,12 +547,17 @@ const NewProcedure: React.FC = () => {
                                     $isSelectable={false}
                                   >
                                     {dayNum}
-                                  </S.DayCell>,
+                                  </S.DayCell>
                                 );
                               }
 
                               for (let d = 1; d <= totalDays; d++) {
-                                const formattedDate = `${calendarYear}.${String(calendarMonth).padStart(2, "0")}.${String(d).padStart(2, "0")}`;
+                                const formattedDate = `${calendarYear}.${String(
+                                  calendarMonth
+                                ).padStart(2, "0")}.${String(d).padStart(
+                                  2,
+                                  "0"
+                                )}`;
                                 const isSelected = item.date === formattedDate;
                                 const isToday =
                                   calendarYear === currentYear &&
@@ -555,7 +566,7 @@ const NewProcedure: React.FC = () => {
                                 const isSelectable = isDateSelectable(
                                   calendarYear,
                                   calendarMonth,
-                                  d,
+                                  d
                                 );
 
                                 cells.push(
@@ -571,12 +582,12 @@ const NewProcedure: React.FC = () => {
                                       updateProcedure(
                                         item.id,
                                         "date",
-                                        formattedDate,
+                                        formattedDate
                                       );
                                     }}
                                   >
                                     {d}
-                                  </S.DayCell>,
+                                  </S.DayCell>
                                 );
                               }
 
@@ -597,7 +608,7 @@ const NewProcedure: React.FC = () => {
                                     $isSelectable={false}
                                   >
                                     {nextD}
-                                  </S.DayCell>,
+                                  </S.DayCell>
                                 );
                               }
 
@@ -643,14 +654,19 @@ const NewProcedure: React.FC = () => {
                                   : 1
                               }
                               style={{
-                                width: `${Math.max(item.currentCount ? item.currentCount.length : 1, 1)}ch`,
+                                width: `${Math.max(
+                                  item.currentCount
+                                    ? item.currentCount.length
+                                    : 1,
+                                  1
+                                )}ch`,
                               }}
                               value={item.currentCount}
                               onChange={(e) =>
                                 updateProcedure(
                                   item.id,
                                   "currentCount",
-                                  e.target.value,
+                                  e.target.value
                                 )
                               }
                             />
@@ -670,14 +686,17 @@ const NewProcedure: React.FC = () => {
                                   : 1
                               }
                               style={{
-                                width: `${Math.max(item.totalCount ? item.totalCount.length : 1, 1)}ch`,
+                                width: `${Math.max(
+                                  item.totalCount ? item.totalCount.length : 1,
+                                  1
+                                )}ch`,
                               }}
                               value={item.totalCount}
                               onChange={(e) =>
                                 updateProcedure(
                                   item.id,
                                   "totalCount",
-                                  e.target.value,
+                                  e.target.value
                                 )
                               }
                             />

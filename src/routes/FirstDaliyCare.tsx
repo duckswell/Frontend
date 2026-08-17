@@ -1,8 +1,8 @@
-import axios from "axios";
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { courseApi, type RoutineTypeCode } from "../api/course";
+
 import { diagnosisApi, SYMPTOM_CODE_MAP } from "../api/diagnosis";
 
 import { NavBar } from "../components/NavBar";
@@ -16,6 +16,10 @@ interface FirstDailyCareLocationState {
   courseId?: number;
   routineTypeCode?: RoutineTypeCode;
 }
+
+type DiagnosisRequest = Parameters<typeof diagnosisApi.createDiagnosis>[0];
+
+const NO_CONDITION = "해당없음";
 
 export default function FirstDaliyCare() {
   const navigate = useNavigate();
@@ -34,20 +38,49 @@ export default function FirstDaliyCare() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   /*
-   * 데일리는 사진이 선택사항이므로
-   * 증상 하나 이상만 선택하면 다음으로 이동 가능
+   * Daily
+   *
+   * 피부 상태 최소 1개 필수.
+   * 사진은 선택사항.
+   *
+   * 해당없음도 정상적인 선택 1개.
    */
   const isNextEnabled = selectedConditions.length > 0;
 
   const handleToggleCondition = (condition: string) => {
     setSelectedConditions((previousConditions) => {
-      if (previousConditions.includes(condition)) {
-        return previousConditions.filter(
+      /*
+       * 해당없음 선택
+       */
+      if (condition === NO_CONDITION) {
+        if (previousConditions.includes(NO_CONDITION)) {
+          return [];
+        }
+
+        return [NO_CONDITION];
+      }
+
+      /*
+       * 일반 증상을 선택하면
+       * 해당없음 자동 해제
+       */
+      const conditionsWithoutNone = previousConditions.filter(
+        (selectedCondition) => selectedCondition !== NO_CONDITION
+      );
+
+      /*
+       * 이미 선택한 일반 증상 해제
+       */
+      if (conditionsWithoutNone.includes(condition)) {
+        return conditionsWithoutNone.filter(
           (selectedCondition) => selectedCondition !== condition
         );
       }
 
-      return [...previousConditions, condition];
+      /*
+       * 새 증상 추가
+       */
+      return [...conditionsWithoutNone, condition];
     });
   };
 
@@ -60,18 +93,10 @@ export default function FirstDaliyCare() {
   };
 
   async function getDailyCourseId(): Promise<number | null> {
-    /*
-     * DailyCare에서 courseId를 전달받았다면
-     * 추가 API 호출 없이 사용
-     */
     if (state?.courseId !== undefined) {
       return state.courseId;
     }
 
-    /*
-     * 새로고침 / 직접 접근 등으로 state가 없으면
-     * 현재 진행 코스를 다시 조회
-     */
     try {
       const currentCourse = await courseApi.getCurrentCourse();
 
@@ -111,44 +136,39 @@ export default function FirstDaliyCare() {
         return;
       }
 
-      const symptoms = selectedConditions.map(
-        (condition) => SYMPTOM_CODE_MAP[condition]
-      );
+      /*
+       * 해당없음 역시 NONE으로 변환.
+       *
+       * 절대 제거하지 않는다.
+       */
+      const symptoms = selectedConditions
+        .map((condition) => SYMPTOM_CODE_MAP[condition])
+        .filter(
+          (symptom): symptom is NonNullable<typeof symptom> =>
+            symptom !== undefined
+        );
 
-      const requestData = {
+      const diagnosisRequest: DiagnosisRequest = {
         courseId,
         symptoms,
         symptomNote: additionalSymptom.trim() || undefined,
         photoId: photoId ?? undefined,
       };
 
-      console.log("===== 데일리 진단 요청 =====");
-      console.log("courseId:", courseId);
-      console.log("선택 증상:", selectedConditions);
-      console.log("변환된 symptoms:", symptoms);
-      console.log("photoId:", photoId);
-      console.log("진단 요청 body:", requestData);
-
-      const diagnosis = await diagnosisApi.createDiagnosis(requestData);
-
-      console.log("데일리 코스 진단 성공:", diagnosis);
+      console.log("===== 데일리 진단 요청 준비 =====");
+      console.log("선택 UI:", selectedConditions);
+      console.log("API symptoms:", symptoms);
+      console.log("진단 요청:", diagnosisRequest);
 
       navigate("/care/second_daily_care", {
         state: {
-          diagnosis,
+          diagnosisRequest,
           selectedConditions,
           routineTypeCode: state?.routineTypeCode,
         },
       });
     } catch (error) {
-      console.error("데일리 코스 진단 실패:", error);
-
-      if (axios.isAxiosError(error)) {
-        console.error("HTTP Status:", error.response?.status);
-        console.error("API Error Response:", error.response?.data);
-        console.error("요청 URL:", error.config?.url);
-        console.error("보낸 요청 데이터:", error.config?.data);
-      }
+      console.error("SecondDailyCare 이동 준비 실패:", error);
     } finally {
       setIsSubmitting(false);
     }

@@ -6,7 +6,7 @@ import { TabBar } from "../components/TabBar";
 import CareButton from "../components/CareButton";
 
 import { api } from "../lib/api";
-import { courseApi, type CurrentCourseResponse } from "../api/course";
+import { courseApi } from "../api/course";
 
 import * as S from "../styles/FocusCare/Care.styles";
 
@@ -44,13 +44,10 @@ const COURSE_STEPS = [
 export default function Care() {
   const navigate = useNavigate();
 
-  const [currentCourse, setCurrentCourse] =
-    useState<CurrentCourseResponse | null>(null);
-
   const [recoveryDayText, setRecoveryDayText] = useState("");
   const [recoverySummary, setRecoverySummary] = useState("");
 
-  const [isStartingCourse, setIsStartingCourse] = useState(false);
+  const [isStartingRoutine, setIsStartingRoutine] = useState(false);
 
   useEffect(() => {
     const fetchCurrentCourse = async () => {
@@ -59,20 +56,14 @@ export default function Care() {
 
         console.log("현재 진행 중인 코스:", course);
 
-        /*
-         * 진행 중인 코스가 없을 수 있으므로
-         * null을 먼저 처리한다.
-         */
         if (!course) {
-          setCurrentCourse(null);
           setRecoverySummary("");
           return;
         }
 
-        setCurrentCourse(course);
-
         /*
-         * recovery-summary는 집중 코스에서만 조회
+         * 집중 코스가 아닐 경우
+         * 회복 단계 요약을 조회하지 않는다.
          */
         if (course.courseType !== "FOCUS") {
           setRecoverySummary("");
@@ -91,7 +82,6 @@ export default function Care() {
       } catch (error) {
         console.error("현재 진행 중인 코스 조회 실패:", error);
 
-        setCurrentCourse(null);
         setRecoverySummary("");
       }
     };
@@ -113,10 +103,6 @@ export default function Care() {
 
         console.log("회복 배너 조회 성공:", banner);
 
-        /*
-         * 집중 코스가 아니거나
-         * 진행 중인 코스가 없으면 data가 없을 수 있음
-         */
         if (!banner) {
           setRecoveryDayText("");
           return;
@@ -138,31 +124,38 @@ export default function Care() {
     fetchRecoveryBanner();
   }, []);
 
-  const handleMoveToProductRecommendation = () => {
-    navigate("/recommend");
-  };
-
   const handleOpenConsultationGuide = () => {
     navigate("/safety");
   };
 
   const handleStartRoutine = async () => {
-    if (isStartingCourse) {
+    if (isStartingRoutine) {
       return;
     }
 
     try {
-      setIsStartingCourse(true);
+      setIsStartingRoutine(true);
 
       /*
-       * 이미 집중 코스 진행 중
+       * 버튼을 누르는 순간
+       * 현재 진행 중인 코스를 다시 조회한다.
        */
-      if (currentCourse?.courseType === "FOCUS") {
-        console.log("기존 집중 코스로 루틴 시작:", currentCourse.courseId);
+      const latestCourse = await courseApi.getCurrentCourse();
+
+      console.log("루틴 시작 시 최신 코스:", latestCourse);
+
+      /*
+       * 기존 집중 코스가 있을 때만
+       * 오늘의 집중 루틴으로 이동한다.
+       *
+       * Care.tsx에서는 FOCUS 코스를 새로 생성하지 않는다.
+       */
+      if (latestCourse?.courseType === "FOCUS") {
+        console.log("기존 집중 코스로 루틴 시작:", latestCourse.courseId);
 
         navigate("/care/first_focus_care", {
           state: {
-            courseId: currentCourse.courseId,
+            courseId: latestCourse.courseId,
           },
         });
 
@@ -170,47 +163,40 @@ export default function Care() {
       }
 
       /*
-       * DAILY 진행 중이면 새 FOCUS 시작 불가
+       * DAILY 코스가 진행 중인 경우
        */
-      if (currentCourse?.courseType === "DAILY") {
+      if (latestCourse?.courseType === "DAILY") {
         console.error(
-          "데일리 코스가 진행 중이어서 집중 코스를 시작할 수 없습니다.",
-          currentCourse
+          "현재 데일리 코스가 진행 중입니다. 집중 루틴을 시작할 수 없습니다.",
+          latestCourse
         );
 
         return;
       }
 
       /*
-       * 진행 중인 코스 없음 → FOCUS 생성
+       * 진행 중인 코스가 없는 경우
+       *
+       * 여기서는 새로운 FOCUS 코스를 생성하지 않는다.
+       * 집중 코스 생성은 시술 등록 페이지가 담당한다.
        */
-      const course = await courseApi.startCourse({
-        courseType: "FOCUS",
-      });
-
-      console.log("새 집중 코스 시작 성공:", course);
-
-      navigate("/care/first_focus_care", {
-        state: {
-          courseId: course.id,
-        },
-      });
+      console.error(
+        "진행 중인 집중 코스가 없습니다. 시술 등록 후 집중 코스를 시작해야 합니다."
+      );
     } catch (error) {
-      console.error("집중 코스 시작 실패:", error);
+      console.error("집중 루틴 시작 실패:", error);
     } finally {
-      setIsStartingCourse(false);
+      setIsStartingRoutine(false);
     }
   };
 
   return (
     <S.Page>
-      <NavBar title="케어" />
+      <NavBar title="집중 코스" />
 
       <S.Content>
         <S.StatusCard>
-          {currentCourse?.courseType === "FOCUS" && (
-            <S.CourseBadge>집중 코스 진행 중</S.CourseBadge>
-          )}
+          <S.CourseBadge>집중 코스 진행 중</S.CourseBadge>
 
           <S.StatusTitle>
             {recoveryDayText || "시술 후 경과 확인 중"}
@@ -224,7 +210,7 @@ export default function Care() {
         </S.StatusCard>
 
         <S.CourseSection>
-          <S.SectionTitle>코스 안내</S.SectionTitle>
+          <S.SectionTitle>코스는 이렇게 진행돼요</S.SectionTitle>
 
           <S.CourseCard>
             <S.StepList>
@@ -240,13 +226,6 @@ export default function Care() {
                 </S.StepItem>
               ))}
             </S.StepList>
-
-            <S.OutlinedButton
-              type="button"
-              onClick={handleMoveToProductRecommendation}
-            >
-              추천 성분 제품 보러가기
-            </S.OutlinedButton>
           </S.CourseCard>
         </S.CourseSection>
 
@@ -277,7 +256,7 @@ export default function Care() {
       </S.Content>
 
       <S.BottomArea>
-        <CareButton disabled={isStartingCourse} onClick={handleStartRoutine}>
+        <CareButton disabled={isStartingRoutine} onClick={handleStartRoutine}>
           루틴 시작
         </CareButton>
       </S.BottomArea>

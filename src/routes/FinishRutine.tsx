@@ -32,18 +32,8 @@ export default function FinishRoutine() {
   function handleMoveToHome() {
     navigate("/");
   }
-
   function handleMoveToDaily() {
-    if (!state?.courseId) {
-      console.error("FinishFocusCare 이동에 필요한 courseId가 없습니다.");
-      return;
-    }
-
-    navigate("/care/finish_focus_care", {
-      state: {
-        courseId: state.courseId,
-      },
-    });
+    navigate("/preview");
   }
 
   return (

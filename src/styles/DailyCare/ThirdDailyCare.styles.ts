@@ -20,9 +20,14 @@ export const Page = styled.div`
     margin-top: 64px;
   }
 `;
+
 export const Main = styled.main`
   display: flex;
   flex-direction: column;
+
+  /*
+   * 프로그레스바 아래 제목까지 16px
+   */
   gap: 16px;
 
   width: 100%;
@@ -43,12 +48,25 @@ export const Content = styled.div`
 `;
 
 export const RoutineIntro = styled.section`
+  display: flex;
+  flex-direction: column;
+
   width: 100%;
 
   box-sizing: border-box;
 `;
 
 export const SectionTitle = styled.h2`
+  /*
+   * 제목 영역 40px
+   * 세로 가운데
+   */
+  display: flex;
+  align-items: center;
+
+  width: 100%;
+  height: 40px;
+
   margin: 0;
 
   color: ${colorPalette.Black};
@@ -60,7 +78,10 @@ export const SectionTitle = styled.h2`
 `;
 
 export const Description = styled.p`
-  margin: 8px 0 0;
+  /*
+   * 제목 바로 아래
+   */
+  margin: 0;
 
   color: ${colorPalette.Black};
 
@@ -68,6 +89,8 @@ export const Description = styled.p`
   font-weight: ${typography.Body1.fontWeight};
   line-height: ${typography.Body1.lineHeight};
   letter-spacing: ${typography.Body1.letterSpacing};
+
+  word-break: keep-all;
 `;
 
 export const CardList = styled.div`
@@ -76,6 +99,7 @@ export const CardList = styled.div`
   gap: 16px;
 
   width: 100%;
+
   margin-top: 16px;
 
   box-sizing: border-box;
@@ -83,6 +107,7 @@ export const CardList = styled.div`
 
 export const WarningBox = styled.section`
   width: 100%;
+
   margin-top: 36px;
   padding: 16px;
 
@@ -146,6 +171,7 @@ export const SymptomButton = styled.button`
 
   width: 100%;
   height: 48px;
+
   margin-top: 16px;
 
   box-sizing: border-box;
@@ -166,8 +192,10 @@ export const SymptomButton = styled.button`
 
 export const CompleteButtonWrapper = styled.div`
   width: 100%;
+
   margin-top: 40px;
 
   box-sizing: border-box;
+
   padding-bottom: 16px;
 `;

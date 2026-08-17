@@ -7,13 +7,12 @@ export const Page = styled.div`
   min-height: 100dvh;
 
   padding-top: 56px;
-
   padding-bottom: 184px;
+
+  box-sizing: border-box;
 
   background-color: ${colorPalette.OffWhite};
   color: ${colorPalette.Black};
-
-  box-sizing: border-box;
 
   > header > button:first-child {
     visibility: hidden;
@@ -28,13 +27,14 @@ export const Page = styled.div`
 export const Content = styled.main`
   display: flex;
   flex-direction: column;
-  gap: 36px;
+  align-items: stretch;
 
   width: 100%;
   max-width: 402px;
 
   margin: 0 auto;
-  padding: 16px 16px 0;
+
+  padding: 16px;
 
   box-sizing: border-box;
 `;
@@ -44,10 +44,13 @@ export const StatusCard = styled.section`
   flex-direction: column;
   align-items: flex-start;
 
-  width: 100%;
-  box-sizing: border-box;
+  gap: 12px;
 
-  padding: 16px 16px;
+  width: 100%;
+
+  padding: 16px;
+
+  box-sizing: border-box;
 
   border: 1px solid ${colorPalette.blue50};
   border-radius: 6px;
@@ -67,6 +70,7 @@ export const CourseBadge = styled.span`
 
   width: fit-content;
 
+  margin: 0;
   padding: 6px 12px;
 
   border: 0.5px solid ${colorPalette.FocusPrimary};
@@ -79,7 +83,7 @@ export const CourseBadge = styled.span`
 export const StatusTitle = styled.h1`
   ${typography.H2};
 
-  margin: 12px 0 0;
+  margin: 0;
 
   color: ${colorPalette.Black};
 `;
@@ -87,29 +91,43 @@ export const StatusTitle = styled.h1`
 export const StatusDescription = styled.p`
   ${typography.Body1};
 
-  margin: 7px 0 0;
+  margin: 0;
 
   color: ${colorPalette.Black};
+
+  word-break: keep-all;
 `;
 
 export const StatusNotice = styled.p`
   ${typography.Body2};
 
-  margin: 12px 0 0;
+  margin: 0;
 
   color: ${colorPalette.FocusSecondary};
+
+  word-break: keep-all;
 `;
 
 export const CourseSection = styled.section`
   display: flex;
   flex-direction: column;
-  gap: 24px;
 
   width: 100%;
+
+  /*
+   * 상단 카드와 제목 사이 36px
+   */
+  margin-top: 36px;
 `;
 
 export const SectionTitle = styled.h2`
   ${typography.H3};
+
+  display: flex;
+  align-items: center;
+
+  width: 100%;
+  height: 40px;
 
   margin: 0;
 
@@ -121,9 +139,11 @@ export const CourseCard = styled.div`
   flex-direction: column;
 
   width: 100%;
-  box-sizing: border-box;
 
+  margin-top: 16px;
   padding: 24px;
+
+  box-sizing: border-box;
 
   border: 0.5px solid ${colorPalette.Quaternary};
   border-radius: 12px;
@@ -134,13 +154,15 @@ export const CourseCard = styled.div`
 export const StepList = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 32px;
+  gap: 28px;
 `;
 
 export const StepItem = styled.div`
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+
+  width: 100%;
 `;
 
 export const StepBadge = styled.span`
@@ -152,6 +174,7 @@ export const StepBadge = styled.span`
 
   width: fit-content;
 
+  margin: 0;
   padding: 6px 12px;
 
   border: 0.5px solid ${colorPalette.FocusPrimary};
@@ -172,34 +195,15 @@ export const StepTitle = styled.h3`
 export const StepDescription = styled.p`
   ${typography.Body1};
 
-  margin: 8px 0 0;
+  /*
+   * 피부 상태 확인 등의 제목과
+   * 설명 사이 간격 9px
+   */
+  margin: 9px 0 0;
 
   color: ${colorPalette.Black};
 
   word-break: keep-all;
-`;
-
-export const OutlinedButton = styled.button`
-  ${typography.Body1Bold};
-
-  width: 100%;
-
-  margin-top: 16px;
-  padding: 12px 16px;
-
-  border: 0.5px solid ${colorPalette.Quaternary};
-  border-radius: 12px;
-
-  background-color: ${colorPalette.OffWhite};
-  color: ${colorPalette.Black};
-
-  font-family: inherit;
-
-  cursor: pointer;
-
-  &:active {
-    background-color: ${colorPalette.grey50};
-  }
 `;
 
 export const WarningCard = styled.section`
@@ -208,9 +212,13 @@ export const WarningCard = styled.section`
 
   width: 100%;
 
-  box-sizing: border-box;
-
+  /*
+   * Step 카드 아래 정확히 36px
+   */
+  margin-top: 36px;
   padding: 20px 16px 16px;
+
+  box-sizing: border-box;
 
   border: 0.5px solid ${colorPalette.Quaternary};
   border-radius: 12px;
@@ -254,20 +262,19 @@ export const WarningDescription = styled.p`
 export const ConsultationButton = styled.button`
   ${typography.Body1Bold};
 
+  align-self: center;
+
   width: 100%;
   max-width: 322px;
 
-  align-self: center;
-
   margin-top: 12px;
-
   padding: 12px 16px;
 
   border: 0.5px solid ${colorPalette.Quaternary};
   border-radius: 12px;
 
-  color: ${colorPalette.Black};
   background-color: ${colorPalette.White};
+  color: ${colorPalette.Black};
 
   font-family: inherit;
 
@@ -277,6 +284,7 @@ export const ConsultationButton = styled.button`
     background-color: ${colorPalette.grey50};
   }
 `;
+
 export const BottomArea = styled.div`
   position: fixed;
 

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import * as S from "../../styles/FocusCare/AnalysisLoading.styles";
 
@@ -6,16 +6,70 @@ interface AnalysisLoadingProps {
   onComplete: () => void;
   variant?: "focus" | "daily";
   type?: "routine" | "image";
+  isComplete?: boolean;
 }
 
 export default function AnalysisLoading({
   onComplete,
   variant = "focus",
   type = "routine",
+  isComplete,
 }: AnalysisLoadingProps) {
   const [progress, setProgress] = useState(0);
 
+  const hasCalledComplete = useRef(false);
+
   useEffect(() => {
+    if (isComplete === undefined) {
+      return;
+    }
+
+    if (!isComplete) {
+      const interval = window.setInterval(() => {
+        setProgress((previousProgress) => {
+          if (previousProgress >= 85) {
+            return 85;
+          }
+
+          if (previousProgress < 35) {
+            return Math.min(previousProgress + 2, 85);
+          }
+
+          if (previousProgress < 65) {
+            return Math.min(previousProgress + 1, 85);
+          }
+
+          return Math.min(previousProgress + 1, 85);
+        });
+      }, 90);
+
+      return () => {
+        window.clearInterval(interval);
+      };
+    }
+
+    const completionInterval = window.setInterval(() => {
+      setProgress((previousProgress) => {
+        if (previousProgress >= 100) {
+          window.clearInterval(completionInterval);
+
+          return 100;
+        }
+
+        return Math.min(previousProgress + 5, 100);
+      });
+    }, 30);
+
+    return () => {
+      window.clearInterval(completionInterval);
+    };
+  }, [isComplete]);
+
+  useEffect(() => {
+    if (isComplete !== undefined) {
+      return;
+    }
+
     const interval = window.setInterval(() => {
       setProgress((previousProgress) => {
         if (previousProgress >= 99) {
@@ -31,12 +85,16 @@ export default function AnalysisLoading({
     return () => {
       window.clearInterval(interval);
     };
-  }, []);
+  }, [isComplete]);
 
   useEffect(() => {
-    if (progress === 100) {
-      onComplete();
+    if (progress !== 100 || hasCalledComplete.current) {
+      return;
     }
+
+    hasCalledComplete.current = true;
+
+    onComplete();
   }, [progress, onComplete]);
 
   return (

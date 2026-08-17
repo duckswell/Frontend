@@ -10,6 +10,7 @@ import * as ModalS from "../../styles/FocusCare/ImageAnalysisModal.styles";
 const SKIN_CONDITION_ROWS = [
   ["붉은기", "열감", "따가움", "건조함"],
   ["각질", "번들거림", "가려움", "붓기"],
+  ["해당없음"],
 ];
 
 interface CareInputFormProps {
@@ -26,6 +27,11 @@ interface CareInputFormProps {
   onChangeAdditionalSymptom: (value: string) => void;
 }
 
+interface PhotoCheckSuccess {
+  file: File;
+  photoId: string;
+}
+
 export default function CareInputForm({
   variant = "focus",
   selectedConditions,
@@ -39,7 +45,16 @@ export default function CareInputForm({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [isAnalyzingImage, setIsAnalyzingImage] = useState(false);
+
+  const [isPhotoCheckComplete, setIsPhotoCheckComplete] = useState(false);
+
+  const [photoCheckSuccess, setPhotoCheckSuccess] =
+    useState<PhotoCheckSuccess | null>(null);
+
+  const [isPhotoCheckFailed, setIsPhotoCheckFailed] = useState(false);
+
   const [isUploadErrorOpen, setIsUploadErrorOpen] = useState(false);
+
   const [isUploadToastVisible, setIsUploadToastVisible] = useState(false);
 
   const isDaily = variant === "daily";
@@ -47,6 +62,12 @@ export default function CareInputForm({
 
   const handleOpenImagePicker = () => {
     fileInputRef.current?.click();
+  };
+
+  const resetPhotoCheckState = () => {
+    setIsPhotoCheckComplete(false);
+    setPhotoCheckSuccess(null);
+    setIsPhotoCheckFailed(false);
   };
 
   const handleChangeImage = async (
@@ -62,43 +83,55 @@ export default function CareInputForm({
 
     const selectedFile = selectedFiles[0];
 
-    try {
-      setIsAnalyzingImage(true);
+    resetPhotoCheckState();
 
-      /*
-       * 선택한 사진을 먼저 화면에 반영하지 않고
-       * photo-check를 통과한 경우에만 저장한다.
-       */
+    setIsAnalyzingImage(true);
+
+    try {
+      console.log("===== 사진 품질 확인 시작 =====");
+      console.log("파일:", selectedFile);
+
       const result = await diagnosisApi.checkPhoto(selectedFile);
 
-      /*
-       * 백엔드 진단 API는 photoId 하나만 받으므로
-       * 사진도 항상 한 장만 유지한다.
-       *
-       * 새 사진을 올리면 기존 사진을 교체한다.
-       */
-      onChangeImages([selectedFile]);
-      onChangePhotoId(result.photoId);
+      console.log("사진 품질 확인 성공:", result);
+
+      setPhotoCheckSuccess({
+        file: selectedFile,
+        photoId: result.photoId,
+      });
+
+      setIsPhotoCheckComplete(true);
+    } catch (error) {
+      console.error("사진 품질 확인 실패:", error);
+
+      setIsPhotoCheckFailed(true);
+      setIsPhotoCheckComplete(true);
+    }
+  };
+
+  const handlePhotoAnalysisComplete = () => {
+    setIsAnalyzingImage(false);
+
+    if (isPhotoCheckFailed) {
+      setIsUploadErrorOpen(true);
+
+      resetPhotoCheckState();
+
+      return;
+    }
+
+    if (photoCheckSuccess) {
+      onChangeImages([photoCheckSuccess.file]);
+      onChangePhotoId(photoCheckSuccess.photoId);
 
       setIsUploadToastVisible(true);
 
       window.setTimeout(() => {
         setIsUploadToastVisible(false);
       }, 2000);
-    } catch (error) {
-      console.error("사진 품질 확인 실패:", error);
-
-      /*
-       * 기존에 정상 등록된 사진이 있다면 그대로 유지한다.
-       *
-       * 여기서 onChangePhotoId(null)을 호출하면
-       * 화면에는 기존 정상 사진이 남아 있는데
-       * photoId만 사라지는 문제가 생길 수 있다.
-       */
-      setIsUploadErrorOpen(true);
-    } finally {
-      setIsAnalyzingImage(false);
     }
+
+    resetPhotoCheckState();
   };
 
   const handleCancelReupload = () => {
@@ -114,10 +147,6 @@ export default function CareInputForm({
   };
 
   const handleRemoveImage = () => {
-    /*
-     * 현재는 사진 한 장만 관리하므로
-     * 삭제 시 이미지와 photoId를 함께 초기화한다.
-     */
     onChangeImages([]);
     onChangePhotoId(null);
   };
@@ -230,21 +259,23 @@ export default function CareInputForm({
           </S.Description>
         </S.TextArea>
 
-        <S.SymptomTextarea
-          value={additionalSymptom}
-          placeholder={
-            isDaily
-              ? "예) 트러블 흔적이 신경 쓰여요"
-              : "예) 만지면 통증이 있어요"
-          }
-          onChange={(event) => onChangeAdditionalSymptom(event.target.value)}
-        />
+        <S.SymptomArea>
+          <S.SymptomTextarea
+            value={additionalSymptom}
+            placeholder={
+              isDaily
+                ? "예) 트러블 흔적이 신경 쓰여요"
+                : "예) 만지면 통증이 있어요"
+            }
+            onChange={(event) => onChangeAdditionalSymptom(event.target.value)}
+          />
 
-        <S.Notice>
-          {isDaily
-            ? "* 입력한 정보는 피부 상태 분석에만 사용되며 의료 진단을 대신하지 않아요"
-            : "* 입력한 정보는 루틴 추천에만 사용되며 의료 진단을 대신하지 않아요"}
-        </S.Notice>
+          <S.Notice>
+            {isDaily
+              ? "* 입력한 정보는 피부 상태 분석에만 사용되며 의료 진단을 대신하지 않아요"
+              : "* 입력한 정보는 루틴 추천에만 사용되며 의료 진단을 대신하지 않아요"}
+          </S.Notice>
+        </S.SymptomArea>
 
         {isUploadToastVisible && (
           <S.UploadToast>
@@ -265,7 +296,8 @@ export default function CareInputForm({
             <AnalysisLoading
               variant={variant}
               type="image"
-              onComplete={() => {}}
+              isComplete={isPhotoCheckComplete}
+              onComplete={handlePhotoAnalysisComplete}
             />
           </ModalS.Modal>
         </ModalS.Overlay>

@@ -22,6 +22,7 @@ function getSecondaryColor(variant: "focus" | "daily") {
 export const Card = styled.section<VariantProps>`
   width: 100%;
   max-width: 370px;
+
   padding: 16px;
 
   box-sizing: border-box;
@@ -59,6 +60,7 @@ export const StepBadge = styled.span<VariantProps>`
 
   white-space: nowrap;
 `;
+
 export const Title = styled.h3<VariantProps>`
   margin: 0;
 
@@ -73,6 +75,10 @@ export const Title = styled.h3<VariantProps>`
 export const InfoList = styled.div`
   display: flex;
   flex-direction: column;
+
+  /*
+   * 제품 / 방법 / 대체성분 줄 사이 8px
+   */
   gap: 8px;
 
   margin-top: 16px;
@@ -81,7 +87,8 @@ export const InfoList = styled.div`
 export const InfoRow = styled.div<{ $secondary?: boolean }>`
   display: flex;
   align-items: flex-start;
-  gap: 8px;
+
+  gap: 3px;
 
   color: ${({ $secondary }) =>
     $secondary ? colorPalette.Secondary : colorPalette.Black};
@@ -99,16 +106,20 @@ export const Icon = styled.img`
 export const InfoContent = styled.div`
   display: flex;
   align-items: flex-start;
+
+  /*
+   * 제품/방법 같은 굵은 글자와
+   * 오른쪽 설명 사이 12px
+   */
   gap: 12px;
 
   min-width: 0;
+
   padding-top: 1px;
 `;
 
 export const InfoLabel = styled.span<{ $secondary?: boolean }>`
   flex-shrink: 0;
-
-  min-width: 44px;
 
   color: ${({ $secondary }) =>
     $secondary ? colorPalette.Secondary : colorPalette.Black};
@@ -138,6 +149,7 @@ export const ProductButton = styled.button`
 
   width: 100%;
   height: 48px;
+
   margin-top: 16px;
 
   box-sizing: border-box;

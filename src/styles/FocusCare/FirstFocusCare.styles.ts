@@ -25,7 +25,11 @@ export const Page = styled.div`
 export const Main = styled.main`
   display: flex;
   flex-direction: column;
-  gap: 36px;
+
+  /*
+   * ProgressBar 아래 다음 콘텐츠까지 정확히 16px
+   */
+  gap: 16px;
 
   width: 100%;
   max-width: 402px;
@@ -35,9 +39,14 @@ export const Main = styled.main`
 
   box-sizing: border-box;
 `;
+
 export const Content = styled.div`
   display: flex;
   flex-direction: column;
+
+  /*
+   * 각각의 큰 입력 섹션 사이 간격
+   */
   gap: 36px;
 
   width: 100%;
