@@ -28,11 +28,15 @@ export const CompletionSection = styled.section`
   position: relative;
 
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
 
   width: 100%;
-  height: 420px;
+
+  padding-top: 152px;
+  padding-bottom: 155px;
+
+  box-sizing: border-box;
 `;
 
 export const CompletionTitle = styled.h1`

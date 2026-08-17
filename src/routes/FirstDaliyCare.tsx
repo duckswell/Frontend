@@ -1,4 +1,3 @@
-import axios from "axios";
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -17,6 +16,8 @@ interface FirstDailyCareLocationState {
   routineTypeCode?: RoutineTypeCode;
 }
 
+type DiagnosisRequest = Parameters<typeof diagnosisApi.createDiagnosis>[0];
+
 export default function FirstDaliyCare() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -24,18 +25,14 @@ export default function FirstDaliyCare() {
   const state = location.state as FirstDailyCareLocationState | null;
 
   const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
-
   const [skinImages, setSkinImages] = useState<File[]>([]);
-
   const [additionalSymptom, setAdditionalSymptom] = useState("");
-
   const [photoId, setPhotoId] = useState<string | null>(null);
-
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   /*
-   * 데일리는 사진이 선택사항이므로
-   * 증상 하나 이상만 선택하면 다음으로 이동 가능
+   * 데일리는 사진 선택사항.
+   * 피부 상태 하나 이상만 선택하면 다음으로 이동 가능.
    */
   const isNextEnabled = selectedConditions.length > 0;
 
@@ -60,18 +57,10 @@ export default function FirstDaliyCare() {
   };
 
   async function getDailyCourseId(): Promise<number | null> {
-    /*
-     * DailyCare에서 courseId를 전달받았다면
-     * 추가 API 호출 없이 사용
-     */
     if (state?.courseId !== undefined) {
       return state.courseId;
     }
 
-    /*
-     * 새로고침 / 직접 접근 등으로 state가 없으면
-     * 현재 진행 코스를 다시 조회
-     */
     try {
       const currentCourse = await courseApi.getCurrentCourse();
 
@@ -111,44 +100,42 @@ export default function FirstDaliyCare() {
         return;
       }
 
-      const symptoms = selectedConditions.map(
-        (condition) => SYMPTOM_CODE_MAP[condition]
-      );
+      const symptoms = selectedConditions
+        .map((condition) => SYMPTOM_CODE_MAP[condition])
+        .filter(
+          (symptom): symptom is NonNullable<typeof symptom> =>
+            symptom !== undefined
+        );
 
-      const requestData = {
+      /*
+       * FirstDailyCare에서는 진단 API 호출 X
+       *
+       * SecondDailyCare에서 실제 AI 분석을 실행할 수 있도록
+       * request 데이터만 넘겨준다.
+       */
+      const diagnosisRequest: DiagnosisRequest = {
         courseId,
         symptoms,
         symptomNote: additionalSymptom.trim() || undefined,
         photoId: photoId ?? undefined,
       };
 
-      console.log("===== 데일리 진단 요청 =====");
+      console.log("===== 데일리 진단 요청 준비 =====");
       console.log("courseId:", courseId);
       console.log("선택 증상:", selectedConditions);
       console.log("변환된 symptoms:", symptoms);
       console.log("photoId:", photoId);
-      console.log("진단 요청 body:", requestData);
-
-      const diagnosis = await diagnosisApi.createDiagnosis(requestData);
-
-      console.log("데일리 코스 진단 성공:", diagnosis);
+      console.log("SecondDailyCare 전달 데이터:", diagnosisRequest);
 
       navigate("/care/second_daily_care", {
         state: {
-          diagnosis,
+          diagnosisRequest,
           selectedConditions,
           routineTypeCode: state?.routineTypeCode,
         },
       });
     } catch (error) {
-      console.error("데일리 코스 진단 실패:", error);
-
-      if (axios.isAxiosError(error)) {
-        console.error("HTTP Status:", error.response?.status);
-        console.error("API Error Response:", error.response?.data);
-        console.error("요청 URL:", error.config?.url);
-        console.error("보낸 요청 데이터:", error.config?.data);
-      }
+      console.error("SecondDailyCare 이동 준비 실패:", error);
     } finally {
       setIsSubmitting(false);
     }

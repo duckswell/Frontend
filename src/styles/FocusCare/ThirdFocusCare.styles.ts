@@ -1,4 +1,5 @@
 import styled from "styled-components";
+
 import { colorPalette } from "../../lib/colorPalette";
 import { typography } from "../../lib/typography";
 
@@ -23,6 +24,10 @@ export const Page = styled.div`
 export const Main = styled.main`
   display: flex;
   flex-direction: column;
+
+  /*
+   * 프로그레스바 아래 제목 영역까지 16px
+   */
   gap: 16px;
 
   width: 100%;
@@ -43,44 +48,25 @@ export const Content = styled.div`
 `;
 
 export const RoutineIntro = styled.section`
-  width: 100%;
-
-  box-sizing: border-box;
-`;
-
-export const CardList = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 16px;
 
   width: 100%;
-  margin-top: 16px;
 
   box-sizing: border-box;
-`;
-
-export const WarningBox = styled.section`
-  width: 100%;
-  margin-top: 36px;
-  padding: 16px;
-
-  box-sizing: border-box;
-
-  border: 0.5px solid ${colorPalette.Quaternary};
-  border-radius: 12px;
-
-  background-color: ${colorPalette.White};
-`;
-
-export const CompleteButtonWrapper = styled.div`
-  width: 100%;
-  margin-top: 28px;
-
-  box-sizing: border-box;
-  padding-bottom: 16px;
 `;
 
 export const SectionTitle = styled.h2`
+  /*
+   * 제목 영역 높이 40px
+   * 글자는 영역의 세로 중앙
+   */
+  display: flex;
+  align-items: center;
+
+  width: 100%;
+  height: 40px;
+
   margin: 0;
 
   color: ${colorPalette.Black};
@@ -92,7 +78,10 @@ export const SectionTitle = styled.h2`
 `;
 
 export const Description = styled.p`
-  margin: 8px 0 0;
+  /*
+   * 제목 바로 아래에 붙음
+   */
+  margin: 0;
 
   color: ${colorPalette.Black};
 
@@ -100,6 +89,37 @@ export const Description = styled.p`
   font-weight: ${typography.Body1.fontWeight};
   line-height: ${typography.Body1.lineHeight};
   letter-spacing: ${typography.Body1.letterSpacing};
+
+  word-break: keep-all;
+`;
+
+export const CardList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  width: 100%;
+
+  /*
+   * 설명 아래 첫 Step 카드까지 기존 16px 유지
+   */
+  margin-top: 16px;
+
+  box-sizing: border-box;
+`;
+
+export const WarningBox = styled.section`
+  width: 100%;
+
+  margin-top: 36px;
+  padding: 16px;
+
+  box-sizing: border-box;
+
+  border: 0.5px solid ${colorPalette.Quaternary};
+  border-radius: 12px;
+
+  background-color: ${colorPalette.White};
 `;
 
 export const WarningHeader = styled.div`
@@ -154,6 +174,7 @@ export const SymptomButton = styled.button`
 
   width: 100%;
   height: 48px;
+
   margin-top: 16px;
 
   box-sizing: border-box;
@@ -170,4 +191,14 @@ export const SymptomButton = styled.button`
   letter-spacing: ${typography.Body1Bold.letterSpacing};
 
   cursor: pointer;
+`;
+
+export const CompleteButtonWrapper = styled.div`
+  width: 100%;
+
+  margin-top: 28px;
+
+  box-sizing: border-box;
+
+  padding-bottom: 16px;
 `;

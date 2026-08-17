@@ -6,7 +6,7 @@ import { TabBar } from "../components/TabBar";
 import CareButton from "../components/CareButton";
 
 import { api } from "../lib/api";
-import { courseApi, type CurrentCourseResponse } from "../api/course";
+import { courseApi } from "../api/course";
 
 import * as S from "../styles/FocusCare/Care.styles";
 
@@ -44,9 +44,6 @@ const COURSE_STEPS = [
 export default function Care() {
   const navigate = useNavigate();
 
-  const [currentCourse, setCurrentCourse] =
-    useState<CurrentCourseResponse | null>(null);
-
   const [recoveryDayText, setRecoveryDayText] = useState("");
   const [recoverySummary, setRecoverySummary] = useState("");
 
@@ -60,13 +57,14 @@ export default function Care() {
         console.log("현재 진행 중인 코스:", course);
 
         if (!course) {
-          setCurrentCourse(null);
           setRecoverySummary("");
           return;
         }
 
-        setCurrentCourse(course);
-
+        /*
+         * 집중 코스가 아닐 경우
+         * 회복 단계 요약을 조회하지 않는다.
+         */
         if (course.courseType !== "FOCUS") {
           setRecoverySummary("");
           return;
@@ -84,7 +82,6 @@ export default function Care() {
       } catch (error) {
         console.error("현재 진행 중인 코스 조회 실패:", error);
 
-        setCurrentCourse(null);
         setRecoverySummary("");
       }
     };
@@ -140,8 +137,8 @@ export default function Care() {
       setIsStartingRoutine(true);
 
       /*
-       * 루틴 버튼을 누르는 시점에
-       * 현재 진행 중인 코스를 다시 확인한다.
+       * 버튼을 누르는 순간
+       * 현재 진행 중인 코스를 다시 조회한다.
        */
       const latestCourse = await courseApi.getCurrentCourse();
 
@@ -151,7 +148,7 @@ export default function Care() {
        * 기존 집중 코스가 있을 때만
        * 오늘의 집중 루틴으로 이동한다.
        *
-       * Care.tsx에서는 새로운 FOCUS 코스를 생성하지 않는다.
+       * Care.tsx에서는 FOCUS 코스를 새로 생성하지 않는다.
        */
       if (latestCourse?.courseType === "FOCUS") {
         console.log("기존 집중 코스로 루틴 시작:", latestCourse.courseId);
@@ -165,6 +162,9 @@ export default function Care() {
         return;
       }
 
+      /*
+       * DAILY 코스가 진행 중인 경우
+       */
       if (latestCourse?.courseType === "DAILY") {
         console.error(
           "현재 데일리 코스가 진행 중입니다. 집중 루틴을 시작할 수 없습니다.",
@@ -174,6 +174,12 @@ export default function Care() {
         return;
       }
 
+      /*
+       * 진행 중인 코스가 없는 경우
+       *
+       * 여기서는 새로운 FOCUS 코스를 생성하지 않는다.
+       * 집중 코스 생성은 시술 등록 페이지가 담당한다.
+       */
       console.error(
         "진행 중인 집중 코스가 없습니다. 시술 등록 후 집중 코스를 시작해야 합니다."
       );
@@ -196,9 +202,7 @@ export default function Care() {
             {recoveryDayText || "시술 후 경과 확인 중"}
           </S.StatusTitle>
 
-          <S.StatusDescription>
-            {recoverySummary}
-          </S.StatusDescription>
+          <S.StatusDescription>{recoverySummary}</S.StatusDescription>
 
           <S.StatusNotice>
             *피부 상태에 따라 회복 속도는 달라질 수 있어요.
@@ -206,9 +210,7 @@ export default function Care() {
         </S.StatusCard>
 
         <S.CourseSection>
-          <S.SectionTitle>
-            코스는 이렇게 진행돼요
-          </S.SectionTitle>
+          <S.SectionTitle>코스는 이렇게 진행돼요</S.SectionTitle>
 
           <S.CourseCard>
             <S.StepList>
@@ -235,9 +237,7 @@ export default function Care() {
               aria-hidden="true"
             />
 
-            <S.WarningTitle>
-              잠깐, 이런 증상이 있나요?
-            </S.WarningTitle>
+            <S.WarningTitle>잠깐, 이런 증상이 있나요?</S.WarningTitle>
           </S.WarningTitleRow>
 
           <S.WarningDescription>
@@ -256,10 +256,7 @@ export default function Care() {
       </S.Content>
 
       <S.BottomArea>
-        <CareButton
-          disabled={isStartingRoutine}
-          onClick={handleStartRoutine}
-        >
+        <CareButton disabled={isStartingRoutine} onClick={handleStartRoutine}>
           루틴 시작
         </CareButton>
       </S.BottomArea>

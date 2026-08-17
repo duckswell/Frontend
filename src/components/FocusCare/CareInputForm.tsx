@@ -26,6 +26,11 @@ interface CareInputFormProps {
   onChangeAdditionalSymptom: (value: string) => void;
 }
 
+interface PhotoCheckSuccess {
+  file: File;
+  photoId: string;
+}
+
 export default function CareInputForm({
   variant = "focus",
   selectedConditions,
@@ -39,7 +44,32 @@ export default function CareInputForm({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [isAnalyzingImage, setIsAnalyzingImage] = useState(false);
+
+  /*
+   * checkPhoto API가 끝났는지 여부
+   *
+   * false:
+   * 실제 API 처리 중
+   *
+   * true:
+   * 성공/실패 여부와 관계없이 API 처리 완료
+   */
+  const [isPhotoCheckComplete, setIsPhotoCheckComplete] = useState(false);
+
+  /*
+   * 성공한 경우:
+   * AnalysisLoading 100% 이후 실제 이미지/PhotoId 반영
+   */
+  const [photoCheckSuccess, setPhotoCheckSuccess] =
+    useState<PhotoCheckSuccess | null>(null);
+
+  /*
+   * API 실패 여부
+   */
+  const [isPhotoCheckFailed, setIsPhotoCheckFailed] = useState(false);
+
   const [isUploadErrorOpen, setIsUploadErrorOpen] = useState(false);
+
   const [isUploadToastVisible, setIsUploadToastVisible] = useState(false);
 
   const isDaily = variant === "daily";
@@ -47,6 +77,12 @@ export default function CareInputForm({
 
   const handleOpenImagePicker = () => {
     fileInputRef.current?.click();
+  };
+
+  const resetPhotoCheckState = () => {
+    setIsPhotoCheckComplete(false);
+    setPhotoCheckSuccess(null);
+    setIsPhotoCheckFailed(false);
   };
 
   const handleChangeImage = async (
@@ -62,43 +98,92 @@ export default function CareInputForm({
 
     const selectedFile = selectedFiles[0];
 
+    /*
+     * 새로운 사진 검사 시작
+     */
+    resetPhotoCheckState();
+
+    setIsAnalyzingImage(true);
+
     try {
-      setIsAnalyzingImage(true);
+      console.log("===== 사진 품질 확인 시작 =====");
+      console.log("파일:", selectedFile);
 
       /*
-       * 선택한 사진을 먼저 화면에 반영하지 않고
-       * photo-check를 통과한 경우에만 저장한다.
+       * 실제 photo-check API 호출
        */
       const result = await diagnosisApi.checkPhoto(selectedFile);
 
+      console.log("사진 품질 확인 성공:", result);
+
       /*
-       * 백엔드 진단 API는 photoId 하나만 받으므로
-       * 사진도 항상 한 장만 유지한다.
+       * 여기서 바로 이미지를 화면에 반영하지 않는다.
        *
-       * 새 사진을 올리면 기존 사진을 교체한다.
+       * API는 완료되었지만
+       * AnalysisLoading이 100%가 될 때까지 기다린다.
        */
-      onChangeImages([selectedFile]);
-      onChangePhotoId(result.photoId);
+      setPhotoCheckSuccess({
+        file: selectedFile,
+        photoId: result.photoId,
+      });
+
+      /*
+       * AnalysisLoading:
+       * 현재 진행률 → 100%
+       */
+      setIsPhotoCheckComplete(true);
+    } catch (error) {
+      console.error("사진 품질 확인 실패:", error);
+
+      /*
+       * 실패한 경우에도 API 자체는 끝났으므로
+       * progress는 100%까지 완료시킨다.
+       */
+      setIsPhotoCheckFailed(true);
+      setIsPhotoCheckComplete(true);
+    }
+  };
+
+  /*
+   * AnalysisLoading 숫자가 실제 100%가 된 뒤 실행
+   */
+  const handlePhotoAnalysisComplete = () => {
+    /*
+     * 먼저 분석 모달 닫기
+     */
+    setIsAnalyzingImage(false);
+
+    /*
+     * API 실패한 경우
+     * 로딩 완료 후 에러 모달 표시
+     */
+    if (isPhotoCheckFailed) {
+      setIsUploadErrorOpen(true);
+
+      resetPhotoCheckState();
+
+      return;
+    }
+
+    /*
+     * API 성공
+     */
+    if (photoCheckSuccess) {
+      /*
+       * 이제서야 정상 사진을 반영
+       */
+      onChangeImages([photoCheckSuccess.file]);
+
+      onChangePhotoId(photoCheckSuccess.photoId);
 
       setIsUploadToastVisible(true);
 
       window.setTimeout(() => {
         setIsUploadToastVisible(false);
       }, 2000);
-    } catch (error) {
-      console.error("사진 품질 확인 실패:", error);
-
-      /*
-       * 기존에 정상 등록된 사진이 있다면 그대로 유지한다.
-       *
-       * 여기서 onChangePhotoId(null)을 호출하면
-       * 화면에는 기존 정상 사진이 남아 있는데
-       * photoId만 사라지는 문제가 생길 수 있다.
-       */
-      setIsUploadErrorOpen(true);
-    } finally {
-      setIsAnalyzingImage(false);
     }
+
+    resetPhotoCheckState();
   };
 
   const handleCancelReupload = () => {
@@ -114,10 +199,6 @@ export default function CareInputForm({
   };
 
   const handleRemoveImage = () => {
-    /*
-     * 현재는 사진 한 장만 관리하므로
-     * 삭제 시 이미지와 photoId를 함께 초기화한다.
-     */
     onChangeImages([]);
     onChangePhotoId(null);
   };
@@ -230,21 +311,23 @@ export default function CareInputForm({
           </S.Description>
         </S.TextArea>
 
-        <S.SymptomTextarea
-          value={additionalSymptom}
-          placeholder={
-            isDaily
-              ? "예) 트러블 흔적이 신경 쓰여요"
-              : "예) 만지면 통증이 있어요"
-          }
-          onChange={(event) => onChangeAdditionalSymptom(event.target.value)}
-        />
+        <S.SymptomArea>
+          <S.SymptomTextarea
+            value={additionalSymptom}
+            placeholder={
+              isDaily
+                ? "예) 트러블 흔적이 신경 쓰여요"
+                : "예) 만지면 통증이 있어요"
+            }
+            onChange={(event) => onChangeAdditionalSymptom(event.target.value)}
+          />
 
-        <S.Notice>
-          {isDaily
-            ? "* 입력한 정보는 피부 상태 분석에만 사용되며 의료 진단을 대신하지 않아요"
-            : "* 입력한 정보는 루틴 추천에만 사용되며 의료 진단을 대신하지 않아요"}
-        </S.Notice>
+          <S.Notice>
+            {isDaily
+              ? "* 입력한 정보는 피부 상태 분석에만 사용되며 의료 진단을 대신하지 않아요"
+              : "* 입력한 정보는 루틴 추천에만 사용되며 의료 진단을 대신하지 않아요"}
+          </S.Notice>
+        </S.SymptomArea>
 
         {isUploadToastVisible && (
           <S.UploadToast>
@@ -265,7 +348,15 @@ export default function CareInputForm({
             <AnalysisLoading
               variant={variant}
               type="image"
-              onComplete={() => {}}
+              /*
+               * checkPhoto 처리 중:
+               * false → 최대 85%
+               *
+               * checkPhoto 응답 완료:
+               * true → 100%
+               */
+              isComplete={isPhotoCheckComplete}
+              onComplete={handlePhotoAnalysisComplete}
             />
           </ModalS.Modal>
         </ModalS.Overlay>

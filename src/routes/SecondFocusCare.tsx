@@ -1,17 +1,20 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import axios from "axios";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
+
+import { diagnosisApi, type DiagnosisResponse } from "../api/diagnosis";
 
 import { NavBar } from "../components/NavBar";
 import AnalysisLoading from "../components/FocusCare/AnalysisLoading";
 import FocusProgress from "../components/FocusCare/FocusProgress";
 import RoutineBottomSheet from "../components/FocusCare/RoutineBottomSheet";
 
-import type { DiagnosisResponse } from "../api/diagnosis";
-
 import * as S from "../styles/FocusCare/SecondFocusCare.styles";
 
+type DiagnosisRequest = Parameters<typeof diagnosisApi.createDiagnosis>[0];
+
 interface SecondFocusCareLocationState {
-  diagnosis: DiagnosisResponse;
+  diagnosisRequest: DiagnosisRequest;
   selectedConditions: string[];
   skinImage?: File;
 }
@@ -21,11 +24,61 @@ export default function SecondFocusCare() {
 
   const state = location.state as SecondFocusCareLocationState | null;
 
-  const diagnosis = state?.diagnosis;
+  const diagnosisRequest = state?.diagnosisRequest;
   const selectedConditions = state?.selectedConditions ?? [];
   const skinImage = state?.skinImage;
 
+  const [diagnosis, setDiagnosis] = useState<DiagnosisResponse | null>(null);
+
   const [isRoutineSheetVisible, setIsRoutineSheetVisible] = useState(false);
+
+  /*
+   * React StrictMode 등으로 useEffect가 중복 실행되어
+   * 진단 API가 두 번 호출되는 것을 방지
+   */
+  const hasRequestedDiagnosis = useRef(false);
+
+  useEffect(() => {
+    if (!diagnosisRequest) {
+      console.error("집중 진단 요청에 필요한 diagnosisRequest가 없습니다.");
+
+      return;
+    }
+
+    if (hasRequestedDiagnosis.current) {
+      return;
+    }
+
+    hasRequestedDiagnosis.current = true;
+
+    async function createDiagnosis() {
+      try {
+        console.log("===== SecondFocusCare AI 진단 시작 =====");
+        console.log("진단 요청 body:", diagnosisRequest);
+
+        const response = await diagnosisApi.createDiagnosis(diagnosisRequest);
+
+        console.log("집중 코스 AI 진단 완료:", response);
+
+        /*
+         * diagnosis가 저장되는 순간
+         * AnalysisLoading의 isComplete가 true가 된다.
+         */
+        setDiagnosis(response);
+      } catch (error) {
+        console.error("집중 코스 AI 진단 실패:", error);
+
+        if (axios.isAxiosError(error)) {
+          console.error("HTTP Status:", error.response?.status);
+          console.error("API Error Response:", error.response?.data);
+          console.error("요청 URL:", error.config?.url);
+          console.error("보낸 요청 데이터:", error.config?.data);
+        }
+      }
+    }
+
+    createDiagnosis();
+  }, [diagnosisRequest]);
 
   const imageUrl = useMemo(() => {
     if (!(skinImage instanceof File)) {
@@ -43,15 +96,21 @@ export default function SecondFocusCare() {
     };
   }, [imageUrl]);
 
+  /*
+   * AnalysisLoading 숫자가 실제 100%가 된 뒤
+   * 바텀시트를 표시
+   */
   const handleAnalysisComplete = useCallback(() => {
     setIsRoutineSheetVisible(true);
   }, []);
 
-  const today = new Date();
+  const formattedDate = useMemo(() => {
+    const today = new Date();
 
-  const formattedDate = `${today.getFullYear()}년 ${
-    today.getMonth() + 1
-  }월 ${today.getDate()}일`;
+    return `${today.getFullYear()}년 ${
+      today.getMonth() + 1
+    }월 ${today.getDate()}일`;
+  }, []);
 
   return (
     <S.Page>
@@ -97,7 +156,10 @@ export default function SecondFocusCare() {
             </S.AnalysisContent>
           </S.AnalysisCard>
 
-          <AnalysisLoading onComplete={handleAnalysisComplete} />
+          <AnalysisLoading
+            isComplete={diagnosis !== null}
+            onComplete={handleAnalysisComplete}
+          />
         </S.Content>
       </S.Main>
 

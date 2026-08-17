@@ -1,4 +1,3 @@
-import axios from "axios";
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -16,6 +15,8 @@ interface FirstFocusCareLocationState {
   courseId?: number;
 }
 
+type DiagnosisRequest = Parameters<typeof diagnosisApi.createDiagnosis>[0];
+
 export default function FirstFocusCare() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -23,14 +24,15 @@ export default function FirstFocusCare() {
   const state = location.state as FirstFocusCareLocationState | null;
 
   const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
-
   const [skinImages, setSkinImages] = useState<File[]>([]);
   const [additionalSymptom, setAdditionalSymptom] = useState("");
   const [photoId, setPhotoId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const isNextEnabled =
-    selectedConditions.length > 0 && skinImages.length > 0 && photoId !== null;
+    selectedConditions.length > 0 &&
+    skinImages.length > 0 &&
+    photoId !== null;
 
   const handleToggleCondition = (condition: string) => {
     setSelectedConditions((previousConditions) => {
@@ -53,32 +55,18 @@ export default function FirstFocusCare() {
   };
 
   const getFocusCourseId = async (): Promise<number | null> => {
-    /*
-     * Care에서 courseId를 전달했다면
-     * 추가 API 호출 없이 사용
-     */
     if (state?.courseId !== undefined) {
       return state.courseId;
     }
 
-    /*
-     * 새로고침 / URL 직접 접근 시에만
-     * 현재 코스 재조회
-     */
     try {
       const currentCourse = await courseApi.getCurrentCourse();
 
-      /*
-       * 진행 중인 코스 자체가 없는 경우
-       */
       if (!currentCourse) {
         console.error("현재 진행 중인 코스가 없습니다.");
         return null;
       }
 
-      /*
-       * 현재 코스가 FOCUS인지 확인
-       */
       if (currentCourse.courseType !== "FOCUS") {
         console.error(
           "현재 진행 중인 코스가 집중 코스가 아닙니다:",
@@ -118,40 +106,35 @@ export default function FirstFocusCare() {
             symptom !== undefined
         );
 
-      const requestData = {
+      /*
+       * 여기서는 AI 진단 API를 호출하지 않는다.
+       *
+       * SecondFocusCare에서 실제 AI 진단을 실행할 수 있도록
+       * 요청 데이터만 전달한다.
+       */
+      const diagnosisRequest: DiagnosisRequest = {
         courseId,
         symptoms,
         symptomNote: additionalSymptom.trim() || undefined,
         photoId,
       };
 
-      console.log("===== 진단 요청 =====");
+      console.log("===== 집중 진단 요청 준비 =====");
       console.log("courseId:", courseId);
       console.log("선택 증상:", selectedConditions);
       console.log("변환된 symptoms:", symptoms);
       console.log("photoId:", photoId);
-      console.log("진단 요청 body:", requestData);
-
-      const diagnosis = await diagnosisApi.createDiagnosis(requestData);
-
-      console.log("집중 코스 진단 성공:", diagnosis);
+      console.log("SecondFocusCare 전달 데이터:", diagnosisRequest);
 
       navigate("/care/second_focus_care", {
         state: {
-          diagnosis,
+          diagnosisRequest,
           selectedConditions,
           skinImage: skinImages[0],
         },
       });
     } catch (error) {
-      console.error("집중 코스 진단 실패:", error);
-
-      if (axios.isAxiosError(error)) {
-        console.error("HTTP Status:", error.response?.status);
-        console.error("API Error Response:", error.response?.data);
-        console.error("요청 URL:", error.config?.url);
-        console.error("보낸 요청 데이터:", error.config?.data);
-      }
+      console.error("SecondFocusCare 이동 준비 실패:", error);
     } finally {
       setIsSubmitting(false);
     }

@@ -1,6 +1,8 @@
 import styled, { keyframes } from "styled-components";
+
 import { colorPalette } from "../../lib/colorPalette";
 import { typography } from "../../lib/typography";
+
 type CareVariant = "focus" | "daily";
 
 export const Section = styled.section`
@@ -8,19 +10,39 @@ export const Section = styled.section`
 
   display: flex;
   flex-direction: column;
+
+  /*
+   * 질문/설명 영역과 실제 입력 UI 사이
+   */
   gap: 16px;
+
+  width: 100%;
 `;
 
 export const TextArea = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 4px;
+
+  /*
+   * 질문과 설명은 별도의 큰 gap 없이 바로 이어짐
+   */
+  gap: 0;
+
+  width: 100%;
 `;
 
 export const Title = styled.h2`
+  ${typography.H3};
+
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+
+  width: 100%;
+  height: 40px;
+
   margin: 0;
 
-  ${typography.H3};
   color: ${colorPalette.Black};
 `;
 
@@ -30,7 +52,7 @@ export const OptionalText = styled.span<{
   font-size: 16px;
   font-weight: 600;
   line-height: 150%;
-
+  margin-left: 2px;
   color: ${({ $variant }) =>
     $variant === "daily"
       ? colorPalette.DailyPrimary
@@ -38,10 +60,13 @@ export const OptionalText = styled.span<{
 `;
 
 export const Description = styled.p`
+  ${typography.Body1};
+
   margin: 0;
 
-  ${typography.Body1};
   color: ${colorPalette.Black};
+
+  word-break: keep-all;
 `;
 
 export const ConditionList = styled.div`
@@ -80,6 +105,7 @@ export const ConditionButton = styled.button<{
 /* =========================
    이미지 미리보기
 ========================= */
+
 export const ImagePreviewList = styled.div`
   display: flex;
   gap: 6px;
@@ -94,6 +120,7 @@ export const ImagePreviewList = styled.div`
     display: none;
   }
 `;
+
 export const ImagePreviewItem = styled.div`
   position: relative;
 
@@ -174,6 +201,7 @@ export const PlusIcon = styled.img`
 
 export const UploadText = styled.span`
   ${typography.Body1Bold};
+
   color: ${colorPalette.Black};
 `;
 
@@ -196,23 +224,26 @@ export const SymptomTextarea = styled.textarea`
   background-color: ${colorPalette.OffWhite};
 
   ${typography.Body1};
+
   color: ${colorPalette.Black};
 
   resize: none;
 
   &::placeholder {
     ${typography.Body1};
+
     color: ${colorPalette.Secondary};
   }
 
   &:focus {
     outline: none;
+
     border-color: ${colorPalette.Black};
   }
 `;
 
 export const Notice = styled.p`
-  margin: 20px 0 0;
+  margin: 36px 0 0;
 
   font-family: "Inter", sans-serif;
   font-size: 11px;
@@ -220,6 +251,8 @@ export const Notice = styled.p`
   line-height: 150%;
 
   color: ${colorPalette.Tertiary};
+
+  word-break: keep-all;
 `;
 
 /* =========================
@@ -235,6 +268,7 @@ export const CheckIcon = styled.img`
 
 export const UploadCompleteText = styled.span`
   ${typography.Body1Bold};
+
   color: ${colorPalette.Black};
 `;
 
@@ -281,4 +315,10 @@ export const UploadToast = styled.div`
   animation: ${showToast} 2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 
   pointer-events: none;
+`;
+export const SymptomArea = styled.div`
+  display: flex;
+  flex-direction: column;
+
+  width: 100%;
 `;

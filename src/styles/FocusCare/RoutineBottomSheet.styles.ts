@@ -1,4 +1,5 @@
 import styled, { keyframes } from "styled-components";
+
 import { colorPalette } from "../../lib/colorPalette";
 import { typography } from "../../lib/typography";
 
@@ -34,8 +35,6 @@ export const BottomSheet = styled.section<BottomSheetProps>`
   width: 100%;
   max-width: 402px;
 
-  /* height: 600px; 삭제 */
-
   padding: 0 16px 16px;
 
   box-sizing: border-box;
@@ -68,30 +67,16 @@ export const BottomSheet = styled.section<BottomSheetProps>`
     $dragOffset === 0 ? "transform 0.3s ease" : "none"};
 `;
 
-export const OptionList = styled.div`
-  display: flex;
-  flex-direction: column;
-
-  /* 카드 ↔ 카드 = 16px */
-  gap: 16px;
-
-  margin-top: 24px;
-`;
-
-export const ButtonArea = styled.div`
-  width: 100%;
-
-  /* 마지막 카드 ↔ 버튼 = 24px */
-  margin-top: 24px;
-`;
-
 export const DragArea = styled.div`
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
 
   width: 100%;
-  height: 40px;
+
+  padding-top: 16px;
+
+  box-sizing: content-box;
 
   flex-shrink: 0;
 
@@ -106,6 +91,8 @@ export const DragArea = styled.div`
 export const Handle = styled.div`
   width: 84px;
   height: 4px;
+
+  flex-shrink: 0;
 
   border-radius: 999999px;
 
@@ -128,11 +115,24 @@ export const SheetContent = styled.div<SheetContentProps>`
 export const HeaderArea = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 4px;
+
+  width: 100%;
+
+  /*
+   * 회색 Handle 아래 24px 후
+   * 제목 영역이 시작되도록 설정
+   */
+  margin-top: 24px;
 `;
 
 export const Title = styled.h2`
   ${typography.H3};
+
+  display: flex;
+  align-items: center;
+
+  width: 100%;
+  height: 40px;
 
   margin: 0;
 
@@ -142,7 +142,25 @@ export const Title = styled.h2`
 export const Description = styled.p`
   ${typography.Body1};
 
+  /*
+   * 제목과 설명 사이 추가 간격 없음
+   */
   margin: 0;
 
   color: ${colorPalette.Black};
+`;
+
+export const OptionList = styled.div`
+  display: flex;
+  flex-direction: column;
+
+  gap: 16px;
+
+  margin-top: 24px;
+`;
+
+export const ButtonArea = styled.div`
+  width: 100%;
+
+  margin-top: 24px;
 `;
