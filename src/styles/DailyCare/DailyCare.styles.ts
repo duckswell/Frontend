@@ -27,13 +27,13 @@ export const Page = styled.div`
 export const Content = styled.main`
   display: flex;
   flex-direction: column;
-  gap: 36px;
+  gap: 16px;
 
   width: 100%;
   max-width: 402px;
 
   margin: 0 auto;
-  padding: 12px 16px 0;
+  padding: 16px 16px 0;
 
   box-sizing: border-box;
 `;
@@ -41,12 +41,18 @@ export const Content = styled.main`
 export const RoutineSection = styled.section`
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 16px;
 
   width: 100%;
 `;
 
 export const SectionTitle = styled.h2`
+  display: flex;
+  align-items: center;
+
+  width: 100%;
+  height: 40px;
+
   margin: 0;
 
   ${typography.H3};
@@ -57,6 +63,7 @@ export const RoutineCard = styled.button`
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  gap: 12px;
 
   width: 100%;
 
@@ -88,8 +95,6 @@ export const RoutineTitleRow = styled.div`
   display: flex;
   align-items: center;
   gap: 4px;
-
-  margin-top: 12px;
 `;
 
 export const RoutineTitle = styled.h1`
@@ -110,7 +115,7 @@ export const SettingIcon = styled.img`
 `;
 
 export const RoutineDescription = styled.p`
-  margin: 12px 0 0;
+  margin: 0;
 
   ${typography.Body1};
   color: #1f2937;
@@ -123,7 +128,7 @@ export const CategoryList = styled.div`
   flex-wrap: wrap;
   gap: 4px;
 
-  margin-top: 12px;
+  margin: 0;
 `;
 
 export const CategoryBadge = styled.span`
@@ -144,7 +149,7 @@ export const CategoryBadge = styled.span`
 export const CourseSection = styled.section`
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 16px;
 
   width: 100%;
 `;
@@ -168,7 +173,7 @@ export const CourseCard = styled.div`
 export const StepList = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 32px;
+  gap: 28px;
 `;
 
 export const StepItem = styled.div`
@@ -196,14 +201,14 @@ export const StepBadge = styled.span`
 `;
 
 export const StepTitle = styled.h3`
-  margin: 13px 0 0;
+  margin: 12px 0 0;
 
   ${typography.H3};
   color: ${colorPalette.Black};
 `;
 
 export const StepDescription = styled.p`
-  margin: 8px 0 0;
+  margin: 9px 0 0;
 
   ${typography.Body1};
   color: ${colorPalette.Black};

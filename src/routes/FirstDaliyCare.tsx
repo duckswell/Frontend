@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { courseApi, type RoutineTypeCode } from "../api/course";
+
 import { diagnosisApi, SYMPTOM_CODE_MAP } from "../api/diagnosis";
 
 import { NavBar } from "../components/NavBar";
@@ -18,6 +19,8 @@ interface FirstDailyCareLocationState {
 
 type DiagnosisRequest = Parameters<typeof diagnosisApi.createDiagnosis>[0];
 
+const NO_CONDITION = "해당없음";
+
 export default function FirstDaliyCare() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -25,26 +28,59 @@ export default function FirstDaliyCare() {
   const state = location.state as FirstDailyCareLocationState | null;
 
   const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
+
   const [skinImages, setSkinImages] = useState<File[]>([]);
+
   const [additionalSymptom, setAdditionalSymptom] = useState("");
+
   const [photoId, setPhotoId] = useState<string | null>(null);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   /*
-   * 데일리는 사진 선택사항.
-   * 피부 상태 하나 이상만 선택하면 다음으로 이동 가능.
+   * Daily
+   *
+   * 피부 상태 최소 1개 필수.
+   * 사진은 선택사항.
+   *
+   * 해당없음도 정상적인 선택 1개.
    */
   const isNextEnabled = selectedConditions.length > 0;
 
   const handleToggleCondition = (condition: string) => {
     setSelectedConditions((previousConditions) => {
-      if (previousConditions.includes(condition)) {
-        return previousConditions.filter(
+      /*
+       * 해당없음 선택
+       */
+      if (condition === NO_CONDITION) {
+        if (previousConditions.includes(NO_CONDITION)) {
+          return [];
+        }
+
+        return [NO_CONDITION];
+      }
+
+      /*
+       * 일반 증상을 선택하면
+       * 해당없음 자동 해제
+       */
+      const conditionsWithoutNone = previousConditions.filter(
+        (selectedCondition) => selectedCondition !== NO_CONDITION
+      );
+
+      /*
+       * 이미 선택한 일반 증상 해제
+       */
+      if (conditionsWithoutNone.includes(condition)) {
+        return conditionsWithoutNone.filter(
           (selectedCondition) => selectedCondition !== condition
         );
       }
 
-      return [...previousConditions, condition];
+      /*
+       * 새 증상 추가
+       */
+      return [...conditionsWithoutNone, condition];
     });
   };
 
@@ -100,6 +136,11 @@ export default function FirstDaliyCare() {
         return;
       }
 
+      /*
+       * 해당없음 역시 NONE으로 변환.
+       *
+       * 절대 제거하지 않는다.
+       */
       const symptoms = selectedConditions
         .map((condition) => SYMPTOM_CODE_MAP[condition])
         .filter(
@@ -107,12 +148,6 @@ export default function FirstDaliyCare() {
             symptom !== undefined
         );
 
-      /*
-       * FirstDailyCare에서는 진단 API 호출 X
-       *
-       * SecondDailyCare에서 실제 AI 분석을 실행할 수 있도록
-       * request 데이터만 넘겨준다.
-       */
       const diagnosisRequest: DiagnosisRequest = {
         courseId,
         symptoms,
@@ -121,11 +156,9 @@ export default function FirstDaliyCare() {
       };
 
       console.log("===== 데일리 진단 요청 준비 =====");
-      console.log("courseId:", courseId);
-      console.log("선택 증상:", selectedConditions);
-      console.log("변환된 symptoms:", symptoms);
-      console.log("photoId:", photoId);
-      console.log("SecondDailyCare 전달 데이터:", diagnosisRequest);
+      console.log("선택 UI:", selectedConditions);
+      console.log("API symptoms:", symptoms);
+      console.log("진단 요청:", diagnosisRequest);
 
       navigate("/care/second_daily_care", {
         state: {

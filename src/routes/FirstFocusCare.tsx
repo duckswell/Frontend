@@ -17,6 +17,8 @@ interface FirstFocusCareLocationState {
 
 type DiagnosisRequest = Parameters<typeof diagnosisApi.createDiagnosis>[0];
 
+const NO_CONDITION = "해당없음";
+
 export default function FirstFocusCare() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -29,20 +31,54 @@ export default function FirstFocusCare() {
   const [photoId, setPhotoId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  /*
+   * Focus
+   *
+   * 피부 상태 최소 1개 필수
+   * 사진 필수
+   * photoId 필수
+   *
+   * 해당없음도 정상적인 증상 선택 1개로 취급
+   */
   const isNextEnabled =
-    selectedConditions.length > 0 &&
-    skinImages.length > 0 &&
-    photoId !== null;
+    selectedConditions.length > 0 && skinImages.length > 0 && photoId !== null;
 
   const handleToggleCondition = (condition: string) => {
     setSelectedConditions((previousConditions) => {
-      if (previousConditions.includes(condition)) {
-        return previousConditions.filter(
+      /*
+       * 해당없음 선택
+       *
+       * 다른 증상과 동시에 선택될 수 없음
+       */
+      if (condition === NO_CONDITION) {
+        if (previousConditions.includes(NO_CONDITION)) {
+          return [];
+        }
+
+        return [NO_CONDITION];
+      }
+
+      /*
+       * 일반 증상을 선택하면
+       * 해당없음은 자동 해제
+       */
+      const conditionsWithoutNone = previousConditions.filter(
+        (selectedCondition) => selectedCondition !== NO_CONDITION
+      );
+
+      /*
+       * 이미 선택된 증상이면 해제
+       */
+      if (conditionsWithoutNone.includes(condition)) {
+        return conditionsWithoutNone.filter(
           (selectedCondition) => selectedCondition !== condition
         );
       }
 
-      return [...previousConditions, condition];
+      /*
+       * 새 증상 추가
+       */
+      return [...conditionsWithoutNone, condition];
     });
   };
 
@@ -64,6 +100,7 @@ export default function FirstFocusCare() {
 
       if (!currentCourse) {
         console.error("현재 진행 중인 코스가 없습니다.");
+
         return null;
       }
 
@@ -96,9 +133,14 @@ export default function FirstFocusCare() {
 
       if (courseId === null) {
         console.error("진단에 사용할 집중 코스 courseId가 없습니다.");
+
         return;
       }
 
+      /*
+       * 해당없음도
+       * SYMPTOM_CODE_MAP을 통해 NONE으로 변환한다.
+       */
       const symptoms = selectedConditions
         .map((condition) => SYMPTOM_CODE_MAP[condition])
         .filter(
@@ -106,12 +148,6 @@ export default function FirstFocusCare() {
             symptom !== undefined
         );
 
-      /*
-       * 여기서는 AI 진단 API를 호출하지 않는다.
-       *
-       * SecondFocusCare에서 실제 AI 진단을 실행할 수 있도록
-       * 요청 데이터만 전달한다.
-       */
       const diagnosisRequest: DiagnosisRequest = {
         courseId,
         symptoms,
@@ -120,11 +156,9 @@ export default function FirstFocusCare() {
       };
 
       console.log("===== 집중 진단 요청 준비 =====");
-      console.log("courseId:", courseId);
-      console.log("선택 증상:", selectedConditions);
-      console.log("변환된 symptoms:", symptoms);
-      console.log("photoId:", photoId);
-      console.log("SecondFocusCare 전달 데이터:", diagnosisRequest);
+      console.log("선택 UI:", selectedConditions);
+      console.log("API symptoms:", symptoms);
+      console.log("진단 요청:", diagnosisRequest);
 
       navigate("/care/second_focus_care", {
         state: {

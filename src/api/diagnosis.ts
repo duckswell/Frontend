@@ -9,7 +9,8 @@ export type SymptomCode =
   | "FLAKING"
   | "OILINESS"
   | "ITCHINESS"
-  | "SWELLING";
+  | "SWELLING"
+  | "NONE";
 
 export type Difficulty = "LIGHT" | "BASIC" | "INTENSIVE";
 
@@ -51,6 +52,7 @@ export const SYMPTOM_CODE_MAP: Record<string, SymptomCode> = {
   번들거림: "OILINESS",
   가려움: "ITCHINESS",
   붓기: "SWELLING",
+  해당없음: "NONE",
 };
 
 export const diagnosisApi = {
@@ -72,6 +74,7 @@ export const diagnosisApi = {
 
     return response.data.data;
   },
+
   createDiagnosis: async (data: DiagnosisRequest) => {
     const response = await api.post<ApiResponse<DiagnosisResponse>>(
       "/api/diagnoses",

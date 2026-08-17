@@ -10,6 +10,7 @@ import * as ModalS from "../../styles/FocusCare/ImageAnalysisModal.styles";
 const SKIN_CONDITION_ROWS = [
   ["붉은기", "열감", "따가움", "건조함"],
   ["각질", "번들거림", "가려움", "붓기"],
+  ["해당없음"],
 ];
 
 interface CareInputFormProps {
@@ -45,27 +46,11 @@ export default function CareInputForm({
 
   const [isAnalyzingImage, setIsAnalyzingImage] = useState(false);
 
-  /*
-   * checkPhoto API가 끝났는지 여부
-   *
-   * false:
-   * 실제 API 처리 중
-   *
-   * true:
-   * 성공/실패 여부와 관계없이 API 처리 완료
-   */
   const [isPhotoCheckComplete, setIsPhotoCheckComplete] = useState(false);
 
-  /*
-   * 성공한 경우:
-   * AnalysisLoading 100% 이후 실제 이미지/PhotoId 반영
-   */
   const [photoCheckSuccess, setPhotoCheckSuccess] =
     useState<PhotoCheckSuccess | null>(null);
 
-  /*
-   * API 실패 여부
-   */
   const [isPhotoCheckFailed, setIsPhotoCheckFailed] = useState(false);
 
   const [isUploadErrorOpen, setIsUploadErrorOpen] = useState(false);
@@ -98,9 +83,6 @@ export default function CareInputForm({
 
     const selectedFile = selectedFiles[0];
 
-    /*
-     * 새로운 사진 검사 시작
-     */
     resetPhotoCheckState();
 
     setIsAnalyzingImage(true);
@@ -109,54 +91,27 @@ export default function CareInputForm({
       console.log("===== 사진 품질 확인 시작 =====");
       console.log("파일:", selectedFile);
 
-      /*
-       * 실제 photo-check API 호출
-       */
       const result = await diagnosisApi.checkPhoto(selectedFile);
 
       console.log("사진 품질 확인 성공:", result);
 
-      /*
-       * 여기서 바로 이미지를 화면에 반영하지 않는다.
-       *
-       * API는 완료되었지만
-       * AnalysisLoading이 100%가 될 때까지 기다린다.
-       */
       setPhotoCheckSuccess({
         file: selectedFile,
         photoId: result.photoId,
       });
 
-      /*
-       * AnalysisLoading:
-       * 현재 진행률 → 100%
-       */
       setIsPhotoCheckComplete(true);
     } catch (error) {
       console.error("사진 품질 확인 실패:", error);
 
-      /*
-       * 실패한 경우에도 API 자체는 끝났으므로
-       * progress는 100%까지 완료시킨다.
-       */
       setIsPhotoCheckFailed(true);
       setIsPhotoCheckComplete(true);
     }
   };
 
-  /*
-   * AnalysisLoading 숫자가 실제 100%가 된 뒤 실행
-   */
   const handlePhotoAnalysisComplete = () => {
-    /*
-     * 먼저 분석 모달 닫기
-     */
     setIsAnalyzingImage(false);
 
-    /*
-     * API 실패한 경우
-     * 로딩 완료 후 에러 모달 표시
-     */
     if (isPhotoCheckFailed) {
       setIsUploadErrorOpen(true);
 
@@ -165,15 +120,8 @@ export default function CareInputForm({
       return;
     }
 
-    /*
-     * API 성공
-     */
     if (photoCheckSuccess) {
-      /*
-       * 이제서야 정상 사진을 반영
-       */
       onChangeImages([photoCheckSuccess.file]);
-
       onChangePhotoId(photoCheckSuccess.photoId);
 
       setIsUploadToastVisible(true);
@@ -348,13 +296,6 @@ export default function CareInputForm({
             <AnalysisLoading
               variant={variant}
               type="image"
-              /*
-               * checkPhoto 처리 중:
-               * false → 최대 85%
-               *
-               * checkPhoto 응답 완료:
-               * true → 100%
-               */
               isComplete={isPhotoCheckComplete}
               onComplete={handlePhotoAnalysisComplete}
             />
