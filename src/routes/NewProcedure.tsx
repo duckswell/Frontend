@@ -85,7 +85,7 @@ const NewProcedure: React.FC = () => {
 
     const loadProcedures = async () => {
       try {
-        const data = await procedureApi.getAllProcedures();
+        const data = await procedureApi.getCurrentProcedures();
         if (!isMounted) return;
 
         if (data && data.length > 0) {
@@ -130,7 +130,7 @@ const NewProcedure: React.FC = () => {
           ]);
         }
       } catch (error) {
-        console.error("기존 시술 목록 불러오기 실패:", error);
+        console.error("현재 코스 시술 목록 불러오기 실패:", error);
       }
     };
 
