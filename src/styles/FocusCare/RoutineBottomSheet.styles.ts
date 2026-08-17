@@ -1,25 +1,13 @@
-import styled, { keyframes } from "styled-components";
+import styled from "styled-components";
 
 import { colorPalette } from "../../lib/colorPalette";
 import { typography } from "../../lib/typography";
 
-const slideUp = keyframes`
-  from {
-    transform: translateX(-50%) translateY(100%);
-  }
-
-  to {
-    transform: translateX(-50%) translateY(0);
-  }
-`;
-
 interface BottomSheetProps {
   $expanded: boolean;
   $dragOffset: number;
-}
-
-interface SheetContentProps {
-  $expanded: boolean;
+  $collapsedOffset: number;
+  $isPositionReady: boolean;
 }
 
 export const BottomSheet = styled.section<BottomSheetProps>`
@@ -27,6 +15,7 @@ export const BottomSheet = styled.section<BottomSheetProps>`
 
   left: 50%;
   bottom: 0;
+
   z-index: 100;
 
   display: flex;
@@ -34,6 +23,15 @@ export const BottomSheet = styled.section<BottomSheetProps>`
 
   width: 100%;
   max-width: 402px;
+
+  /*
+   * 실제 콘텐츠 높이만큼만 사용.
+   *
+   * 화면보다 길어지는 경우에만
+   * 최대 높이를 제한한다.
+   */
+  height: auto;
+  max-height: calc(100dvh - 16px);
 
   padding: 0 16px 16px;
 
@@ -46,25 +44,59 @@ export const BottomSheet = styled.section<BottomSheetProps>`
 
   box-shadow: 0 -4px 4px rgb(187 187 187 / 20%);
 
-  touch-action: none;
+  overflow: hidden;
 
-  animation: ${slideUp} 0.45s ease-out;
-
+  /*
+   * 높이는 절대 애니메이션하지 않는다.
+   *
+   * 오직 translateY 하나만 움직여서
+   * 위/아래 이동 중 튀거나 바운스하는 현상을 줄인다.
+   */
   transform: translateX(-50%)
     translateY(
-      ${({ $expanded, $dragOffset }) => {
+      ${({ $expanded, $dragOffset, $collapsedOffset }) => {
+        /*
+         * 펼친 상태
+         *
+         * 기본 위치 = 0
+         * 아래로 드래그하면 dragOffset만큼 내려감
+         */
         if ($expanded) {
-          return `${Math.max($dragOffset, 0)}px`;
+          return `${$dragOffset}px`;
         }
 
-        return `calc(
-          100% - 40px + ${Math.min($dragOffset, 0)}px
-        )`;
+        /*
+         * 접힌 상태
+         *
+         * 기본 위치 = collapsedOffset
+         * 위로 드래그하면 음수 dragOffset만큼 올라감
+         */
+        return `${Math.max($collapsedOffset + $dragOffset, 0)}px`;
       }}
     );
 
+  /*
+   * 최초 실제 위치를 계산하기 전에는 숨겨 두어
+   * 화면 아래에서 갑자기 위치가 바뀌는 현상을 방지.
+   */
+  opacity: ${({ $isPositionReady }) => ($isPositionReady ? 1 : 0)};
+
+  /*
+   * 드래그 중에는 transition 없음.
+   *
+   * 손을 놓았을 때만 현재 위치에서 목표 위치까지
+   * 부드럽게 이동한다.
+   *
+   * bounce 성향이 없는 easing 사용.
+   */
   transition: ${({ $dragOffset }) =>
-    $dragOffset === 0 ? "transform 0.3s ease" : "none"};
+    $dragOffset === 0
+      ? "transform 520ms cubic-bezier(0.25, 0.1, 0.25, 1), opacity 160ms ease"
+      : "none"};
+
+  will-change: transform;
+
+  touch-action: none;
 `;
 
 export const DragArea = styled.div`
@@ -76,12 +108,15 @@ export const DragArea = styled.div`
 
   padding-top: 16px;
 
-  box-sizing: content-box;
+  box-sizing: border-box;
 
   flex-shrink: 0;
 
   cursor: grab;
+
   touch-action: none;
+
+  user-select: none;
 
   &:active {
     cursor: grabbing;
@@ -99,17 +134,13 @@ export const Handle = styled.div`
   background-color: #d9d9d9;
 `;
 
-export const SheetContent = styled.div<SheetContentProps>`
+export const SheetContent = styled.div`
   display: flex;
   flex-direction: column;
 
   width: 100%;
 
-  opacity: ${({ $expanded }) => ($expanded ? 1 : 0)};
-
-  pointer-events: ${({ $expanded }) => ($expanded ? "auto" : "none")};
-
-  transition: opacity 0.15s ease;
+  min-height: 0;
 `;
 
 export const HeaderArea = styled.div`
@@ -118,11 +149,9 @@ export const HeaderArea = styled.div`
 
   width: 100%;
 
-  /*
-   * 회색 Handle 아래 24px 후
-   * 제목 영역이 시작되도록 설정
-   */
   margin-top: 24px;
+
+  flex-shrink: 0;
 `;
 
 export const Title = styled.h2`
@@ -142,25 +171,49 @@ export const Title = styled.h2`
 export const Description = styled.p`
   ${typography.Body1};
 
-  /*
-   * 제목과 설명 사이 추가 간격 없음
-   */
   margin: 0;
 
   color: ${colorPalette.Black};
 `;
 
-export const OptionList = styled.div`
+export const ScrollArea = styled.div`
   display: flex;
   flex-direction: column;
 
-  gap: 16px;
+  width: 100%;
+
+  min-height: 0;
 
   margin-top: 24px;
+
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  overscroll-behavior: contain;
+
+  scrollbar-width: none;
+
+  -webkit-overflow-scrolling: touch;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+`;
+
+export const OptionList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  width: 100%;
+
+  flex-shrink: 0;
 `;
 
 export const ButtonArea = styled.div`
   width: 100%;
 
   margin-top: 24px;
+
+  flex-shrink: 0;
 `;
