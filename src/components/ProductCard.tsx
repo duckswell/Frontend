@@ -5,30 +5,38 @@ export interface Product {
   brand: string;
   name: string;
   imageUrl?: string | null;
+  linkUrl?: string | null;
 }
 
 interface ProductCardProps {
   product: Product;
-  onClick: () => void;
 }
 
-export default function ProductCard({ product, onClick }: ProductCardProps) {
+export default function ProductCard({ product }: ProductCardProps) {
+  function handleMoveToProduct() {
+    if (!product.linkUrl) {
+      return;
+    }
+
+    window.open(product.linkUrl, "_blank", "noopener,noreferrer");
+  }
+
   return (
     <S.Card>
-      <S.ProductImageButton
-        type="button"
-        onClick={onClick}
-        aria-label={`${product.name} 상세보기`}
-      >
-        <S.ProductImagePlaceholder $imageUrl={product.imageUrl} />
-      </S.ProductImageButton>
+      <S.ProductImagePlaceholder $imageUrl={product.imageUrl} />
 
       <S.ProductInfo>
-        <S.ProductTextButton type="button" onClick={onClick}>
-          <S.Brand>{product.brand}</S.Brand>
+        <S.Brand>{product.brand}</S.Brand>
 
-          <S.ProductName>{product.name}</S.ProductName>
-        </S.ProductTextButton>
+        <S.ProductName>{product.name}</S.ProductName>
+
+        <S.ProductLinkButton
+          type="button"
+          onClick={handleMoveToProduct}
+          disabled={!product.linkUrl}
+        >
+          제품 보러가기
+        </S.ProductLinkButton>
       </S.ProductInfo>
     </S.Card>
   );
