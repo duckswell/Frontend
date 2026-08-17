@@ -350,6 +350,8 @@ export const DayCell = styled.button<{
         ? colorPalette.Secondary
         : colorPalette.Black};
 
+  opacity: ${({ $isSelectable }) => ($isSelectable ? 1.0 : 0.38)};
+
   background-color: ${({ $isSelected }) =>
     $isSelected ? colorPalette.Black : "transparent"};
 
@@ -364,7 +366,7 @@ export const DayCell = styled.button<{
   @media (hover: hover) {
     &:not(:disabled):hover {
       background-color: ${({ $isSelected }) =>
-        $isSelected ? colorPalette.Black : colorPalette.Secondary};
+        $isSelected ? colorPalette.Black : colorPalette.grey50};
     }
   }
 
