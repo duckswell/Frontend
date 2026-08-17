@@ -2,12 +2,17 @@ import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { courseApi } from "../api/course";
-import { diagnosisApi, SYMPTOM_CODE_MAP } from "../api/diagnosis";
+import {
+  diagnosisApi,
+  SYMPTOM_CODE_MAP,
+  type DiagnosisResponse,
+} from "../api/diagnosis";
 
 import { NavBar } from "../components/NavBar";
 import CareButton from "../components/CareButton";
 import CareInputForm from "../components/FocusCare/CareInputForm";
 import FocusProgress from "../components/FocusCare/FocusProgress";
+import ImageAnalysisModal from "../components/FocusCare/ImageAnalysisModal";
 
 import * as S from "../styles/FocusCare/FirstFocusCare.styles";
 
@@ -29,7 +34,24 @@ export default function FirstFocusCare() {
   const [skinImages, setSkinImages] = useState<File[]>([]);
   const [additionalSymptom, setAdditionalSymptom] = useState("");
   const [photoId, setPhotoId] = useState<string | null>(null);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  /*
+   * 진단 진행 모달
+   */
+  const [isDiagnosisModalOpen, setIsDiagnosisModalOpen] = useState(false);
+
+  /*
+   * 실제 /api/diagnoses 요청이 끝났는지 여부
+   * true가 되는 순간 AnalysisLoading이 100%로 마무리된다.
+   */
+  const [isDiagnosisComplete, setIsDiagnosisComplete] = useState(false);
+
+  /*
+   * First에서 받은 실제 AI 분석 결과
+   */
+  const [diagnosis, setDiagnosis] = useState<DiagnosisResponse | null>(null);
 
   /*
    * Focus
@@ -37,19 +59,12 @@ export default function FirstFocusCare() {
    * 피부 상태 최소 1개 필수
    * 사진 필수
    * photoId 필수
-   *
-   * 해당없음도 정상적인 증상 선택 1개로 취급
    */
   const isNextEnabled =
     selectedConditions.length > 0 && skinImages.length > 0 && photoId !== null;
 
   const handleToggleCondition = (condition: string) => {
     setSelectedConditions((previousConditions) => {
-      /*
-       * 해당없음 선택
-       *
-       * 다른 증상과 동시에 선택될 수 없음
-       */
       if (condition === NO_CONDITION) {
         if (previousConditions.includes(NO_CONDITION)) {
           return [];
@@ -58,26 +73,16 @@ export default function FirstFocusCare() {
         return [NO_CONDITION];
       }
 
-      /*
-       * 일반 증상을 선택하면
-       * 해당없음은 자동 해제
-       */
       const conditionsWithoutNone = previousConditions.filter(
         (selectedCondition) => selectedCondition !== NO_CONDITION
       );
 
-      /*
-       * 이미 선택된 증상이면 해제
-       */
       if (conditionsWithoutNone.includes(condition)) {
         return conditionsWithoutNone.filter(
           (selectedCondition) => selectedCondition !== condition
         );
       }
 
-      /*
-       * 새 증상 추가
-       */
       return [...conditionsWithoutNone, condition];
     });
   };
@@ -126,21 +131,26 @@ export default function FirstFocusCare() {
       return;
     }
 
-    try {
-      setIsSubmitting(true);
+    /*
+     * 버튼을 누르자마자 모달부터 표시
+     */
+    setIsSubmitting(true);
+    setDiagnosis(null);
+    setIsDiagnosisComplete(false);
+    setIsDiagnosisModalOpen(true);
 
+    try {
       const courseId = await getFocusCourseId();
 
       if (courseId === null) {
         console.error("진단에 사용할 집중 코스 courseId가 없습니다.");
 
+        setIsDiagnosisModalOpen(false);
+        setIsSubmitting(false);
+
         return;
       }
 
-      /*
-       * 해당없음도
-       * SYMPTOM_CODE_MAP을 통해 NONE으로 변환한다.
-       */
       const symptoms = selectedConditions
         .map((condition) => SYMPTOM_CODE_MAP[condition])
         .filter(
@@ -155,23 +165,68 @@ export default function FirstFocusCare() {
         photoId,
       };
 
-      console.log("===== 집중 진단 요청 준비 =====");
+      console.log("===== 집중 AI 진단 시작 =====");
       console.log("선택 UI:", selectedConditions);
       console.log("API symptoms:", symptoms);
       console.log("진단 요청:", diagnosisRequest);
 
-      navigate("/care/second_focus_care", {
-        state: {
-          diagnosisRequest,
-          selectedConditions,
-          skinImage: skinImages[0],
-        },
-      });
+      /*
+       * 실제 AI 분석 API
+       *
+       * 이 요청이 진행되는 동안 모달의 퍼센트가 진행된다.
+       */
+      const response = await diagnosisApi.createDiagnosis(diagnosisRequest);
+
+      console.log("===== 집중 AI 진단 완료 =====");
+      console.log("진단 결과:", response);
+
+      /*
+       * 결과 먼저 저장
+       */
+      setDiagnosis(response);
+
+      /*
+       * 실제 API가 끝났다는 신호
+       *
+       * AnalysisLoading이 이 값을 감지하고
+       * 진행률을 100%까지 마무리한다.
+       */
+      setIsDiagnosisComplete(true);
     } catch (error) {
-      console.error("SecondFocusCare 이동 준비 실패:", error);
-    } finally {
+      console.error("집중 코스 AI 진단 실패:", error);
+
+      /*
+       * 요청 실패 시 모달 종료
+       */
+      setDiagnosis(null);
+      setIsDiagnosisComplete(false);
+      setIsDiagnosisModalOpen(false);
       setIsSubmitting(false);
     }
+  };
+
+  /*
+   * API가 끝났다고 즉시 페이지를 이동하지 않는다.
+   *
+   * AnalysisLoading이 실제로 100%까지 표시한 뒤
+   * onComplete가 실행되면 SecondFocusCare로 이동한다.
+   */
+  const handleDiagnosisAnalysisComplete = () => {
+    if (!diagnosis) {
+      return;
+    }
+
+    setIsDiagnosisModalOpen(false);
+
+    navigate("/care/second_focus_care", {
+      state: {
+        diagnosis,
+        selectedConditions,
+        skinImage: skinImages[0],
+      },
+    });
+
+    setIsSubmitting(false);
   };
 
   return (
@@ -204,6 +259,14 @@ export default function FirstFocusCare() {
           다음으로
         </CareButton>
       </S.BottomArea>
+
+      {isDiagnosisModalOpen && (
+        <ImageAnalysisModal
+          variant="focus"
+          isComplete={isDiagnosisComplete}
+          onComplete={handleDiagnosisAnalysisComplete}
+        />
+      )}
     </S.Page>
   );
 }

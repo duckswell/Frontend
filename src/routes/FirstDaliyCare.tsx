@@ -2,13 +2,17 @@ import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { courseApi, type RoutineTypeCode } from "../api/course";
-
-import { diagnosisApi, SYMPTOM_CODE_MAP } from "../api/diagnosis";
+import {
+  diagnosisApi,
+  SYMPTOM_CODE_MAP,
+  type DiagnosisResponse,
+} from "../api/diagnosis";
 
 import { NavBar } from "../components/NavBar";
 import CareButton from "../components/CareButton";
 import CareInputForm from "../components/FocusCare/CareInputForm";
 import FocusProgress from "../components/FocusCare/FocusProgress";
+import ImageAnalysisModal from "../components/FocusCare/ImageAnalysisModal";
 
 import * as S from "../styles/DailyCare/FirstDaliyCare.styles";
 
@@ -28,30 +32,37 @@ export default function FirstDaliyCare() {
   const state = location.state as FirstDailyCareLocationState | null;
 
   const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
-
   const [skinImages, setSkinImages] = useState<File[]>([]);
-
   const [additionalSymptom, setAdditionalSymptom] = useState("");
-
   const [photoId, setPhotoId] = useState<string | null>(null);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   /*
+   * 실제 진단 진행 모달
+   */
+  const [isDiagnosisModalOpen, setIsDiagnosisModalOpen] = useState(false);
+
+  /*
+   * /api/diagnoses 완료 여부
+   */
+  const [isDiagnosisComplete, setIsDiagnosisComplete] = useState(false);
+
+  /*
+   * First에서 받은 AI 진단 결과
+   */
+  const [diagnosis, setDiagnosis] = useState<DiagnosisResponse | null>(null);
+
+  /*
    * Daily
    *
-   * 피부 상태 최소 1개 필수.
-   * 사진은 선택사항.
-   *
-   * 해당없음도 정상적인 선택 1개.
+   * 피부 상태 최소 1개 필수
+   * 사진은 선택사항
    */
   const isNextEnabled = selectedConditions.length > 0;
 
   const handleToggleCondition = (condition: string) => {
     setSelectedConditions((previousConditions) => {
-      /*
-       * 해당없음 선택
-       */
       if (condition === NO_CONDITION) {
         if (previousConditions.includes(NO_CONDITION)) {
           return [];
@@ -60,26 +71,16 @@ export default function FirstDaliyCare() {
         return [NO_CONDITION];
       }
 
-      /*
-       * 일반 증상을 선택하면
-       * 해당없음 자동 해제
-       */
       const conditionsWithoutNone = previousConditions.filter(
         (selectedCondition) => selectedCondition !== NO_CONDITION
       );
 
-      /*
-       * 이미 선택한 일반 증상 해제
-       */
       if (conditionsWithoutNone.includes(condition)) {
         return conditionsWithoutNone.filter(
           (selectedCondition) => selectedCondition !== condition
         );
       }
 
-      /*
-       * 새 증상 추가
-       */
       return [...conditionsWithoutNone, condition];
     });
   };
@@ -125,22 +126,26 @@ export default function FirstDaliyCare() {
       return;
     }
 
-    try {
-      setIsSubmitting(true);
+    /*
+     * 버튼을 누르는 순간 분석 모달 표시
+     */
+    setIsSubmitting(true);
+    setDiagnosis(null);
+    setIsDiagnosisComplete(false);
+    setIsDiagnosisModalOpen(true);
 
+    try {
       const courseId = await getDailyCourseId();
 
       if (courseId === null) {
         console.error("진단에 사용할 DAILY courseId가 없습니다.");
 
+        setIsDiagnosisModalOpen(false);
+        setIsSubmitting(false);
+
         return;
       }
 
-      /*
-       * 해당없음 역시 NONE으로 변환.
-       *
-       * 절대 제거하지 않는다.
-       */
       const symptoms = selectedConditions
         .map((condition) => SYMPTOM_CODE_MAP[condition])
         .filter(
@@ -155,23 +160,55 @@ export default function FirstDaliyCare() {
         photoId: photoId ?? undefined,
       };
 
-      console.log("===== 데일리 진단 요청 준비 =====");
+      console.log("===== 데일리 AI 진단 시작 =====");
       console.log("선택 UI:", selectedConditions);
       console.log("API symptoms:", symptoms);
       console.log("진단 요청:", diagnosisRequest);
 
-      navigate("/care/second_daily_care", {
-        state: {
-          diagnosisRequest,
-          selectedConditions,
-          routineTypeCode: state?.routineTypeCode,
-        },
-      });
+      /*
+       * 실제 AI 진단 API 호출
+       */
+      const response = await diagnosisApi.createDiagnosis(diagnosisRequest);
+
+      console.log("===== 데일리 AI 진단 완료 =====");
+      console.log("진단 결과:", response);
+
+      setDiagnosis(response);
+
+      /*
+       * API가 끝난 순간
+       * AnalysisLoading에게 완료 신호 전달
+       */
+      setIsDiagnosisComplete(true);
     } catch (error) {
-      console.error("SecondDailyCare 이동 준비 실패:", error);
-    } finally {
+      console.error("데일리 코스 AI 진단 실패:", error);
+
+      setDiagnosis(null);
+      setIsDiagnosisComplete(false);
+      setIsDiagnosisModalOpen(false);
       setIsSubmitting(false);
     }
+  };
+
+  /*
+   * 진행바가 실제 100%까지 표시된 다음 이동
+   */
+  const handleDiagnosisAnalysisComplete = () => {
+    if (!diagnosis) {
+      return;
+    }
+
+    setIsDiagnosisModalOpen(false);
+
+    navigate("/care/second_daily_care", {
+      state: {
+        diagnosis,
+        selectedConditions,
+        routineTypeCode: state?.routineTypeCode,
+      },
+    });
+
+    setIsSubmitting(false);
   };
 
   return (
@@ -204,6 +241,14 @@ export default function FirstDaliyCare() {
           다음으로
         </CareButton>
       </S.BottomArea>
+
+      {isDiagnosisModalOpen && (
+        <ImageAnalysisModal
+          variant="daily"
+          isComplete={isDiagnosisComplete}
+          onComplete={handleDiagnosisAnalysisComplete}
+        />
+      )}
     </S.Page>
   );
 }
