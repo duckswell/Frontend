@@ -85,7 +85,6 @@ const NewProcedure: React.FC = () => {
 
     const loadProcedures = async () => {
       try {
-        // 💡 GET /api/procedures/current 호출 (현재 진행 중인 집중 코스의 시술만 조회)
         const data = await procedureApi.getCurrentProcedures();
         if (!isMounted) return;
 
@@ -102,7 +101,7 @@ const NewProcedure: React.FC = () => {
 
             return {
               id: item.id,
-              isOpen: idx === sortedData.length - 1, // 가장 최근 항목만 펼침
+              isOpen: idx === sortedData.length - 1,
               type: displayType,
               date: item.procedureDate
                 ? item.procedureDate.replace(/-/g, ".")
