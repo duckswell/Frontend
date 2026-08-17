@@ -14,7 +14,7 @@ import {
   type WeatherFactor,
 } from "../api/dashboard";
 
-const calculateDDay = (dateStr?: string): number | null => {
+const formatDDay = (dateStr?: string): string | null => {
   if (!dateStr) return null;
   const targetDate = new Date(dateStr.replace(/\./g, "-"));
   const today = new Date();
@@ -25,7 +25,13 @@ const calculateDDay = (dateStr?: string): number | null => {
   const diffTime = today.getTime() - targetDate.getTime();
   const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
 
-  return diffDays >= 0 ? diffDays + 1 : 1;
+  if (diffDays < 0) {
+    return `D${diffDays}`;
+  } else if (diffDays === 0) {
+    return "D-Day";
+  } else {
+    return `D+${diffDays + 1}`;
+  }
 };
 
 const Home: React.FC = () => {
@@ -238,13 +244,15 @@ const Home: React.FC = () => {
   const latestProcedure = currentProcedures[0];
 
   const getFocusBadgeText = () => {
-    if (recoveryData?.dDay !== undefined && recoveryData.dDay !== null) {
-      return `D+${recoveryData.dDay}`;
+    if (latestProcedure?.procedureDate) {
+      const calculated = formatDDay(latestProcedure.procedureDate);
+      if (calculated) return calculated;
     }
 
-    const calculatedDay = calculateDDay(latestProcedure?.procedureDate);
-    if (calculatedDay !== null) {
-      return `D+${calculatedDay}`;
+    if (recoveryData?.dDay !== undefined && recoveryData.dDay !== null) {
+      return recoveryData.dDay <= 0
+        ? `D${recoveryData.dDay}`
+        : `D+${recoveryData.dDay}`;
     }
 
     return "-";
@@ -253,8 +261,8 @@ const Home: React.FC = () => {
   const getDailyBadgeText = () => {
     if (currentCourse && currentCourse.courseType === "DAILY") {
       const label = currentCourse.label || "데일리 케어";
-      const dDay = calculateDDay(currentCourse.startedAt) ?? 1;
-      return `${label} D+${dDay}`;
+      const dDayText = formatDDay(currentCourse.startedAt) ?? "D+1";
+      return `${label} ${dDayText}`;
     }
 
     return weatherData?.triggerFactor || "-";
