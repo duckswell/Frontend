@@ -248,14 +248,22 @@ export const PrimaryConcernChip = styled.div`
   font-weight: 700;
   line-height: 150%;
 `;
-
 export const SecondaryConcernList = styled.div`
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
 
-  gap: 14px 12px;
+  gap: 14px;
+
+  width: 100%;
+`;
+
+export const SecondaryConcernRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 12px;
 
   width: 100%;
 `;
@@ -279,8 +287,9 @@ export const SecondaryConcernChip = styled.div`
   font-size: 14px;
   font-weight: 700;
   line-height: 150%;
-`;
 
+  white-space: nowrap;
+`;
 /* =========================
    3. 루틴 선택
 ========================= */

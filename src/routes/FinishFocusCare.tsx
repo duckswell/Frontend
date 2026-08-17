@@ -52,7 +52,6 @@ const SKIN_CONCERNS: SkinConcern[] = [
   "번들거림",
   "가려움",
   "붓기",
-  "트러블",
 ];
 
 const SYMPTOM_LABEL_MAP: Record<string, SkinConcern> = {
@@ -144,7 +143,29 @@ export default function FinishFocusCare() {
   const secondaryConcerns = SKIN_CONCERNS.filter(
     (concern) => !primaryConcerns.includes(concern)
   );
+  const secondaryConcernRows = (() => {
+    if (secondaryConcerns.length <= 3) {
+      return [secondaryConcerns];
+    }
 
+    if (secondaryConcerns.length === 4) {
+      return [secondaryConcerns.slice(0, 2), secondaryConcerns.slice(2, 4)];
+    }
+
+    if (secondaryConcerns.length === 5) {
+      return [secondaryConcerns.slice(0, 3), secondaryConcerns.slice(3, 5)];
+    }
+
+    if (secondaryConcerns.length === 6) {
+      return [secondaryConcerns.slice(0, 3), secondaryConcerns.slice(3, 6)];
+    }
+
+    if (secondaryConcerns.length === 7) {
+      return [secondaryConcerns.slice(0, 4), secondaryConcerns.slice(4, 7)];
+    }
+
+    return [secondaryConcerns];
+  })();
   const recommendedRoutineId =
     symptomSummary?.recommendedRoutineTypeCode !== null &&
     symptomSummary?.recommendedRoutineTypeCode !== undefined
@@ -471,10 +492,14 @@ export default function FinishFocusCare() {
               )}
 
               <S.SecondaryConcernList>
-                {secondaryConcerns.map((concern) => (
-                  <S.SecondaryConcernChip key={concern}>
-                    {concern}
-                  </S.SecondaryConcernChip>
+                {secondaryConcernRows.map((row, rowIndex) => (
+                  <S.SecondaryConcernRow key={rowIndex}>
+                    {row.map((concern) => (
+                      <S.SecondaryConcernChip key={concern}>
+                        {concern}
+                      </S.SecondaryConcernChip>
+                    ))}
+                  </S.SecondaryConcernRow>
                 ))}
               </S.SecondaryConcernList>
             </S.ConcernArea>
