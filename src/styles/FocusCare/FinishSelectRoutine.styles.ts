@@ -37,7 +37,7 @@ export const CompletionSection = styled.section`
 
   width: 100%;
 
-  padding-top: 160px;
+  padding-top: 152px;
 `;
 
 export const IntroTextArea = styled.div`
@@ -101,9 +101,8 @@ export const RoutineCard = styled.div`
   border: 0.5px solid ${colorPalette.Quaternary};
   border-radius: 12px;
 
-  background-color: transparent;
+  background-color: ${colorPalette.White};
 `;
-
 export const CategoryList = styled.div`
   display: flex;
   flex-wrap: wrap;
@@ -130,7 +129,7 @@ export const Category = styled.span`
   border: 0.5px solid ${colorPalette.Quaternary};
   border-radius: 9999px;
 
-  background-color: transparent;
+  background-color: ${colorPalette.White};
   color: ${colorPalette.Black};
 
   white-space: nowrap;

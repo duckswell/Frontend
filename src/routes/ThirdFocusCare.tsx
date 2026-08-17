@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { courseApi } from "../api/course";
+import { procedureApi } from "../api/procedure";
 import {
   routineApi,
   type RoutineDifficultyResponse,
@@ -18,6 +19,31 @@ import * as S from "../styles/FocusCare/ThirdFocusCare.styles";
 
 interface ThirdFocusCareLocationState {
   routine: RoutineDifficultyResponse;
+}
+
+/**
+ * 시술 날짜 기준 현재 몇 일차인지 계산
+ *
+ * 예)
+ * 8/13 시술
+ * 8/13 → 1일차
+ * 8/14 → 2일차
+ * ...
+ * 8/19 → 7일차
+ */
+function calculateProcedureDay(procedureDate: string): number {
+  const [year, month, day] = procedureDate.split("-").map(Number);
+
+  const procedure = new Date(year, month - 1, day);
+  const today = new Date();
+
+  procedure.setHours(0, 0, 0, 0);
+  today.setHours(0, 0, 0, 0);
+
+  const diffTime = today.getTime() - procedure.getTime();
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+  return Math.max(diffDays + 1, 1);
 }
 
 export default function ThirdFocusCare() {
@@ -66,19 +92,84 @@ export default function ThirdFocusCare() {
       setIsCompleting(true);
 
       /*
-       * 1. 루틴 완료
+       * 1. 현재 진행 중인 코스 확인
+       *
+       * 루틴 완료 전에 현재 FOCUS 코스가
+       * 정상적으로 존재하는지 먼저 확인한다.
+       */
+      const currentCourse = await courseApi.getCurrentCourse();
+
+      if (!currentCourse) {
+        console.error("현재 진행 중인 코스가 없습니다.");
+        return;
+      }
+
+      if (currentCourse.courseType !== "FOCUS") {
+        console.error(
+          "현재 진행 중인 코스가 집중 코스가 아닙니다:",
+          currentCourse
+        );
+        return;
+      }
+
+      console.log("현재 집중 코스:", currentCourse);
+      console.log("현재 집중 코스 ID:", currentCourse.courseId);
+
+      /*
+       * 2. 현재 집중 코스에 등록된 시술 조회
+       *
+       * /api/procedures/current는
+       * 현재 진행 중인 집중 코스에 등록된 시술만 반환한다.
+       *
+       * 코스를 종료한 뒤에는 빈 배열이 되므로
+       * 반드시 endCourse보다 먼저 조회해야 한다.
+       */
+      const currentProcedures = await procedureApi.getCurrentProcedures();
+
+      console.log("현재 집중 코스 시술:", currentProcedures);
+
+      if (!Array.isArray(currentProcedures) || currentProcedures.length === 0) {
+        console.error("현재 집중 코스에 등록된 시술이 없습니다.");
+        return;
+      }
+
+      /*
+       * Home에서도 currentProcedures[0]을
+       * 현재 시술 기준으로 사용하고 있으므로
+       * 동일한 기준으로 사용한다.
+       */
+      const currentProcedure = currentProcedures[0];
+
+      const procedureDay = calculateProcedureDay(
+        currentProcedure.procedureDate
+      );
+
+      console.log("시술 정보:", currentProcedure);
+      console.log("시술일:", currentProcedure.procedureDate);
+      console.log("현재 시술 일차:", procedureDay);
+
+      /*
+       * 3. 오늘의 루틴 완료
+       *
+       * 루틴 완료와 집중 코스 종료는 별개이다.
+       *
+       * 1~6일차:
+       *   오늘 루틴만 완료
+       *
+       * 7일차:
+       *   오늘 루틴 완료 후 집중 코스까지 종료
        */
       const completionData = await routineApi.completeRoutine(
         routine.routineId
       );
 
-      console.log("루틴 완료 성공:", completionData);
+      console.log("오늘의 루틴 완료 성공:", completionData);
 
       /*
-       * 2. 추천 제품 조회
+       * 4. 추천 제품 조회
        *
-       * 추천 제품 API가 실패해도
-       * 코스 종료와 완료 페이지 이동은 계속한다.
+       * 추천 제품 API가 실패하더라도
+       * 루틴 완료 및 이후 페이지 이동은 계속 진행한다.
        */
       let recommendedProducts: {
         id: number;
@@ -104,44 +195,55 @@ export default function ThirdFocusCare() {
           linkUrl: item.product.linkUrl,
         }));
       } catch (error) {
-        console.error("추천 제품 조회 실패 - 코스 종료는 계속 진행:", error);
+        console.error("추천 제품 조회 실패 - 이후 흐름은 계속 진행:", error);
       }
 
       /*
-       * 3. 현재 진행 중인 코스 조회
+       * 5. 시술 7일차 이상
+       *
+       * 이때만 집중 코스 자체를 종료한다.
+       *
+       * ThirdFocusCare
+       * → 집중 코스 종료
+       * → FinishFocusCare
+       * → 데일리 루틴 선택
+       * → FinishSelectRoutine
        */
-      const currentCourse = await courseApi.getCurrentCourse();
-
-      if (!currentCourse) {
-        console.error("종료할 현재 집중 코스가 없습니다.");
-        return;
-      }
-
-      console.log("현재 코스:", currentCourse);
-      console.log("종료할 courseId:", currentCourse.courseId);
-
-      if (currentCourse.courseType !== "FOCUS") {
-        console.error(
-          "현재 진행 중인 코스가 집중 코스가 아닙니다:",
-          currentCourse
+      if (procedureDay >= 7) {
+        console.log(
+          `시술 ${procedureDay}일차 → 집중 코스 종료 후 FinishFocusCare 이동`
         );
 
+        const endedCourse = await courseApi.endCourse(currentCourse.courseId);
+
+        console.log("집중 코스 종료 성공:", endedCourse);
+
+        navigate("/care/finish_focus_care", {
+          state: {
+            courseId: endedCourse.id,
+          },
+        });
+
         return;
       }
 
       /*
-       * 4. 집중 코스 종료
+       * 6. 시술 1~6일차
+       *
+       * 집중 코스는 절대로 종료하지 않는다.
+       *
+       * 오늘 루틴만 완료하고 FinishRoutine으로 이동한다.
+       *
+       * 따라서 홈으로 돌아간 뒤 다음 날에도
+       * 같은 FOCUS 코스를 계속 사용할 수 있다.
        */
-      const endedCourse = await courseApi.endCourse(currentCourse.courseId);
+      console.log(
+        `시술 ${procedureDay}일차 → 집중 코스 유지 / FinishRoutine 이동`
+      );
 
-      console.log("집중 코스 종료 성공:", endedCourse);
-
-      /*
-       * 5. FinishRoutine으로 이동
-       */
       navigate("/care/finish_routine", {
         state: {
-          courseId: endedCourse.id,
+          courseId: currentCourse.courseId,
           routineId: routine.routineId,
           completionData,
           recommendedProducts,

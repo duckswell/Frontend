@@ -211,29 +211,6 @@ export const StepDescription = styled.p`
   word-break: keep-all;
 `;
 
-export const OutlinedButton = styled.button`
-  width: 100%;
-
-  margin-top: 16px;
-  padding: 12px 16px;
-
-  border: 0.5px solid ${colorPalette.Quaternary};
-  border-radius: 12px;
-
-  background-color: ${colorPalette.OffWhite};
-
-  ${typography.Body1Bold};
-  color: ${colorPalette.Black};
-
-  font-family: inherit;
-
-  cursor: pointer;
-
-  &:active {
-    background-color: ${colorPalette.grey50};
-  }
-`;
-
 export const WarningCard = styled.section`
   display: flex;
   flex-direction: column;

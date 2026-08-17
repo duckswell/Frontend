@@ -31,13 +31,17 @@ export const CompletionSection = styled.section`
   position: relative;
 
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
 
   flex-shrink: 0;
 
   width: 100%;
-  height: 420px;
+
+  box-sizing: border-box;
+
+  padding-top: 152px;
+  padding-bottom: 120px;
 `;
 
 export const Title = styled.h1`
@@ -70,6 +74,7 @@ export const RecordTitle = styled.h2`
   ${typography.H3};
 
   margin: 0;
+
   color: ${colorPalette.Black};
 `;
 
