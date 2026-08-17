@@ -269,7 +269,7 @@ export const CustomCalendarCard = styled.div`
       color: ${colorPalette.Black};
 
       &.sunday {
-        color: #e53935;
+        color: ${colorPalette.Red};
       }
     }
   }
@@ -322,11 +322,11 @@ export const CustomCalendarCard = styled.div`
 export const DayCell = styled.button<{
   $isCurrentMonth: boolean;
   $isSelected: boolean;
+  $isToday?: boolean;
+  $isSelectable?: boolean;
 }>`
-  background: none;
-  border: none;
   width: 100%;
-  max-width: 36px;
+  max-width: 48px;
   aspect-ratio: 1 / 1;
   margin: 0 auto;
   border-radius: 50%;
@@ -336,29 +336,41 @@ export const DayCell = styled.button<{
   ${applyTypography("Body1")}
   cursor: pointer;
   padding: 0;
+  box-sizing: border-box;
 
   -webkit-tap-highlight-color: transparent;
 
-  color: ${({ $isCurrentMonth, $isSelected }) =>
+  border: ${({ $isSelected, $isToday }) =>
+    $isSelected ? "none" : $isToday ? `0.5px solid #000` : "none"};
+
+  color: ${({ $isCurrentMonth, $isSelected, $isSelectable = true }) =>
     $isSelected
       ? colorPalette.OffWhite
-      : $isCurrentMonth
-        ? colorPalette.Black
-        : colorPalette.grey200};
+      : !$isSelectable || !$isCurrentMonth
+        ? colorPalette.Secondary
+        : colorPalette.Black};
 
   background-color: ${({ $isSelected }) =>
     $isSelected ? colorPalette.Black : "transparent"};
 
+  &:disabled {
+    color: ${colorPalette.Secondary} !important;
+    cursor: default !important;
+    pointer-events: none !important;
+    background-color: transparent !important;
+    border: none !important;
+  }
+
   @media (hover: hover) {
-    &:hover {
+    &:not(:disabled):hover {
       background-color: ${({ $isSelected }) =>
-        $isSelected ? colorPalette.Black : colorPalette.grey50};
+        $isSelected ? colorPalette.Black : colorPalette.Secondary};
     }
   }
 
-  &:active {
+  &:not(:disabled):active {
     background-color: ${({ $isSelected }) =>
-      $isSelected ? colorPalette.Black : colorPalette.grey50};
+      $isSelected ? colorPalette.Black : colorPalette.Secondary};
   }
 `;
 

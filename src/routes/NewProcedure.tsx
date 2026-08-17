@@ -73,12 +73,24 @@ const NewProcedure: React.FC = () => {
   const today = new Date();
   const currentYear = today.getFullYear();
   const currentMonth = today.getMonth() + 1;
+  const currentDate = today.getDate();
 
   const [calendarYear, setCalendarYear] = useState(currentYear);
   const [calendarMonth, setCalendarMonth] = useState(currentMonth);
 
   const [isSaved, setIsSaved] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const isDateSelectable = (year: number, month: number, day: number) => {
+    const targetDate = new Date(year, month - 1, day);
+    targetDate.setHours(0, 0, 0, 0);
+
+    const minDate = new Date(currentYear, currentMonth - 1, currentDate);
+    minDate.setDate(minDate.getDate() - 6);
+    minDate.setHours(0, 0, 0, 0);
+
+    return targetDate >= minDate;
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -523,8 +535,10 @@ const NewProcedure: React.FC = () => {
                                   <S.DayCell
                                     key={`prev-${dayNum}`}
                                     type="button"
+                                    disabled
                                     $isCurrentMonth={false}
                                     $isSelected={false}
+                                    $isSelectable={false}
                                   >
                                     {dayNum}
                                   </S.DayCell>,
@@ -534,13 +548,25 @@ const NewProcedure: React.FC = () => {
                               for (let d = 1; d <= totalDays; d++) {
                                 const formattedDate = `${calendarYear}.${String(calendarMonth).padStart(2, "0")}.${String(d).padStart(2, "0")}`;
                                 const isSelected = item.date === formattedDate;
+                                const isToday =
+                                  calendarYear === currentYear &&
+                                  calendarMonth === currentMonth &&
+                                  d === currentDate;
+                                const isSelectable = isDateSelectable(
+                                  calendarYear,
+                                  calendarMonth,
+                                  d,
+                                );
 
                                 cells.push(
                                   <S.DayCell
                                     key={`curr-${d}`}
                                     type="button"
+                                    disabled={!isSelectable}
                                     $isCurrentMonth={true}
                                     $isSelected={isSelected}
+                                    $isToday={isToday}
+                                    $isSelectable={isSelectable}
                                     onClick={() => {
                                       updateProcedure(
                                         item.id,
@@ -565,8 +591,10 @@ const NewProcedure: React.FC = () => {
                                   <S.DayCell
                                     key={`next-${nextD}`}
                                     type="button"
+                                    disabled
                                     $isCurrentMonth={false}
                                     $isSelected={false}
+                                    $isSelectable={false}
                                   >
                                     {nextD}
                                   </S.DayCell>,
