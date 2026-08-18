@@ -91,18 +91,18 @@ export const courseApi = {
 
   getCourseHistory: async (): Promise<PastCourseHistoryItem[]> => {
     const response = await api.get<ApiResponse<PastCourseHistoryItem[]>>(
-      "/api/courses/history",
+      "/api/courses/history"
     );
 
     return response.data.data;
   },
 
   startCourse: async (
-    data: StartCourseRequest,
+    data: StartCourseRequest
   ): Promise<StartCourseResponse> => {
     const response = await api.post<ApiResponse<StartCourseResponse>>(
       "/api/courses/start",
-      data,
+      data
     );
 
     return response.data.data;
@@ -110,7 +110,7 @@ export const courseApi = {
 
   endCourse: async (courseId: number | string): Promise<EndCourseResponse> => {
     const response = await api.post<ApiResponse<EndCourseResponse>>(
-      `/api/courses/${courseId}/end`,
+      `/api/courses/${courseId}/end`
     );
 
     return response.data.data;
@@ -118,17 +118,17 @@ export const courseApi = {
 
   restartFocusCourse: async (): Promise<CurrentCourseResponse> => {
     const response = await api.post<ApiResponse<CurrentCourseResponse>>(
-      "/api/courses/restart-focus",
+      "/api/courses/restart-focus"
     );
 
     return response.data.data;
   },
 
   getRecoverySummary: async (
-    courseId: number | string,
+    courseId: number | string
   ): Promise<RecoverySummaryResponse> => {
     const response = await api.get<ApiResponse<RecoverySummaryResponse>>(
-      `/api/courses/${courseId}/recovery-summary`,
+      `/api/courses/${courseId}/recovery-summary`
     );
 
     return response.data.data;
