@@ -244,7 +244,7 @@ const Home: React.FC = () => {
   const getFocusBadgeText = () => {
     if (latestProcedure?.procedureDate) {
       const calculated = formatDDay(latestProcedure.procedureDate);
-      if (calculated) return calculated;
+      if (calculated) return `시술 ${calculated}`;
     }
 
     if (recoveryData?.dDay !== undefined && recoveryData.dDay !== null) {
@@ -276,7 +276,7 @@ const Home: React.FC = () => {
         <S.LeftColumn>
           <S.HeroCard $isFocus={isFocus}>
             <S.Badge $isFocus={isFocus}>
-              시술 {isFocus ? getFocusBadgeText() : getDailyBadgeText()}
+              {isFocus ? getFocusBadgeText() : getDailyBadgeText()}
             </S.Badge>
 
             <S.HeroTitle>
