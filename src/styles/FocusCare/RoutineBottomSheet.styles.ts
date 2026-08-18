@@ -100,15 +100,13 @@ export const BottomSheet = styled.section<BottomSheetProps>`
 `;
 
 export const DragArea = styled.div`
+  position: relative;
+
   display: flex;
-  align-items: flex-start;
   justify-content: center;
 
   width: 100%;
-
-  padding-top: 16px;
-
-  box-sizing: border-box;
+  height: 20px;
 
   flex-shrink: 0;
 
@@ -118,20 +116,43 @@ export const DragArea = styled.div`
 
   user-select: none;
 
+  /*
+   * DragArea 자체의 실제 터치 영역을
+   * 시각적인 영역보다 넓게 확보
+   */
+  &::before {
+    content: "";
+
+    position: absolute;
+
+    top: -8px;
+    left: 0;
+
+    width: 100%;
+    height: 48px;
+  }
+
   &:active {
     cursor: grabbing;
   }
 `;
 
 export const Handle = styled.div`
+  position: absolute;
+
+  top: 16px;
+  left: 50%;
+
   width: 84px;
   height: 4px;
-
-  flex-shrink: 0;
 
   border-radius: 999999px;
 
   background-color: #d9d9d9;
+
+  transform: translateX(-50%);
+
+  pointer-events: none;
 `;
 
 export const SheetContent = styled.div`
