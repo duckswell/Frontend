@@ -24,9 +24,19 @@ export const Container = styled.section`
 
   width: 100%;
 
-  margin: 50px 0 50px;
+  margin: 0;
 `;
 
+export const TextArea = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+
+  margin-top: 40px;
+
+  text-align: center;
+`;
 export const ProgressCircle = styled.div`
   position: relative;
 
@@ -73,17 +83,6 @@ export const ProgressUnit = styled.span`
   font-size: 24px;
   font-weight: 700;
   line-height: 1;
-`;
-
-export const TextArea = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-
-  margin-top: 34px;
-
-  text-align: center;
 `;
 
 export const Title = styled.h2`

@@ -69,7 +69,17 @@ export const AnalysisTitle = styled.h2`
   ${typography.H3};
   color: ${colorPalette.Black};
 `;
+export const AnalysisImage = styled.img`
+  width: 120px;
+  height: 80px;
 
+  margin-top: 16px;
+
+  border-radius: 4px;
+
+  object-fit: cover;
+  display: block;
+`;
 export const DateBadge = styled.span`
   display: inline-flex;
   align-items: center;
@@ -120,7 +130,7 @@ export const ConditionList = styled.div`
   flex-wrap: wrap;
   gap: 4px;
 
-  margin-top: 16px;
+  margin-top: 8px;
 `;
 
 export const ConditionBadge = styled.span`
