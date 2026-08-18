@@ -33,7 +33,7 @@ export const Container = styled.div`
   max-width: 402px;
   margin: 0 auto;
   min-height: 100vh;
-  padding: 64px 16px 120px 16px;
+  padding: 56px 16px 120px 16px;
   box-sizing: border-box;
 `;
 

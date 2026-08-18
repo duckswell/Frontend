@@ -14,7 +14,7 @@ export const Container = styled.div`
   max-width: 402px;
   margin: 0 auto;
   min-height: 100vh;
-  padding: 72px 16px 80px 16px;
+  padding: 64px 16px 80px 16px;
   box-sizing: border-box;
 `;
 
