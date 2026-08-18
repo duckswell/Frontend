@@ -14,16 +14,21 @@ export const Container = styled.div`
   max-width: 402px;
   margin: 0 auto;
   min-height: 100vh;
-  padding: 72px 16px 100px 16px;
+  padding: 64px 16px 100px 16px;
   box-sizing: border-box;
-
-  @media (min-width: 768px) {
-    padding: 80px 40px 120px 40px;
-  }
 `;
 
 export const Section = styled.section`
   margin-bottom: 28px;
+`;
+
+export const SectionTitle1 = styled.h3`
+  ${applyTypography("H3")}
+  color: ${colorPalette.Black};
+  margin: 0 0 8px 0;
+  height: 40px;
+  display: flex;
+  align-items: center;
 `;
 
 export const SectionTitle = styled.h3`

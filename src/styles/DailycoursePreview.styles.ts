@@ -33,7 +33,7 @@ export const Container = styled.div`
   max-width: 402px;
   margin: 0 auto;
   min-height: 100vh;
-  padding: 72px 16px 100px 16px;
+  padding: 64px 16px 16px 16px;
   box-sizing: border-box;
   position: relative;
 `;
@@ -204,6 +204,7 @@ export const SubmitButton = styled.button`
   ${applyTypography("H3")}
   cursor: pointer;
   transition: opacity 0.2s ease;
+  margin-top: 30px;
 
   &:disabled {
     opacity: 0.3;

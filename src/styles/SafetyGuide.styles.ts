@@ -14,7 +14,7 @@ export const Container = styled.div`
   max-width: 402px;
   margin: 0 auto;
   min-height: 100vh;
-  padding: 72px 16px 40px 16px;
+  padding: 64px 16px 40px 16px;
   box-sizing: border-box;
 `;
 
@@ -28,6 +28,15 @@ export const RightColumn = styled.div`
 
 export const Section = styled.section`
   margin-bottom: 36px;
+`;
+
+export const Title1 = styled.h2`
+  ${applyTypography("H3")}
+  color: ${colorPalette.Black};
+  margin: 0;
+  height: 40px;
+  display: flex;
+  align-items: center;
 `;
 
 export const Title = styled.h2`
