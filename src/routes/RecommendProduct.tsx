@@ -1,4 +1,10 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type PointerEvent as ReactPointerEvent,
+} from "react";
 import { useSearchParams } from "react-router-dom";
 
 import {
@@ -57,10 +63,6 @@ interface IngredientCardInfo {
   description: string;
 }
 
-/*
- * 성분 카드에 표시할
- * 특징 태그 + 성분 설명
- */
 const INGREDIENT_CARD_INFO: Record<string, IngredientCardInfo> = {
   센텔라: {
     categories: ["진정", "붉은기", "피부 보호"],
@@ -138,9 +140,6 @@ function getIngredientCardInfo(name: string): IngredientCardInfo {
     return matchedInfo;
   }
 
-  /*
-   * 백엔드에서 이름에 공백 등이 다르게 내려오는 경우를 위한 fallback
-   */
   const matchedEntry = Object.entries(INGREDIENT_CARD_INFO).find(
     ([ingredientName]) =>
       ingredientName.replace(/\s/g, "") === normalizedName.replace(/\s/g, "")
@@ -150,9 +149,6 @@ function getIngredientCardInfo(name: string): IngredientCardInfo {
     return matchedEntry[1];
   }
 
-  /*
-   * 아직 등록되지 않은 성분이 내려올 경우
-   */
   return {
     categories: ["추천 성분"],
     description: `${name} 성분을 활용한 맞춤 제품을 확인해보세요.`,
@@ -197,17 +193,21 @@ export default function RecommendProduct() {
 
   const scrollEndTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  /*
-   * 코드에서 직접 카드를 이동시키는 동안
-   * onScroll이 사용자 스크롤로 인식되지 않게 한다.
-   */
   const isProgrammaticScrollRef = useRef(false);
 
   /*
-   * URL ingredientId가 바뀌었을 때
-   * 최초 중앙 정렬을 다시 실행하기 위한 ref
+   * 최초 중앙정렬이 여러 번 실행되는 것을 방지
    */
-  const centeredIngredientIdRef = useRef<number | null>(null);
+  const hasInitialCenteredRef = useRef(false);
+
+  /*
+   * PC 마우스 드래그용
+   */
+  const dragStartXRef = useRef(0);
+  const dragStartScrollLeftRef = useRef(0);
+  const draggingPointerIdRef = useRef<number | null>(null);
+
+  const [isDraggingIngredient, setIsDraggingIngredient] = useState(false);
 
   const fromCare = searchParams.get("from") === "care";
 
@@ -243,19 +243,22 @@ export default function RecommendProduct() {
   const [showScrollTopButton, setShowScrollTopButton] = useState(false);
 
   /*
-   * 성분 카드 무한 스크롤을 위해
-   * 같은 배열을 3번 반복
+   * Third에서 들어온 경우
+   * → 실제 성분 1장만 사용
+   *
+   * 탭바에서 들어온 경우
+   * → 추천 성분 배열을 3번 복제해서 무한 스크롤 구현
    */
-  const loopedIngredients = useMemo(() => {
-    if (ingredients.length <= 1) {
+  const displayedIngredients = useMemo(() => {
+    if (fromCare || ingredients.length <= 1) {
       return ingredients;
     }
 
     return [...ingredients, ...ingredients, ...ingredients];
-  }, [ingredients]);
+  }, [fromCare, ingredients]);
 
   /*
-   * 선택된 제품 카테고리가 화면에서 잘 보이도록 중앙 정렬
+   * 선택된 제품 카테고리를 화면 가운데로 이동
    */
   useEffect(() => {
     const container = productCategoryScrollRef.current;
@@ -291,7 +294,32 @@ export default function RecommendProduct() {
   useEffect(() => {
     let isCancelled = false;
 
+    hasInitialCenteredRef.current = false;
+
     async function fetchIngredients() {
+      /*
+       * Third 페이지 추천 버튼으로 들어온 경우
+       *
+       * Third에서 전달한 성분 한 장만 표시한다.
+       */
+      if (fromCare && initialIngredientId !== null && requestedIngredientName) {
+        const stepIngredient: DisplayIngredient = {
+          id: initialIngredientId,
+          name: requestedIngredientName,
+          category: "ROUTINE_STEP",
+        };
+
+        setIngredients([stepIngredient]);
+        setSelectedIngredientId(initialIngredientId);
+
+        return;
+      }
+
+      /*
+       * 탭바 등 일반 진입
+       *
+       * 기존 추천 성분 API 사용
+       */
       try {
         const response = await productApi.getRecommendedIngredients();
 
@@ -300,95 +328,14 @@ export default function RecommendProduct() {
         }
 
         console.log("🔥 추천 성분 API 응답:", response);
-        console.log("🔥 Third에서 전달받은 ingredientId:", initialIngredientId);
-        console.log(
-          "🔥 Third에서 전달받은 ingredientName:",
-          requestedIngredientName
-        );
 
-        /*
-         * 현재 코스 추천 성분 API가 비어 있어도
-         * Third 페이지에서 ingredientId/name을 전달했다면
-         * 해당 성분 하나는 화면에 표시한다.
-         */
-        if (response.length === 0) {
-          if (initialIngredientId === null || !requestedIngredientName) {
-            setIngredients([]);
-            setSelectedIngredientId(null);
-
-            return;
-          }
-
-          const stepIngredient: DisplayIngredient = {
-            id: initialIngredientId,
-            name: requestedIngredientName,
-            category: "ROUTINE_STEP",
-          };
-
-          setIngredients([stepIngredient]);
-          setSelectedIngredientId(initialIngredientId);
-
-          centeredIngredientIdRef.current = null;
-
-          return;
-        }
-
-        /*
-         * Third 페이지에서 ingredientId를 넘겨받은 경우
-         */
-        if (initialIngredientId !== null) {
-          const matchedIngredient = response.find(
-            (ingredient) => ingredient.id === initialIngredientId
-          );
-
-          /*
-           * 추천 성분 안에 해당 성분이 존재하면
-           * API 배열은 그대로 유지하고 해당 성분을 선택한다.
-           */
-          if (matchedIngredient) {
-            setIngredients(response);
-            setSelectedIngredientId(matchedIngredient.id);
-
-            centeredIngredientIdRef.current = null;
-
-            return;
-          }
-
-          /*
-           * API 추천 성분에는 없지만
-           * Third에서 ingredientName까지 전달했다면
-           * 해당 성분을 가장 앞에 추가한다.
-           */
-          if (requestedIngredientName) {
-            const stepIngredient: DisplayIngredient = {
-              id: initialIngredientId,
-              name: requestedIngredientName,
-              category: "ROUTINE_STEP",
-            };
-
-            const nextIngredients: DisplayIngredient[] = [
-              stepIngredient,
-              ...response.filter(
-                (ingredient) => ingredient.id !== initialIngredientId
-              ),
-            ].slice(0, 3);
-
-            setIngredients(nextIngredients);
-            setSelectedIngredientId(initialIngredientId);
-
-            centeredIngredientIdRef.current = null;
-
-            return;
-          }
-        }
-
-        /*
-         * 탭바 등 일반 진입
-         */
         setIngredients(response);
-        setSelectedIngredientId(response[0].id);
 
-        centeredIngredientIdRef.current = null;
+        if (response.length > 0) {
+          setSelectedIngredientId(response[0].id);
+        } else {
+          setSelectedIngredientId(null);
+        }
       } catch (error) {
         if (isCancelled) {
           return;
@@ -406,11 +353,10 @@ export default function RecommendProduct() {
     return () => {
       isCancelled = true;
     };
-  }, [initialIngredientId, requestedIngredientName]);
+  }, [fromCare, initialIngredientId, requestedIngredientName]);
 
   /*
-   * 선택된 성분 / 제품 카테고리가 바뀌면
-   * 해당 조건의 제품 조회
+   * 선택된 성분 / 제품 카테고리 기준 제품 조회
    */
   useEffect(() => {
     if (selectedIngredientId === null) {
@@ -445,8 +391,6 @@ export default function RecommendProduct() {
         }
 
         console.error("추천 제품 조회 실패:", error);
-
-        setProducts([]);
       }
     }
 
@@ -460,7 +404,7 @@ export default function RecommendProduct() {
   const visibleProducts = selectedIngredientId === null ? [] : products;
 
   /*
-   * 특정 성분 카드를 정확히 중앙으로 이동
+   * 특정 카드를 화면 정중앙으로 이동
    */
   function scrollCardToCenter(
     card: HTMLElement,
@@ -487,14 +431,22 @@ export default function RecommendProduct() {
       behavior,
     });
 
-    window.setTimeout(() => {
-      isProgrammaticScrollRef.current = false;
-    }, 250);
+    window.setTimeout(
+      () => {
+        isProgrammaticScrollRef.current = false;
+      },
+      behavior === "smooth" ? 350 : 50
+    );
   }
 
   /*
-   * 처음 진입했을 때 선택된 ingredientId의 카드를
-   * 가운데 묶음에서 찾아 중앙 정렬
+   * 최초 진입 시 성분 카드 중앙정렬
+   *
+   * Third:
+   *   한 장을 중앙으로
+   *
+   * Tab:
+   *   3배 복제된 배열 중 가운데 묶음의 첫 번째 선택 성분으로
    */
   useEffect(() => {
     const container = ingredientScrollRef.current;
@@ -502,16 +454,11 @@ export default function RecommendProduct() {
     if (
       !container ||
       ingredients.length === 0 ||
-      selectedIngredientId === null
+      selectedIngredientId === null ||
+      hasInitialCenteredRef.current
     ) {
       return;
     }
-
-    if (centeredIngredientIdRef.current === selectedIngredientId) {
-      return;
-    }
-
-    const ingredientId = selectedIngredientId;
 
     const animationFrame = window.requestAnimationFrame(() => {
       const cards = Array.from(
@@ -522,56 +469,37 @@ export default function RecommendProduct() {
         return;
       }
 
-      /*
-       * 성분이 하나뿐이면 해당 카드 중앙 정렬
-       */
-      if (ingredients.length === 1) {
-        const targetCard = cards.find(
-          (card) => Number(card.dataset.ingredientId) === ingredientId
+      let targetCard: HTMLElement | undefined;
+
+      if (fromCare || ingredients.length === 1) {
+        targetCard = cards.find(
+          (card) => Number(card.dataset.ingredientId) === selectedIngredientId
         );
+      } else {
+        const ingredientCount = ingredients.length;
 
-        if (targetCard) {
-          scrollCardToCenter(targetCard, "auto");
-          centeredIngredientIdRef.current = ingredientId;
-        }
-
-        return;
+        targetCard = cards.find(
+          (card, index) =>
+            index >= ingredientCount &&
+            index < ingredientCount * 2 &&
+            Number(card.dataset.ingredientId) === selectedIngredientId
+        );
       }
 
-      const ingredientCount = ingredients.length;
-
-      const middleStart = ingredientCount;
-      const middleEnd = ingredientCount * 2;
-
-      const targetCard = cards.find(
-        (card, index) =>
-          index >= middleStart &&
-          index < middleEnd &&
-          Number(card.dataset.ingredientId) === ingredientId
-      );
-
       if (!targetCard) {
-        console.error(
-          "선택된 성분 카드를 가운데 묶음에서 찾지 못했습니다:",
-          ingredientId
-        );
-
         return;
       }
 
       scrollCardToCenter(targetCard, "auto");
 
-      centeredIngredientIdRef.current = ingredientId;
+      hasInitialCenteredRef.current = true;
     });
 
     return () => {
       window.cancelAnimationFrame(animationFrame);
     };
-  }, [ingredients, selectedIngredientId]);
+  }, [fromCare, ingredients, selectedIngredientId, displayedIngredients]);
 
-  /*
-   * 컴포넌트 제거 시 예약 timer 정리
-   */
   useEffect(() => {
     return () => {
       if (scrollEndTimerRef.current) {
@@ -604,27 +532,26 @@ export default function RecommendProduct() {
   }
 
   /*
-   * 사용자가 성분 카드를 스크롤하고 멈추면
-   * 화면 중앙에 가장 가까운 카드를 선택
+   * 현재 중앙에 가장 가까운 카드 찾기
    */
-  function updateSelectedIngredient() {
+  function getClosestIngredientCard() {
     const container = ingredientScrollRef.current;
 
     if (!container) {
-      return;
+      return null;
     }
-
-    const containerRect = container.getBoundingClientRect();
-
-    const containerCenter = containerRect.left + containerRect.width / 2;
 
     const cards = Array.from(
       container.querySelectorAll<HTMLElement>("[data-ingredient-id]")
     );
 
     if (cards.length === 0) {
-      return;
+      return null;
     }
+
+    const containerRect = container.getBoundingClientRect();
+
+    const containerCenter = containerRect.left + containerRect.width / 2;
 
     let closestCard = cards[0];
     let closestCardIndex = 0;
@@ -644,6 +571,35 @@ export default function RecommendProduct() {
       }
     });
 
+    return {
+      cards,
+      closestCard,
+      closestCardIndex,
+    };
+  }
+
+  /*
+   * 중앙 카드 기준으로 성분 변경
+   *
+   * 무한 스크롤에서는 첫 번째/세 번째 묶음에 도달하면
+   * 같은 카드가 있는 가운데 묶음으로 순간 이동한다.
+   *
+   * 이때 selectedIngredientId 변경 effect로
+   * 다시 원래 카드로 끌려가는 로직은 없다.
+   */
+  function updateSelectedIngredient() {
+    if (fromCare) {
+      return;
+    }
+
+    const result = getClosestIngredientCard();
+
+    if (!result) {
+      return;
+    }
+
+    const { cards, closestCard, closestCardIndex } = result;
+
     const ingredientIdText = closestCard.dataset.ingredientId;
 
     if (!ingredientIdText) {
@@ -651,8 +607,6 @@ export default function RecommendProduct() {
     }
 
     const nextIngredientId = Number(ingredientIdText);
-
-    centeredIngredientIdRef.current = nextIngredientId;
 
     if (nextIngredientId !== selectedIngredientId) {
       console.log("🔥 중앙 카드 성분 변경:", {
@@ -662,9 +616,6 @@ export default function RecommendProduct() {
 
       setSelectedIngredientId(nextIngredientId);
 
-      /*
-       * 성분이 바뀌면 제품 종류 필터는 전체보기
-       */
       setSelectedProductCategory(null);
     }
 
@@ -675,8 +626,8 @@ export default function RecommendProduct() {
     const ingredientCount = ingredients.length;
 
     /*
-     * 첫 번째 묶음까지 이동하면
-     * 같은 카드의 가운데 묶음으로 순간 이동
+     * 첫 번째 복제 묶음에 들어온 경우
+     * 동일 카드의 가운데 묶음으로 이동
      */
     if (closestCardIndex < ingredientCount) {
       const equivalentIndex = closestCardIndex + ingredientCount;
@@ -691,8 +642,8 @@ export default function RecommendProduct() {
     }
 
     /*
-     * 세 번째 묶음까지 이동하면
-     * 같은 카드의 가운데 묶음으로 순간 이동
+     * 세 번째 복제 묶음에 들어온 경우
+     * 동일 카드의 가운데 묶음으로 이동
      */
     if (closestCardIndex >= ingredientCount * 2) {
       const equivalentIndex = closestCardIndex - ingredientCount;
@@ -706,7 +657,7 @@ export default function RecommendProduct() {
   }
 
   function handleIngredientScroll() {
-    if (isProgrammaticScrollRef.current) {
+    if (fromCare || isProgrammaticScrollRef.current || isDraggingIngredient) {
       return;
     }
 
@@ -714,8 +665,8 @@ export default function RecommendProduct() {
       clearTimeout(scrollEndTimerRef.current);
     }
 
-    scrollEndTimerRef.current = setTimeout(() => {
-      if (isProgrammaticScrollRef.current) {
+    scrollEndTimerRef.current = window.setTimeout(() => {
+      if (isProgrammaticScrollRef.current || isDraggingIngredient) {
         return;
       }
 
@@ -723,6 +674,104 @@ export default function RecommendProduct() {
 
       scrollEndTimerRef.current = null;
     }, 150);
+  }
+
+  /*
+   * ==========================
+   * PC 마우스 드래그
+   * ==========================
+   */
+
+  function handleIngredientPointerDown(
+    event: ReactPointerEvent<HTMLDivElement>
+  ) {
+    /*
+     * 터치에서는 기존 모바일 가로 스크롤을 사용
+     */
+    if (fromCare || ingredients.length <= 1 || event.pointerType !== "mouse") {
+      return;
+    }
+
+    const container = ingredientScrollRef.current;
+
+    if (!container) {
+      return;
+    }
+
+    draggingPointerIdRef.current = event.pointerId;
+
+    dragStartXRef.current = event.clientX;
+
+    dragStartScrollLeftRef.current = container.scrollLeft;
+
+    setIsDraggingIngredient(true);
+
+    container.setPointerCapture(event.pointerId);
+
+    event.preventDefault();
+  }
+
+  function handleIngredientPointerMove(
+    event: ReactPointerEvent<HTMLDivElement>
+  ) {
+    if (
+      !isDraggingIngredient ||
+      event.pointerType !== "mouse" ||
+      draggingPointerIdRef.current !== event.pointerId
+    ) {
+      return;
+    }
+
+    const container = ingredientScrollRef.current;
+
+    if (!container) {
+      return;
+    }
+
+    const moveX = event.clientX - dragStartXRef.current;
+
+    container.scrollLeft = dragStartScrollLeftRef.current - moveX;
+
+    event.preventDefault();
+  }
+
+  function finishIngredientDrag(event: ReactPointerEvent<HTMLDivElement>) {
+    if (
+      event.pointerType !== "mouse" ||
+      draggingPointerIdRef.current !== event.pointerId
+    ) {
+      return;
+    }
+
+    const container = ingredientScrollRef.current;
+
+    if (container?.hasPointerCapture(event.pointerId)) {
+      container.releasePointerCapture(event.pointerId);
+    }
+
+    draggingPointerIdRef.current = null;
+
+    setIsDraggingIngredient(false);
+
+    /*
+     * scroll-snap이 다시 활성화된 뒤
+     * 중앙 카드 판정
+     */
+    window.setTimeout(() => {
+      updateSelectedIngredient();
+    }, 180);
+  }
+
+  function handleIngredientPointerCancel(
+    event: ReactPointerEvent<HTMLDivElement>
+  ) {
+    if (draggingPointerIdRef.current !== event.pointerId) {
+      return;
+    }
+
+    draggingPointerIdRef.current = null;
+
+    setIsDraggingIngredient(false);
   }
 
   function handleScrollToTop() {
@@ -754,16 +803,22 @@ export default function RecommendProduct() {
 
           <S.IngredientScroll
             ref={ingredientScrollRef}
-            onScroll={handleIngredientScroll}
+            $isDragging={isDraggingIngredient}
+            $isScrollable={!fromCare && ingredients.length > 1}
+            onScroll={fromCare ? undefined : handleIngredientScroll}
+            onPointerDown={handleIngredientPointerDown}
+            onPointerMove={handleIngredientPointerMove}
+            onPointerUp={finishIngredientDrag}
+            onPointerCancel={handleIngredientPointerCancel}
+            onDragStart={(event) => event.preventDefault()}
           >
-            {loopedIngredients.map((ingredient, index) => {
+            {displayedIngredients.map((ingredient, index) => {
               const cardInfo = getIngredientCardInfo(ingredient.name);
 
               return (
                 <S.IngredientCardWrapper
                   key={`${ingredient.id}-${index}`}
                   data-ingredient-id={ingredient.id}
-                  data-loop-index={index}
                 >
                   <RecommendedIngredientCard
                     category={cardInfo.categories}

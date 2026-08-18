@@ -6,7 +6,9 @@ import { typography } from "../../lib/typography";
 interface ProductImagePlaceholderProps {
   $imageUrl?: string;
 }
-
+interface ProductScrollProps {
+  $isDragging: boolean;
+}
 export const Section = styled.section`
   box-sizing: border-box;
 
@@ -58,7 +60,7 @@ export const MoreIcon = styled.img`
   height: 16px;
 `;
 
-export const ProductScroll = styled.div`
+export const ProductScroll = styled.div<ProductScrollProps>`
   box-sizing: border-box;
 
   display: flex;
@@ -73,11 +75,16 @@ export const ProductScroll = styled.div`
 
   scrollbar-width: none;
 
+  -webkit-overflow-scrolling: touch;
+
+  cursor: ${({ $isDragging }) => ($isDragging ? "grabbing" : "grab")};
+
+  user-select: ${({ $isDragging }) => ($isDragging ? "none" : "auto")};
+
   &::-webkit-scrollbar {
     display: none;
   }
 `;
-
 export const ProductCard = styled.div`
   box-sizing: border-box;
 
