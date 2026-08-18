@@ -1,13 +1,30 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useLottie } from "lottie-react";
 
 import confettiAnimation from "../../assets/confetti.json";
 
 import * as S from "../../styles/FocusCare/FocusConfetti.styles";
 
-export default function FocusConfetti() {
+interface FocusConfettiProps {
+  onComplete?: () => void;
+}
+
+export default function FocusConfetti({ onComplete }: FocusConfettiProps) {
   const [isLeftConfettiVisible, setIsLeftConfettiVisible] = useState(true);
   const [isRightConfettiVisible, setIsRightConfettiVisible] = useState(true);
+
+  const completedCountRef = useRef(0);
+  const hasCalledCompleteRef = useRef(false);
+
+  function handleConfettiComplete() {
+    completedCountRef.current += 1;
+
+    if (completedCountRef.current >= 2 && !hasCalledCompleteRef.current) {
+      hasCalledCompleteRef.current = true;
+
+      onComplete?.();
+    }
+  }
 
   const leftConfettiOptions = {
     animationData: confettiAnimation,
@@ -15,6 +32,7 @@ export default function FocusConfetti() {
     autoplay: true,
     onComplete: () => {
       setIsLeftConfettiVisible(false);
+      handleConfettiComplete();
     },
   };
 
@@ -24,6 +42,7 @@ export default function FocusConfetti() {
     autoplay: true,
     onComplete: () => {
       setIsRightConfettiVisible(false);
+      handleConfettiComplete();
     },
   };
 
@@ -33,15 +52,11 @@ export default function FocusConfetti() {
   return (
     <>
       {isLeftConfettiVisible && (
-        <S.LeftConfetti aria-hidden="true">
-          {leftConfetti}
-        </S.LeftConfetti>
+        <S.LeftConfetti aria-hidden="true">{leftConfetti}</S.LeftConfetti>
       )}
 
       {isRightConfettiVisible && (
-        <S.RightConfetti aria-hidden="true">
-          {rightConfetti}
-        </S.RightConfetti>
+        <S.RightConfetti aria-hidden="true">{rightConfetti}</S.RightConfetti>
       )}
     </>
   );

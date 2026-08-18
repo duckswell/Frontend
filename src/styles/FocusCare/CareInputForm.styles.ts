@@ -295,22 +295,34 @@ const showToast = keyframes`
 `;
 
 export const UploadToast = styled.div`
+  position: fixed;
+  z-index: 30;
+
+  left: 50%;
+
+  bottom: 88px;
+
   display: flex;
   align-items: center;
   gap: 12px;
 
-  width: 100%;
+  width: calc(100% - 32px);
   max-width: 370px;
 
-  margin-top: 20px;
+  padding: 16px;
 
   box-sizing: border-box;
-  padding: 16px;
 
   border: 1px solid ${colorPalette.Quaternary};
   border-radius: 12px;
 
   background-color: ${colorPalette.OffWhite};
+
+  /*
+   * X축 중앙 정렬은 translate 속성으로 따로 처리해서
+   * 기존 toast 애니메이션의 transform과 충돌하지 않게 함
+   */
+  translate: -50% 0;
 
   animation: ${showToast} 2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 

@@ -19,19 +19,19 @@ interface IngredientScrollProps {
 export const Page = styled.div<PageProps>`
   box-sizing: border-box;
 
+  display: flex;
+  flex-direction: column;
+
   width: 100%;
   height: 100dvh;
 
-  /*
-   * care에서 진입한 경우 NavBar가 fixed라서
-   * NavBar 높이만큼 페이지 시작 위치 확보
-   */
   padding-top: ${({ $hasTabBar }) => ($hasTabBar ? "0" : "56px")};
-
   padding-bottom: ${({ $hasTabBar }) => ($hasTabBar ? "84px" : "24px")};
 
   overflow-x: hidden;
   overflow-y: auto;
+
+  background-color: ${colorPalette.OffWhite};
 
   scrollbar-width: none;
 
@@ -44,7 +44,47 @@ export const Page = styled.div<PageProps>`
   }
 `;
 
+export const TitleHeader = styled.header`
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+  max-width: 402px;
+  height: 56px;
+
+  margin: 0 auto;
+`;
+
+export const HeaderTitle = styled.h1`
+  ${typography.H3};
+
+  margin: 0;
+
+  color: ${colorPalette.Black};
+`;
+
+export const Content = styled.main`
+  box-sizing: border-box;
+
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+
+  width: 100%;
+  max-width: 402px;
+  min-height: 0;
+
+  margin: 0 auto;
+
+  overflow-x: hidden;
+`;
+
 export const IngredientSection = styled.section`
+  flex-shrink: 0;
+
   width: 100%;
 
   padding-top: 16px;
@@ -79,7 +119,6 @@ export const IngredientScroll = styled.div<IngredientScrollProps>`
   padding: 0 60px;
 
   overflow-x: ${({ $isScrollable }) => ($isScrollable ? "auto" : "hidden")};
-
   overflow-y: hidden;
 
   scroll-snap-type: ${({ $isDragging }) =>
@@ -106,40 +145,6 @@ export const IngredientScroll = styled.div<IngredientScrollProps>`
   }
 `;
 
-export const TitleHeader = styled.header`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  width: 100%;
-  max-width: 402px;
-  height: 56px;
-
-  margin: 0 auto;
-`;
-
-export const HeaderTitle = styled.h1`
-  ${typography.H3};
-
-  margin: 0;
-
-  color: ${colorPalette.Black};
-`;
-
-export const Content = styled.main`
-  box-sizing: border-box;
-
-  display: flex;
-  flex-direction: column;
-
-  width: 100%;
-  max-width: 402px;
-
-  margin: 0 auto;
-
-  overflow-x: hidden;
-`;
-
 export const IngredientCardWrapper = styled.div`
   flex: 0 0 282px;
 
@@ -147,13 +152,164 @@ export const IngredientCardWrapper = styled.div`
   scroll-snap-stop: always;
 `;
 
-export const ProductSection = styled.section`
+/* =========================
+   루틴 없음 - 성분 카드
+========================= */
+
+export const EmptyIngredientCardArea = styled.div`
+  display: flex;
+  justify-content: center;
+
+  width: 100%;
+
+  margin-top: 16px;
+`;
+
+export const EmptyIngredientCard = styled.div`
+  position: relative;
+
+  box-sizing: border-box;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 282px;
+  height: 218px;
+
+  overflow: hidden;
+
+  border: 0.5px solid ${colorPalette.Quaternary};
+  border-radius: 12px;
+
+  background-color: ${colorPalette.OffWhite};
+`;
+
+export const EmptyIngredientLogo = styled.img`
+  position: absolute;
+
+  top: 50%;
+  left: 50%;
+
+  width: 266px;
+  height: 64px;
+
+  object-fit: contain;
+
+  transform: translate(-50%, -50%);
+
+  pointer-events: none;
+  user-select: none;
+`;
+
+export const EmptyIngredientInfo = styled.div`
+  position: absolute;
+
+  left: 16px;
+  right: 16px;
+  bottom: 16px;
+  z-index: 2;
+
   box-sizing: border-box;
 
   display: flex;
   flex-direction: column;
+  gap: 6px;
+
+  padding: 16px;
+
+  overflow: hidden;
+
+  border: 0.5px solid rgba(255, 255, 255, 0.5);
+  border-radius: 12px;
+
+  background-color: rgba(255, 255, 255, 0.6);
+
+  /*
+   * Figma의 유리 효과
+   * 빛 -45 / 80%
+   * 굴절·깊이·분산 값은 CSS와 1:1 대응되지 않아서
+   * backdrop + highlight + shadow로 최대한 가깝게 표현
+   */
+  backdrop-filter: blur(8px) saturate(1.15);
+  -webkit-backdrop-filter: blur(8px) saturate(1.15);
+
+  box-shadow: inset 1px 1px 1.5px rgba(255, 255, 255, 0.8),
+    inset -1px -1px 2px rgba(255, 255, 255, 0.18),
+    0 2px 8px rgba(0, 0, 0, 0.025);
+
+  &::before {
+    content: "";
+
+    position: absolute;
+    inset: 0;
+
+    border-radius: inherit;
+
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.8) 0%,
+      rgba(255, 255, 255, 0.28) 26%,
+      rgba(255, 255, 255, 0) 52%
+    );
+
+    pointer-events: none;
+  }
+
+  &::after {
+    content: "";
+
+    position: absolute;
+    inset: 1px;
+
+    border-radius: 11px;
+
+    box-shadow: inset 0.5px 0.5px 1px rgba(255, 255, 255, 0.8),
+      inset -0.5px -0.5px 1px rgba(80, 80, 80, 0.04);
+
+    pointer-events: none;
+  }
+`;
+
+export const EmptyIngredientTitle = styled.p`
+  position: relative;
+  z-index: 1;
+
+  margin: 0;
+
+  color: ${colorPalette.Black};
+
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.4;
+`;
+
+export const EmptyIngredientDescription = styled.p`
+  position: relative;
+  z-index: 1;
+
+  margin: 0;
+
+  color: ${colorPalette.Black};
+
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.4;
+`;
+
+/* =========================
+   제품 영역
+========================= */
+
+export const ProductSection = styled.section`
+  box-sizing: border-box;
+
+  display: flex;
+  flex: 1;
+  flex-direction: column;
 
   width: 100%;
+  min-height: 0;
 
   margin-top: 36px;
   padding: 0 16px;
@@ -161,6 +317,8 @@ export const ProductSection = styled.section`
 
 export const ProductCategoryScroll = styled.div`
   box-sizing: border-box;
+
+  flex-shrink: 0;
 
   display: flex;
   align-items: center;
@@ -223,6 +381,120 @@ export const ProductGrid = styled.div`
 
   margin-top: 16px;
 `;
+
+/* =========================
+   제품 없음
+========================= */
+
+export const EmptyProductArea = styled.div`
+  box-sizing: border-box;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+  height: 321px;
+
+  background-color: transparent;
+`;
+
+export const EmptyProductContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+
+  width: 100%;
+
+  text-align: center;
+`;
+
+export const EmptyProductTitle = styled.p`
+  ${typography.H3};
+
+  margin: 0;
+
+  color: ${colorPalette.Black};
+`;
+
+export const EmptyProductDescription = styled.p`
+  ${typography.Body1};
+
+  margin: 0;
+
+  color: ${colorPalette.Secondary};
+
+  text-align: center;
+`;
+
+/* =========================
+   루틴 없음
+========================= */
+
+export const NoRoutineArea = styled.div`
+  box-sizing: border-box;
+
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+  min-height: 0;
+`;
+
+export const NoRoutineContent = styled.div`
+  box-sizing: border-box;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  width: 100%;
+
+  /*
+   * 카테고리 ~ TabBar 사이의 중앙에
+   * 문구 + 버튼 묶음 자체가 오도록 약간 아래 여백 보정
+   */
+  transform: translateY(-4px);
+`;
+
+export const NoRoutineDescription = styled.p`
+  ${typography.Body1};
+
+  margin: 0;
+
+  color: ${colorPalette.Secondary};
+
+  text-align: center;
+`;
+
+export const StartRoutineButton = styled.button`
+  ${typography.H3};
+
+  box-sizing: border-box;
+
+  width: 100%;
+  height: 56px;
+
+  margin-top: 36px;
+  padding: 0;
+
+  border: 0.5px solid ${colorPalette.Quaternary};
+  border-radius: 12px;
+
+  background-color: transparent;
+  color: ${colorPalette.Black};
+
+  font-family: inherit;
+
+  cursor: pointer;
+`;
+
+/* =========================
+   맨 위 버튼
+========================= */
 
 export const ScrollTopButton = styled.button<PageProps>`
   position: fixed;
