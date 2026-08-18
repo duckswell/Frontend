@@ -18,7 +18,7 @@ export default function ImageAnalysisModal({
       <S.Modal>
         <AnalysisLoading
           variant={variant}
-          type="image"
+          type="diagnosis"
           isComplete={isComplete}
           onComplete={onComplete}
         />

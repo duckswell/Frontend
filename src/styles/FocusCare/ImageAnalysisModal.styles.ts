@@ -22,7 +22,7 @@ export const Modal = styled.div`
 
   width: 292px;
 
-  padding: 60px;
+  padding: 60px 0;
 
   border-radius: 12px;
 

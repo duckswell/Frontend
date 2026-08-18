@@ -5,7 +5,7 @@ import * as S from "../../styles/FocusCare/AnalysisLoading.styles";
 interface AnalysisLoadingProps {
   onComplete: () => void;
   variant?: "focus" | "daily";
-  type?: "routine" | "image";
+  type?: "routine" | "image" | "diagnosis";
   isComplete?: boolean;
 }
 
@@ -97,6 +97,18 @@ export default function AnalysisLoading({
     onComplete();
   }, [progress, onComplete]);
 
+  const getTitle = () => {
+    if (type === "image") {
+      return "사진을 확인 중이에요";
+    }
+
+    if (type === "diagnosis") {
+      return "오늘의 피부를 분석하고 있어요";
+    }
+
+    return "오늘의 맞춤 루틴을 만들고 있어요";
+  };
+
   return (
     <S.Container>
       <S.ProgressCircle>
@@ -151,11 +163,7 @@ export default function AnalysisLoading({
       </S.ProgressCircle>
 
       <S.TextArea>
-        <S.Title>
-          {type === "image"
-            ? "사진을 확인 중이에요"
-            : "오늘의 맞춤 루틴을 만들고 있어요"}
-        </S.Title>
+        <S.Title>{getTitle()}</S.Title>
 
         <S.Description>
           {type === "image" ? (
@@ -165,6 +173,14 @@ export default function AnalysisLoading({
               정확한 분석을 위해
               <br />
               사진을 다시 요청할 수 있어요
+            </>
+          ) : type === "diagnosis" ? (
+            <>
+              AI 피부 분석 결과에 맞춰
+              <br />
+              지금 필요한 성분과
+              <br />
+              관리 순서를 조합 중이에요
             </>
           ) : (
             <>

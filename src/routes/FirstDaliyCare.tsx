@@ -38,19 +38,9 @@ export default function FirstDaliyCare() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  /*
-   * 실제 진단 진행 모달
-   */
   const [isDiagnosisModalOpen, setIsDiagnosisModalOpen] = useState(false);
-
-  /*
-   * /api/diagnoses 완료 여부
-   */
   const [isDiagnosisComplete, setIsDiagnosisComplete] = useState(false);
 
-  /*
-   * First에서 받은 AI 진단 결과
-   */
   const [diagnosis, setDiagnosis] = useState<DiagnosisResponse | null>(null);
 
   /*
@@ -126,9 +116,6 @@ export default function FirstDaliyCare() {
       return;
     }
 
-    /*
-     * 버튼을 누르는 순간 분석 모달 표시
-     */
     setIsSubmitting(true);
     setDiagnosis(null);
     setIsDiagnosisComplete(false);
@@ -157,6 +144,12 @@ export default function FirstDaliyCare() {
         courseId,
         symptoms,
         symptomNote: additionalSymptom.trim() || undefined,
+
+        /*
+         * 사진은 선택사항.
+         * 사진을 업로드했다면 photoId 전달,
+         * 업로드하지 않았다면 undefined 전달.
+         */
         photoId: photoId ?? undefined,
       };
 
@@ -165,20 +158,12 @@ export default function FirstDaliyCare() {
       console.log("API symptoms:", symptoms);
       console.log("진단 요청:", diagnosisRequest);
 
-      /*
-       * 실제 AI 진단 API 호출
-       */
       const response = await diagnosisApi.createDiagnosis(diagnosisRequest);
 
       console.log("===== 데일리 AI 진단 완료 =====");
       console.log("진단 결과:", response);
 
       setDiagnosis(response);
-
-      /*
-       * API가 끝난 순간
-       * AnalysisLoading에게 완료 신호 전달
-       */
       setIsDiagnosisComplete(true);
     } catch (error) {
       console.error("데일리 코스 AI 진단 실패:", error);
@@ -190,9 +175,6 @@ export default function FirstDaliyCare() {
     }
   };
 
-  /*
-   * 진행바가 실제 100%까지 표시된 다음 이동
-   */
   const handleDiagnosisAnalysisComplete = () => {
     if (!diagnosis) {
       return;
@@ -205,6 +187,12 @@ export default function FirstDaliyCare() {
         diagnosis,
         selectedConditions,
         routineTypeCode: state?.routineTypeCode,
+
+        /*
+         * 사진이 있으면 File 전달.
+         * 없으면 undefined 전달.
+         */
+        skinImage: skinImages[0],
       },
     });
 
