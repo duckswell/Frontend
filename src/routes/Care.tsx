@@ -26,18 +26,19 @@ interface RecoveryBannerResponse {
 const COURSE_STEPS = [
   {
     step: "STEP 1",
-    title: "사진촬영/증상선택",
-    description: "화장하지 않은 얼굴을 찍거나 오늘의 증상을 선택",
+    title: "피부 상태 확인",
+    description:
+      "민낯 사진을 촬영하고 피부 고민을 기록하면 AI가 오늘의 상태를 분석해요",
   },
   {
     step: "STEP 2",
-    title: "관리 난이도 선택",
-    description: "화장하지 않은 얼굴을 찍거나 오늘의 증상을 선택",
+    title: "관리 강도 선택",
+    description: "오늘 내가 원하는 만큼 편하게 관리해요",
   },
   {
     step: "STEP 3",
-    title: "루틴 진행",
-    description: "화장하지 않은 얼굴을 찍거나 오늘의 증상을 선택",
+    title: "맞춤 루틴 진행",
+    description: "AI가 피부 상태에 최적화된 맞춤 루틴을 안내해요",
   },
 ];
 
