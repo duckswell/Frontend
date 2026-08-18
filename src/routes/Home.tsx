@@ -260,7 +260,7 @@ const Home: React.FC = () => {
     if (currentCourse && currentCourse.courseType === "DAILY") {
       const label = currentCourse.label || "데일리 케어";
       const dDayText = formatDDay(currentCourse.startedAt) ?? "D+1";
-      return `${label} ${dDayText}`;
+      return `${label} 루틴 ${dDayText}`;
     }
 
     return weatherData?.triggerFactor || "-";
