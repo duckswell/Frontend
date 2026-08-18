@@ -135,10 +135,10 @@ export const courseApi = {
   },
 
   getSymptomSummary: async (
-    courseId: number | string,
+    courseId: number | string
   ): Promise<SymptomSummaryResponse> => {
     const response = await api.get<ApiResponse<SymptomSummaryResponse>>(
-      `/api/courses/${courseId}/symptom-summary`,
+      `/api/courses/${courseId}/symptom-summary`
     );
 
     return response.data.data;
