@@ -174,23 +174,35 @@ export default function ThirdDailyCare() {
           </S.RoutineIntro>
 
           <S.CardList>
-            {routine.steps.map((step) => (
-              <RoutineStepCard
-                key={step.stepId}
-                step={step.order}
-                title={step.stepName}
-                product={step.productText}
-                method={step.methodText}
-                alternative={step.alternateText ?? undefined}
-                variant="daily"
-                productButtonText="추천 성분이 포함된 제품"
-                onProductButtonClick={() =>
-                  handleMoveToRecommendedProduct(step.stepId)
-                }
-              />
-            ))}
-          </S.CardList>
+            {routine.steps.map((step) => {
+              const stepSummary = stepSummaries.find(
+                (summary) => summary.stepId === step.stepId
+              );
 
+              const canShowRecommendation =
+                step.order !== 1 &&
+                stepSummary !== undefined &&
+                stepSummary.ingredientId !== null;
+
+              return (
+                <RoutineStepCard
+                  key={step.stepId}
+                  step={step.order}
+                  title={step.stepName}
+                  product={step.productText}
+                  method={step.methodText}
+                  alternative={step.alternateText ?? undefined}
+                  variant="daily"
+                  productButtonText="추천 성분이 포함된 제품"
+                  onProductButtonClick={
+                    canShowRecommendation
+                      ? () => handleMoveToRecommendedProduct(step.stepId)
+                      : undefined
+                  }
+                />
+              );
+            })}
+          </S.CardList>
           <S.WarningBox>
             <S.WarningHeader>
               <S.WarningIcon

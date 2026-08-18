@@ -10,6 +10,12 @@ interface PageProps {
 interface ProductCategoryButtonProps {
   $selected: boolean;
 }
+
+interface IngredientScrollProps {
+  $isDragging: boolean;
+  $isScrollable: boolean;
+}
+
 export const Page = styled.div<PageProps>`
   box-sizing: border-box;
 
@@ -21,6 +27,7 @@ export const Page = styled.div<PageProps>`
    * NavBar 높이만큼 페이지 시작 위치 확보
    */
   padding-top: ${({ $hasTabBar }) => ($hasTabBar ? "0" : "56px")};
+
   padding-bottom: ${({ $hasTabBar }) => ($hasTabBar ? "84px" : "24px")};
 
   overflow-x: hidden;
@@ -60,7 +67,7 @@ export const SectionTitle = styled.h2`
   color: ${colorPalette.Black};
 `;
 
-export const IngredientScroll = styled.div`
+export const IngredientScroll = styled.div<IngredientScrollProps>`
   box-sizing: border-box;
 
   display: flex;
@@ -68,20 +75,31 @@ export const IngredientScroll = styled.div`
 
   width: 100%;
 
-  /*
-   * 40px 제목 영역과 카드 사이 16px
-   */
   margin-top: 16px;
   padding: 0 60px;
 
-  overflow-x: auto;
+  overflow-x: ${({ $isScrollable }) => ($isScrollable ? "auto" : "hidden")};
 
-  scroll-snap-type: x mandatory;
+  overflow-y: hidden;
+
+  scroll-snap-type: ${({ $isDragging }) =>
+    $isDragging ? "none" : "x mandatory"};
+
   overscroll-behavior-x: contain;
 
   scrollbar-width: none;
 
   -webkit-overflow-scrolling: touch;
+
+  cursor: ${({ $isScrollable, $isDragging }) => {
+    if (!$isScrollable) {
+      return "default";
+    }
+
+    return $isDragging ? "grabbing" : "grab";
+  }};
+
+  user-select: ${({ $isDragging }) => ($isDragging ? "none" : "auto")};
 
   &::-webkit-scrollbar {
     display: none;
@@ -166,6 +184,7 @@ export const ProductCategoryScroll = styled.div`
     display: none;
   }
 `;
+
 export const ProductCategoryButton = styled.button<ProductCategoryButtonProps>`
   ${typography.Body1};
 
@@ -193,7 +212,9 @@ export const ProductCategoryButton = styled.button<ProductCategoryButtonProps>`
 
 export const ProductGrid = styled.div`
   display: grid;
+
   grid-template-columns: repeat(2, minmax(0, 1fr));
+
   column-gap: 16px;
   row-gap: 16px;
 
@@ -202,11 +223,13 @@ export const ProductGrid = styled.div`
 
   margin-top: 16px;
 `;
+
 export const ScrollTopButton = styled.button<PageProps>`
   position: fixed;
   z-index: 1100;
 
   right: max(16px, calc((100vw - 402px) / 2 + 16px));
+
   bottom: ${({ $hasTabBar }) => ($hasTabBar ? "84px" : "10px")};
 
   display: flex;

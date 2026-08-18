@@ -61,12 +61,11 @@ export default function RoutineStepCard({
         )}
       </S.InfoList>
 
-      <S.ProductButton
-        type="button"
-        onClick={onProductButtonClick}
-      >
-        {productButtonText}
-      </S.ProductButton>
+      {onProductButtonClick && (
+        <S.ProductButton type="button" onClick={onProductButtonClick}>
+          {productButtonText}
+        </S.ProductButton>
+      )}
     </S.Card>
   );
 }
