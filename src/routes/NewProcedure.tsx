@@ -196,15 +196,32 @@ const NewProcedure: React.FC = () => {
     );
   };
 
+  const INDIVIDUAL_PARTS = ["T존", "나비존", "턱", "볼"];
+
   const togglePart = (id: number, part: string) => {
     setProcedures((prev) =>
       prev.map((item) => {
         if (item.id !== id) return item;
 
-        const exists = item.selectedParts.includes(part);
-        const updatedParts = exists
-          ? item.selectedParts.filter((p) => p !== part)
-          : [...item.selectedParts, part];
+        let updatedParts: string[];
+
+        if (part === "얼굴 전체") {
+          const exists = item.selectedParts.includes("얼굴 전체");
+          updatedParts = exists ? [] : ["얼굴 전체"];
+        } else {
+          const baseParts = item.selectedParts.filter((p) => p !== "얼굴 전체");
+          const exists = baseParts.includes(part);
+
+          const nextParts = exists
+            ? baseParts.filter((p) => p !== part)
+            : [...baseParts, part];
+
+          const isAllIndividualSelected = INDIVIDUAL_PARTS.every((p) =>
+            nextParts.includes(p),
+          );
+
+          updatedParts = isAllIndividualSelected ? ["얼굴 전체"] : nextParts;
+        }
 
         return { ...item, selectedParts: updatedParts };
       }),
