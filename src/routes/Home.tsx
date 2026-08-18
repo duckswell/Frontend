@@ -228,7 +228,7 @@ const Home: React.FC = () => {
   };
 
   const renderDeltaArrow = (delta?: number) => {
-    if (delta === undefined || delta === 0) return null;
+    if (delta === undefined || delta === null || delta === 0) return null;
 
     return (
       <img
@@ -237,6 +237,13 @@ const Home: React.FC = () => {
         alt={delta > 0 ? "증가" : "감소"}
       />
     );
+  };
+
+  const getDisplayValue = (item?: { current?: number; delta?: number }) => {
+    if (item?.delta !== undefined && item.delta !== null) {
+      return Math.abs(item.delta);
+    }
+    return item?.current ?? "-";
   };
 
   const latestProcedure = currentProcedures[0];
@@ -292,10 +299,10 @@ const Home: React.FC = () => {
                     <span className="label">붉은기</span>
                     <div className="value-wrap">
                       <span className="number">
-                        {recoveryData?.redness?.current ?? "-"}
+                        {getDisplayValue(recoveryData?.redness)}
                       </span>
                       <span className="unit">%</span>
-                      {renderDeltaArrow(recoveryData?.redness?.delta ?? 1)}
+                      {renderDeltaArrow(recoveryData?.redness?.delta)}
                     </div>
                   </S.StatItem>
 
@@ -303,10 +310,10 @@ const Home: React.FC = () => {
                     <span className="label">요철</span>
                     <div className="value-wrap">
                       <span className="number">
-                        {recoveryData?.texture?.current ?? "-"}
+                        {getDisplayValue(recoveryData?.texture)}
                       </span>
                       <span className="unit">%</span>
-                      {renderDeltaArrow(recoveryData?.texture?.delta ?? -1)}
+                      {renderDeltaArrow(recoveryData?.texture?.delta)}
                     </div>
                   </S.StatItem>
 
@@ -314,10 +321,10 @@ const Home: React.FC = () => {
                     <span className="label">잡티</span>
                     <div className="value-wrap">
                       <span className="number">
-                        {recoveryData?.blemish?.current ?? "-"}
+                        {getDisplayValue(recoveryData?.blemish)}
                       </span>
                       <span className="unit">%</span>
-                      {renderDeltaArrow(recoveryData?.blemish?.delta ?? -1)}
+                      {renderDeltaArrow(recoveryData?.blemish?.delta)}
                     </div>
                   </S.StatItem>
                 </>
