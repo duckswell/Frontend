@@ -89,7 +89,7 @@ const NewProcedure: React.FC = () => {
     maxDate.setHours(0, 0, 0, 0);
 
     const minDate = new Date(currentYear, currentMonth - 1, currentDate);
-    minDate.setDate(minDate.getDate() - 7);
+    minDate.setDate(minDate.getDate() - 6);
     minDate.setHours(0, 0, 0, 0);
 
     return targetDate >= minDate && targetDate <= maxDate;
