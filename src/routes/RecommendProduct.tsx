@@ -5,7 +5,7 @@ import {
   useState,
   type PointerEvent as ReactPointerEvent,
 } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 import {
   productApi,
@@ -185,6 +185,7 @@ function isProductCategory(value: string | null): value is ProductCategory {
 }
 
 export default function RecommendProduct() {
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
   const pageRef = useRef<HTMLDivElement>(null);
@@ -194,15 +195,8 @@ export default function RecommendProduct() {
   const scrollEndTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const isProgrammaticScrollRef = useRef(false);
-
-  /*
-   * 최초 중앙정렬이 여러 번 실행되는 것을 방지
-   */
   const hasInitialCenteredRef = useRef(false);
 
-  /*
-   * PC 마우스 드래그용
-   */
   const dragStartXRef = useRef(0);
   const dragStartScrollLeftRef = useRef(0);
   const draggingPointerIdRef = useRef<number | null>(null);
@@ -240,15 +234,12 @@ export default function RecommendProduct() {
 
   const [products, setProducts] = useState<RecommendedProduct[]>([]);
 
+  const [loadedProductKey, setLoadedProductKey] = useState<string | null>(null);
+
+  const [isIngredientLoading, setIsIngredientLoading] = useState(true);
+
   const [showScrollTopButton, setShowScrollTopButton] = useState(false);
 
-  /*
-   * Third에서 들어온 경우
-   * → 실제 성분 1장만 사용
-   *
-   * 탭바에서 들어온 경우
-   * → 추천 성분 배열을 3번 복제해서 무한 스크롤 구현
-   */
   const displayedIngredients = useMemo(() => {
     if (fromCare || ingredients.length <= 1) {
       return ingredients;
@@ -257,9 +248,27 @@ export default function RecommendProduct() {
     return [...ingredients, ...ingredients, ...ingredients];
   }, [fromCare, ingredients]);
 
-  /*
-   * 선택된 제품 카테고리를 화면 가운데로 이동
-   */
+  const currentProductKey =
+    selectedIngredientId === null
+      ? null
+      : `${selectedIngredientId}-${selectedProductCategory ?? "ALL"}`;
+
+  const isProductLoading =
+    currentProductKey !== null && loadedProductKey !== currentProductKey;
+
+  const visibleProducts =
+    selectedIngredientId === null || isProductLoading ? [] : products;
+
+  const hasNoRoutine =
+    !fromCare && !isIngredientLoading && ingredients.length === 0;
+
+  const hasNoProducts =
+    !hasNoRoutine &&
+    !isIngredientLoading &&
+    !isProductLoading &&
+    selectedIngredientId !== null &&
+    visibleProducts.length === 0;
+
   useEffect(() => {
     const container = productCategoryScrollRef.current;
 
@@ -288,20 +297,14 @@ export default function RecommendProduct() {
     };
   }, [selectedProductCategory]);
 
-  /*
-   * 추천 성분 조회
-   */
   useEffect(() => {
     let isCancelled = false;
 
     hasInitialCenteredRef.current = false;
 
     async function fetchIngredients() {
-      /*
-       * Third 페이지 추천 버튼으로 들어온 경우
-       *
-       * Third에서 전달한 성분 한 장만 표시한다.
-       */
+      setIsIngredientLoading(true);
+
       if (fromCare && initialIngredientId !== null && requestedIngredientName) {
         const stepIngredient: DisplayIngredient = {
           id: initialIngredientId,
@@ -311,15 +314,11 @@ export default function RecommendProduct() {
 
         setIngredients([stepIngredient]);
         setSelectedIngredientId(initialIngredientId);
+        setIsIngredientLoading(false);
 
         return;
       }
 
-      /*
-       * 탭바 등 일반 진입
-       *
-       * 기존 추천 성분 API 사용
-       */
       try {
         const response = await productApi.getRecommendedIngredients();
 
@@ -345,6 +344,10 @@ export default function RecommendProduct() {
 
         setIngredients([]);
         setSelectedIngredientId(null);
+      } finally {
+        if (!isCancelled) {
+          setIsIngredientLoading(false);
+        }
       }
     }
 
@@ -355,9 +358,6 @@ export default function RecommendProduct() {
     };
   }, [fromCare, initialIngredientId, requestedIngredientName]);
 
-  /*
-   * 선택된 성분 / 제품 카테고리 기준 제품 조회
-   */
   useEffect(() => {
     if (selectedIngredientId === null) {
       return;
@@ -366,6 +366,7 @@ export default function RecommendProduct() {
     let isCancelled = false;
 
     const ingredientId = selectedIngredientId;
+    const productKey = `${ingredientId}-${selectedProductCategory ?? "ALL"}`;
 
     async function fetchProducts() {
       try {
@@ -385,12 +386,16 @@ export default function RecommendProduct() {
         });
 
         setProducts(response);
+        setLoadedProductKey(productKey);
       } catch (error) {
         if (isCancelled) {
           return;
         }
 
         console.error("추천 제품 조회 실패:", error);
+
+        setProducts([]);
+        setLoadedProductKey(productKey);
       }
     }
 
@@ -401,11 +406,6 @@ export default function RecommendProduct() {
     };
   }, [selectedIngredientId, selectedProductCategory]);
 
-  const visibleProducts = selectedIngredientId === null ? [] : products;
-
-  /*
-   * 특정 카드를 화면 정중앙으로 이동
-   */
   function scrollCardToCenter(
     card: HTMLElement,
     behavior: ScrollBehavior = "auto"
@@ -439,15 +439,6 @@ export default function RecommendProduct() {
     );
   }
 
-  /*
-   * 최초 진입 시 성분 카드 중앙정렬
-   *
-   * Third:
-   *   한 장을 중앙으로
-   *
-   * Tab:
-   *   3배 복제된 배열 중 가운데 묶음의 첫 번째 선택 성분으로
-   */
   useEffect(() => {
     const container = ingredientScrollRef.current;
 
@@ -531,9 +522,6 @@ export default function RecommendProduct() {
     setShowScrollTopButton(page.scrollTop > 10);
   }
 
-  /*
-   * 현재 중앙에 가장 가까운 카드 찾기
-   */
   function getClosestIngredientCard() {
     const container = ingredientScrollRef.current;
 
@@ -578,15 +566,6 @@ export default function RecommendProduct() {
     };
   }
 
-  /*
-   * 중앙 카드 기준으로 성분 변경
-   *
-   * 무한 스크롤에서는 첫 번째/세 번째 묶음에 도달하면
-   * 같은 카드가 있는 가운데 묶음으로 순간 이동한다.
-   *
-   * 이때 selectedIngredientId 변경 effect로
-   * 다시 원래 카드로 끌려가는 로직은 없다.
-   */
   function updateSelectedIngredient() {
     if (fromCare) {
       return;
@@ -615,7 +594,6 @@ export default function RecommendProduct() {
       });
 
       setSelectedIngredientId(nextIngredientId);
-
       setSelectedProductCategory(null);
     }
 
@@ -625,13 +603,8 @@ export default function RecommendProduct() {
 
     const ingredientCount = ingredients.length;
 
-    /*
-     * 첫 번째 복제 묶음에 들어온 경우
-     * 동일 카드의 가운데 묶음으로 이동
-     */
     if (closestCardIndex < ingredientCount) {
       const equivalentIndex = closestCardIndex + ingredientCount;
-
       const equivalentCard = cards[equivalentIndex];
 
       if (equivalentCard) {
@@ -641,13 +614,8 @@ export default function RecommendProduct() {
       return;
     }
 
-    /*
-     * 세 번째 복제 묶음에 들어온 경우
-     * 동일 카드의 가운데 묶음으로 이동
-     */
     if (closestCardIndex >= ingredientCount * 2) {
       const equivalentIndex = closestCardIndex - ingredientCount;
-
       const equivalentCard = cards[equivalentIndex];
 
       if (equivalentCard) {
@@ -676,18 +644,9 @@ export default function RecommendProduct() {
     }, 150);
   }
 
-  /*
-   * ==========================
-   * PC 마우스 드래그
-   * ==========================
-   */
-
   function handleIngredientPointerDown(
     event: ReactPointerEvent<HTMLDivElement>
   ) {
-    /*
-     * 터치에서는 기존 모바일 가로 스크롤을 사용
-     */
     if (fromCare || ingredients.length <= 1 || event.pointerType !== "mouse") {
       return;
     }
@@ -701,7 +660,6 @@ export default function RecommendProduct() {
     draggingPointerIdRef.current = event.pointerId;
 
     dragStartXRef.current = event.clientX;
-
     dragStartScrollLeftRef.current = container.scrollLeft;
 
     setIsDraggingIngredient(true);
@@ -753,10 +711,6 @@ export default function RecommendProduct() {
 
     setIsDraggingIngredient(false);
 
-    /*
-     * scroll-snap이 다시 활성화된 뒤
-     * 중앙 카드 판정
-     */
     window.setTimeout(() => {
       updateSelectedIngredient();
     }, 180);
@@ -787,6 +741,14 @@ export default function RecommendProduct() {
     });
   }
 
+  /*
+   * 임시
+   * 오늘의 루틴 시작하기 → /
+   */
+  function handleStartDailyRoutine() {
+    navigate("/");
+  }
+
   return (
     <S.Page ref={pageRef} $hasTabBar={!fromCare} onScroll={handlePageScroll}>
       {fromCare ? (
@@ -801,35 +763,57 @@ export default function RecommendProduct() {
         <S.IngredientSection>
           <S.SectionTitle>나의 맞춤 성분</S.SectionTitle>
 
-          <S.IngredientScroll
-            ref={ingredientScrollRef}
-            $isDragging={isDraggingIngredient}
-            $isScrollable={!fromCare && ingredients.length > 1}
-            onScroll={fromCare ? undefined : handleIngredientScroll}
-            onPointerDown={handleIngredientPointerDown}
-            onPointerMove={handleIngredientPointerMove}
-            onPointerUp={finishIngredientDrag}
-            onPointerCancel={handleIngredientPointerCancel}
-            onDragStart={(event) => event.preventDefault()}
-          >
-            {displayedIngredients.map((ingredient, index) => {
-              const cardInfo = getIngredientCardInfo(ingredient.name);
+          {hasNoRoutine ? (
+            <S.EmptyIngredientCardArea>
+              <S.EmptyIngredientCard>
+                <S.EmptyIngredientLogo
+                  src="/assets/HALE.svg"
+                  alt=""
+                  aria-hidden="true"
+                />
 
-              return (
-                <S.IngredientCardWrapper
-                  key={`${ingredient.id}-${index}`}
-                  data-ingredient-id={ingredient.id}
-                >
-                  <RecommendedIngredientCard
-                    category={cardInfo.categories}
-                    ingredient={ingredient.name}
-                    description={cardInfo.description}
-                    image={getIngredientImage(ingredient.category)}
-                  />
-                </S.IngredientCardWrapper>
-              );
-            })}
-          </S.IngredientScroll>
+                <S.EmptyIngredientInfo>
+                  <S.EmptyIngredientTitle>
+                    오늘의 맞춤 성분
+                  </S.EmptyIngredientTitle>
+
+                  <S.EmptyIngredientDescription>
+                    루틴을 시작하고 찾아보세요
+                  </S.EmptyIngredientDescription>
+                </S.EmptyIngredientInfo>
+              </S.EmptyIngredientCard>
+            </S.EmptyIngredientCardArea>
+          ) : (
+            <S.IngredientScroll
+              ref={ingredientScrollRef}
+              $isDragging={isDraggingIngredient}
+              $isScrollable={!fromCare && ingredients.length > 1}
+              onScroll={fromCare ? undefined : handleIngredientScroll}
+              onPointerDown={handleIngredientPointerDown}
+              onPointerMove={handleIngredientPointerMove}
+              onPointerUp={finishIngredientDrag}
+              onPointerCancel={handleIngredientPointerCancel}
+              onDragStart={(event) => event.preventDefault()}
+            >
+              {displayedIngredients.map((ingredient, index) => {
+                const cardInfo = getIngredientCardInfo(ingredient.name);
+
+                return (
+                  <S.IngredientCardWrapper
+                    key={`${ingredient.id}-${index}`}
+                    data-ingredient-id={ingredient.id}
+                  >
+                    <RecommendedIngredientCard
+                      category={cardInfo.categories}
+                      ingredient={ingredient.name}
+                      description={cardInfo.description}
+                      image={getIngredientImage(ingredient.category)}
+                    />
+                  </S.IngredientCardWrapper>
+                );
+              })}
+            </S.IngredientScroll>
+          )}
         </S.IngredientSection>
 
         <S.ProductSection>
@@ -853,20 +837,53 @@ export default function RecommendProduct() {
             })}
           </S.ProductCategoryScroll>
 
-          <S.ProductGrid>
-            {visibleProducts.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={{
-                  id: product.id,
-                  brand: product.brand,
-                  name: product.name,
-                  imageUrl: product.imageUrl,
-                  linkUrl: product.linkUrl,
-                }}
-              />
-            ))}
-          </S.ProductGrid>
+          {hasNoRoutine ? (
+            <S.NoRoutineArea>
+              <S.NoRoutineContent>
+                <S.NoRoutineDescription>
+                  오늘의 루틴을 시작하고
+                  <br />
+                  추천 성분의 제품을 받아보세요.
+                </S.NoRoutineDescription>
+
+                <S.StartRoutineButton
+                  type="button"
+                  onClick={handleStartDailyRoutine}
+                >
+                  오늘의 루틴 시작하기
+                </S.StartRoutineButton>
+              </S.NoRoutineContent>
+            </S.NoRoutineArea>
+          ) : hasNoProducts ? (
+            <S.EmptyProductArea>
+              <S.EmptyProductContent>
+                <S.EmptyProductTitle>
+                  해당하는 성분의 제품이 없어요
+                </S.EmptyProductTitle>
+
+                <S.EmptyProductDescription>
+                  현재 신규 상품을 검수 및 업데이트하고 있습니다.
+                  <br />
+                  빠른 시일 내에 찾아뵙겠습니다.
+                </S.EmptyProductDescription>
+              </S.EmptyProductContent>
+            </S.EmptyProductArea>
+          ) : (
+            <S.ProductGrid>
+              {visibleProducts.map((product) => (
+                <ProductCard
+                  key={product.id}
+                  product={{
+                    id: product.id,
+                    brand: product.brand,
+                    name: product.name,
+                    imageUrl: product.imageUrl,
+                    linkUrl: product.linkUrl,
+                  }}
+                />
+              ))}
+            </S.ProductGrid>
+          )}
         </S.ProductSection>
       </S.Content>
 
