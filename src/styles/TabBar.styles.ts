@@ -12,25 +12,17 @@ const applyTypography = (type: keyof typeof typography) => css`
 export const Container = styled.nav`
   position: fixed;
   bottom: 0;
-  left: 0;
-  right: 0;
+  left: 50%;
+  transform: translateX(-50%);
   width: 100%;
+  max-width: 402px;
   height: 64px;
   background-color: ${colorPalette.OffWhite};
   display: flex;
   align-items: center;
   justify-content: space-around;
+  box-sizing: border-box;
   z-index: 1000;
-
-  @media (min-width: 768px) {
-    height: 72px;
-    padding: 0 100px;
-    box-sizing: border-box;
-  }
-
-  @media (min-width: 1024px) {
-    padding: 0 200px;
-  }
 `;
 
 export const TabItem = styled.button<{ $isActive: boolean }>`
