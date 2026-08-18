@@ -68,9 +68,10 @@ export const Content = styled.div`
 export const CategoryList = styled.div`
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 4px;
 
-  width: fit-content;
+  width: 100%;
 `;
 
 export const Category = styled.span`
