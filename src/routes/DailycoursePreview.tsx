@@ -1,9 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import * as S from "../styles/DailycoursePreview.styles";
 import { NavBar } from "../components/NavBar";
-import { RoutineCard } from "../components/DailycoursePreview/RoutineCard";
-import type { RoutineCardProps } from "../components/DailycoursePreview/RoutineCard";
 import { courseApi } from "../api/course";
 import { isAxiosError } from "axios";
 
@@ -17,11 +15,32 @@ const ROUTINE_CODE_MAP: Record<
   moisture: "HYDRATION",
 };
 
+const REVERSE_ROUTINE_ID_MAP: Record<string, string> = {
+  "쿨다운 케어": "cooldown",
+  쿨다운: "cooldown",
+  "클리어업 케어": "clearup",
+  클리어업: "clearup",
+  "피지 조절 케어": "sebum",
+  "피지컨트롤 케어": "sebum",
+  피지컨트롤: "sebum",
+  "수분 보충 케어": "moisture",
+  "수분충전 케어": "moisture",
+  수분충전: "moisture",
+};
+
 type StartDailyCoursePayload = Parameters<typeof courseApi.startCourse>[0] & {
   routineTypeCode: "COOLDOWN" | "CLEAR_UP" | "SEBUM_CONTROL" | "HYDRATION";
 };
 
-const ROUTINE_DATA: RoutineCardProps[] = [
+interface RoutineItem {
+  id: string;
+  title: string;
+  description: string;
+  tags: string[];
+  iconSrc: string;
+}
+
+const ROUTINE_DATA: RoutineItem[] = [
   {
     id: "cooldown",
     title: "쿨다운 루틴",
@@ -55,10 +74,47 @@ const ROUTINE_DATA: RoutineCardProps[] = [
 const DailycoursePreview: React.FC = () => {
   const navigate = useNavigate();
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [currentRoutineId, setCurrentRoutineId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [showToast, setShowToast] = useState<boolean>(false);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchCurrentCourse = async () => {
+      try {
+        const current = await courseApi.getCurrentCourse();
+        if (!isMounted || !current) return;
+
+        if (current.courseType === "DAILY" && current.label) {
+          const matchedId = REVERSE_ROUTINE_ID_MAP[current.label] || null;
+          setCurrentRoutineId(matchedId);
+        }
+      } catch (error) {
+        console.error("현재 코스 조회 실패:", error);
+      }
+    };
+
+    fetchCurrentCourse();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const handleRoutineClick = (id: string) => {
+    if (currentRoutineId === id) {
+      setShowToast(false);
+      setTimeout(() => setShowToast(true), 10);
+      setTimeout(() => setShowToast(false), 2500);
+      return;
+    }
+
+    setSelectedId(id);
+  };
 
   const handleSubmit = async () => {
-    if (!selectedId || isSubmitting) return;
+    if (!selectedId || selectedId === currentRoutineId || isSubmitting) return;
 
     const routineTypeCode = ROUTINE_CODE_MAP[selectedId];
     if (!routineTypeCode) return;
@@ -141,23 +197,53 @@ const DailycoursePreview: React.FC = () => {
         </S.SectionHeader>
 
         <S.RoutineList>
-          {ROUTINE_DATA.map((item) => (
-            <RoutineCard
-              key={item.id}
-              {...item}
-              isSelected={selectedId === item.id}
-              onClick={() => setSelectedId(item.id)}
-            />
-          ))}
+          {ROUTINE_DATA.map((item) => {
+            const isCurrent = currentRoutineId === item.id;
+            const isSelected = selectedId === item.id;
+
+            return (
+              <S.CardContainer
+                key={item.id}
+                $isSelected={isSelected}
+                style={{
+                  position: "relative",
+                  marginTop: isCurrent ? "12px" : "0px",
+                }}
+                onClick={() => handleRoutineClick(item.id)}
+              >
+                {isCurrent && <S.NowRoutine>현재 진행 중인 루틴</S.NowRoutine>}
+
+                <S.IconImage src={item.iconSrc} alt={item.title} />
+                <S.ContentBox>
+                  <S.CardTitle>{item.title}</S.CardTitle>
+                  <S.CardDescription>{item.description}</S.CardDescription>
+                  <S.TagList>
+                    {item.tags.map((tag) => (
+                      <S.TagChip key={tag}>{tag}</S.TagChip>
+                    ))}
+                  </S.TagList>
+                </S.ContentBox>
+              </S.CardContainer>
+            );
+          })}
         </S.RoutineList>
 
         <S.SubmitButton
           type="button"
-          disabled={!selectedId || isSubmitting}
+          disabled={
+            !selectedId || selectedId === currentRoutineId || isSubmitting
+          }
           onClick={handleSubmit}
         >
           {isSubmitting ? "변경하는 중..." : "이 루틴으로 변경하기"}
         </S.SubmitButton>
+
+        {showToast && (
+          <S.ToastNotice>
+            <span className="info-icon">!</span> 현재 진행 중인 루틴은 선택할 수
+            없습니다.
+          </S.ToastNotice>
+        )}
       </S.Container>
     </>
   );
