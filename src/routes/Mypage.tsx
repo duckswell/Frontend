@@ -146,7 +146,7 @@ const Mypage: React.FC = () => {
             <div className="left">
               <div>
                 <div className="desc">심한 통증·급격한 악화 시 확인하세요</div>
-                <div className="title">이상 증상 안내</div>
+                <div className="title">상담이 필요한 증상 확인</div>
               </div>
             </div>
             <div className="arrow">

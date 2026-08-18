@@ -165,7 +165,7 @@ const CourseHistories: React.FC = () => {
             className="safety-btn"
             onClick={() => navigate("/safety")}
           >
-            이상 증상 안전 안내
+            상담이 필요한 증상 확인
           </button>
         </S.InfoNoticeCard>
       </S.Container>

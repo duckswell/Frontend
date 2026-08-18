@@ -5,15 +5,15 @@ import { NavBar } from "../components/NavBar";
 const SafetyGuide: React.FC = () => {
   const criteriaList = [
     "심한 통증 또는 압통이 있는 경우",
-    "붓기나 발적이 급격히 악화된 경우",
-    "진물·고름 등 분비물이 증가한 경우",
+    "붓기나 붉은기가 급격히 악화된 경우",
+    "진물이나 고름 등 분비물이 증가한 경우",
     "발열 또는 전신 이상 반응이 동반된 경우",
-    "가려움증이나 두드러기가 심하게 발생하는 경우",
+    "피부색이 비정상적으로 변하거나 감각 이상이 느껴지는 경우",
   ];
 
   return (
     <>
-      <NavBar title="이상 증상 안전 안내" />
+      <NavBar title="상담이 필요한 증상 확인" />
 
       <S.Container>
         <S.LeftColumn>
@@ -40,9 +40,8 @@ const SafetyGuide: React.FC = () => {
               안내
             </div>
             <p className="notice-desc">
-              이 안내는 의료 진단을 대체하지 않습니다. 증상의 원인 판정, 치료
-              필요성 결정, 응급 여부 판단은 의료 전문가만 할 수 있습니다. 본
-              서비스는 일상 피부 관리 목적으로만 활용해 주세요.
+              HALE의 피부 분석 결과는 의료적 진단을 대체하지 않아요 <br />
+              증상의 원인이나 치료 필요 여부는 의료진에게 확인해 주세요
             </p>
           </S.InfoNoticeCard>
 
