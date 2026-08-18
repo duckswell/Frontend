@@ -52,23 +52,111 @@ interface DisplayIngredient {
   category: DisplayIngredientCategory;
 }
 
-function getIngredientCategoryLabel(category: DisplayIngredientCategory) {
-  switch (category) {
-    case "VITAMIN":
-      return "비타민계열";
+interface IngredientCardInfo {
+  categories: string[];
+  description: string;
+}
 
-    case "MOISTURE":
-      return "수분계열";
+/*
+ * 성분 카드에 표시할
+ * 특징 태그 + 성분 설명
+ */
+const INGREDIENT_CARD_INFO: Record<string, IngredientCardInfo> = {
+  센텔라: {
+    categories: ["진정", "붉은기", "피부 보호"],
+    description:
+      "자극받아 붉어진 피부를 편안하게 진정하고 건강한 피부 컨디션을 유지하도록 도와줘요",
+  },
 
-    case "PLANT_EXTRACT":
-      return "풀 추출물계열";
+  판테놀: {
+    categories: ["보습", "장벽 강화", "진정"],
+    description:
+      "피부에 수분을 공급하고 외부 자극으로 약해진 피부 장벽을 편안하게 관리해 줘요",
+  },
 
-    case "ROUTINE_STEP":
-      return "추천 성분";
+  알로에: {
+    categories: ["진정", "수분 공급", "쿨링"],
+    description:
+      "자극받은 피부를 산뜻하게 진정하고 건조해진 피부에 촉촉함을 더해줘요",
+  },
 
-    default:
-      return category;
+  알로에베라: {
+    categories: ["진정", "수분 공급", "쿨링"],
+    description:
+      "자극받은 피부를 산뜻하게 진정하고 건조해진 피부에 촉촉함을 더해줘요",
+  },
+
+  세라마이드: {
+    categories: ["장벽 강화", "수분 유지", "피부 보호"],
+    description:
+      "피부 장벽을 구성하는 성분으로, 수분이 빠져나가지 않도록 보호하고 보습을 유지해 줘요",
+  },
+
+  히알루론산: {
+    categories: ["수분 공급", "보습 유지"],
+    description:
+      "피부에 수분을 끌어당겨 건조함을 줄이고 촉촉하고 유연한 피부로 관리해 줘요",
+  },
+
+  나이아신아마이드: {
+    categories: ["피부톤 개선", "잡티 관리", "장벽 강화", "피지 조절"],
+    description:
+      "칙칙한 피부톤과 눈에 띄는 잡티를 맑고 균일하게 관리하고 피지 조절, 피부 장벽 강화에 도움을 줘요",
+  },
+
+  "비타민 C": {
+    categories: ["피부톤 개선", "항산화", "잡티 관리"],
+    description:
+      "칙칙한 피부톤을 맑게 관리하고 외부 환경으로 인한 피부 산화를 방지하는 데 도움을 줘요",
+  },
+
+  비타민C: {
+    categories: ["피부톤 개선", "항산화", "잡티 관리"],
+    description:
+      "칙칙한 피부톤을 맑게 관리하고 외부 환경으로 인한 피부 산화를 방지하는 데 도움을 줘요",
+  },
+
+  "징크 PCA": {
+    categories: ["피지 조절", "번들거림 완화", "피부 청결"],
+    description:
+      "과도한 피지와 번들거림을 조절해 피부를 산뜻하고 깨끗한 상태로 유지하도록 도와줘요",
+  },
+
+  징크PCA: {
+    categories: ["피지 조절", "번들거림 완화", "피부 청결"],
+    description:
+      "과도한 피지와 번들거림을 조절해 피부를 산뜻하고 깨끗한 상태로 유지하도록 도와줘요",
+  },
+};
+
+function getIngredientCardInfo(name: string): IngredientCardInfo {
+  const normalizedName = name.trim();
+
+  const matchedInfo = INGREDIENT_CARD_INFO[normalizedName];
+
+  if (matchedInfo) {
+    return matchedInfo;
   }
+
+  /*
+   * 백엔드에서 이름에 공백 등이 다르게 내려오는 경우를 위한 fallback
+   */
+  const matchedEntry = Object.entries(INGREDIENT_CARD_INFO).find(
+    ([ingredientName]) =>
+      ingredientName.replace(/\s/g, "") === normalizedName.replace(/\s/g, "")
+  );
+
+  if (matchedEntry) {
+    return matchedEntry[1];
+  }
+
+  /*
+   * 아직 등록되지 않은 성분이 내려올 경우
+   */
+  return {
+    categories: ["추천 성분"],
+    description: `${name} 성분을 활용한 맞춤 제품을 확인해보세요.`,
+  };
 }
 
 function getIngredientImage(category: DisplayIngredientCategory) {
@@ -105,7 +193,6 @@ export default function RecommendProduct() {
 
   const pageRef = useRef<HTMLDivElement>(null);
   const ingredientScrollRef = useRef<HTMLDivElement>(null);
-
   const productCategoryScrollRef = useRef<HTMLDivElement>(null);
 
   const scrollEndTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -151,6 +238,25 @@ export default function RecommendProduct() {
   const [selectedProductCategory, setSelectedProductCategory] =
     useState<ProductCategory | null>(initialProductCategory);
 
+  const [products, setProducts] = useState<RecommendedProduct[]>([]);
+
+  const [showScrollTopButton, setShowScrollTopButton] = useState(false);
+
+  /*
+   * 성분 카드 무한 스크롤을 위해
+   * 같은 배열을 3번 반복
+   */
+  const loopedIngredients = useMemo(() => {
+    if (ingredients.length <= 1) {
+      return ingredients;
+    }
+
+    return [...ingredients, ...ingredients, ...ingredients];
+  }, [ingredients]);
+
+  /*
+   * 선택된 제품 카테고리가 화면에서 잘 보이도록 중앙 정렬
+   */
   useEffect(() => {
     const container = productCategoryScrollRef.current;
 
@@ -178,18 +284,6 @@ export default function RecommendProduct() {
       window.cancelAnimationFrame(animationFrame);
     };
   }, [selectedProductCategory]);
-
-  const [products, setProducts] = useState<RecommendedProduct[]>([]);
-
-  const [showScrollTopButton, setShowScrollTopButton] = useState(false);
-
-  const loopedIngredients = useMemo(() => {
-    if (ingredients.length <= 1) {
-      return ingredients;
-    }
-
-    return [...ingredients, ...ingredients, ...ingredients];
-  }, [ingredients]);
 
   /*
    * 추천 성분 조회
@@ -248,7 +342,7 @@ export default function RecommendProduct() {
           );
 
           /*
-           * 추천 성분 3개 안에 해당 성분이 존재하면
+           * 추천 성분 안에 해당 성분이 존재하면
            * API 배열은 그대로 유지하고 해당 성분을 선택한다.
            */
           if (matchedIngredient) {
@@ -261,7 +355,7 @@ export default function RecommendProduct() {
           }
 
           /*
-           * API 추천 성분 3개에는 없지만
+           * API 추천 성분에는 없지만
            * Third에서 ingredientName까지 전달했다면
            * 해당 성분을 가장 앞에 추가한다.
            */
@@ -378,12 +472,6 @@ export default function RecommendProduct() {
       return;
     }
 
-    /*
-     * 이미 예약돼 있던 사용자 scroll-end 판정을 제거한다.
-     *
-     * 이게 남아 있으면 우리가 특정 카드를 중앙에 맞춘 직후
-     * 이전 timer가 실행돼 옆 성분을 선택할 수 있다.
-     */
     if (scrollEndTimerRef.current) {
       clearTimeout(scrollEndTimerRef.current);
       scrollEndTimerRef.current = null;
@@ -399,10 +487,6 @@ export default function RecommendProduct() {
       behavior,
     });
 
-    /*
-     * 120ms은 기존 scroll-end debounce와 너무 가까워서
-     * race condition이 생길 수 있으므로 조금 넉넉하게 둔다.
-     */
     window.setTimeout(() => {
       isProgrammaticScrollRef.current = false;
     }, 250);
@@ -410,7 +494,7 @@ export default function RecommendProduct() {
 
   /*
    * 처음 진입했을 때 선택된 ingredientId의 카드를
-   * 정확히 가운데 묶음에서 찾은 뒤 중앙 정렬한다.
+   * 가운데 묶음에서 찾아 중앙 정렬
    */
   useEffect(() => {
     const container = ingredientScrollRef.current;
@@ -423,9 +507,6 @@ export default function RecommendProduct() {
       return;
     }
 
-    /*
-     * 같은 ingredientId에 대해 계속 강제 이동하지 않는다.
-     */
     if (centeredIngredientIdRef.current === selectedIngredientId) {
       return;
     }
@@ -442,7 +523,7 @@ export default function RecommendProduct() {
       }
 
       /*
-       * 성분이 하나뿐이면 그 카드만 중앙 배치
+       * 성분이 하나뿐이면 해당 카드 중앙 정렬
        */
       if (ingredients.length === 1) {
         const targetCard = cards.find(
@@ -457,14 +538,6 @@ export default function RecommendProduct() {
         return;
       }
 
-      /*
-       * 3번 반복된 배열 중
-       * 가운데 묶음만 대상으로 찾는다.
-       *
-       * 예)
-       * [1,2,3] [1,2,3] [1,2,3]
-       *          ^ 여기
-       */
       const ingredientCount = ingredients.length;
 
       const middleStart = ingredientCount;
@@ -532,7 +605,7 @@ export default function RecommendProduct() {
 
   /*
    * 사용자가 성분 카드를 스크롤하고 멈추면
-   * 화면 중앙에 가장 가까운 카드를 실제 선택 성분으로 변경
+   * 화면 중앙에 가장 가까운 카드를 선택
    */
   function updateSelectedIngredient() {
     const container = ingredientScrollRef.current;
@@ -579,10 +652,6 @@ export default function RecommendProduct() {
 
     const nextIngredientId = Number(ingredientIdText);
 
-    /*
-     * 실제 사용자 스크롤로 선택이 바뀐 것이므로
-     * 자동 중앙 정렬 완료 표시를 갱신한다.
-     */
     centeredIngredientIdRef.current = nextIngredientId;
 
     if (nextIngredientId !== selectedIngredientId) {
@@ -594,15 +663,11 @@ export default function RecommendProduct() {
       setSelectedIngredientId(nextIngredientId);
 
       /*
-       * 다른 성분으로 넘어가면
-       * 제품 종류 필터는 전체보기로 초기화
+       * 성분이 바뀌면 제품 종류 필터는 전체보기
        */
       setSelectedProductCategory(null);
     }
 
-    /*
-     * 카드가 하나뿐이면 루프 위치 보정 필요 없음
-     */
     if (ingredients.length <= 1) {
       return;
     }
@@ -610,8 +675,8 @@ export default function RecommendProduct() {
     const ingredientCount = ingredients.length;
 
     /*
-     * 첫 번째 묶음까지 스크롤했으면
-     * 같은 카드의 가운데 묶음 위치로 순간 이동
+     * 첫 번째 묶음까지 이동하면
+     * 같은 카드의 가운데 묶음으로 순간 이동
      */
     if (closestCardIndex < ingredientCount) {
       const equivalentIndex = closestCardIndex + ingredientCount;
@@ -626,8 +691,8 @@ export default function RecommendProduct() {
     }
 
     /*
-     * 세 번째 묶음까지 스크롤했으면
-     * 같은 카드의 가운데 묶음 위치로 순간 이동
+     * 세 번째 묶음까지 이동하면
+     * 같은 카드의 가운데 묶음으로 순간 이동
      */
     if (closestCardIndex >= ingredientCount * 2) {
       const equivalentIndex = closestCardIndex - ingredientCount;
@@ -641,10 +706,6 @@ export default function RecommendProduct() {
   }
 
   function handleIngredientScroll() {
-    /*
-     * 프로그램이 카드를 중앙에 옮기는 중에는
-     * 사용자가 카드를 변경한 것으로 처리하지 않는다.
-     */
     if (isProgrammaticScrollRef.current) {
       return;
     }
@@ -654,10 +715,6 @@ export default function RecommendProduct() {
     }
 
     scrollEndTimerRef.current = setTimeout(() => {
-      /*
-       * timer가 예약된 뒤 그 사이 프로그램 스크롤이 시작될 수도 있으므로
-       * 실행 직전에도 한 번 더 확인한다.
-       */
       if (isProgrammaticScrollRef.current) {
         return;
       }
@@ -699,20 +756,24 @@ export default function RecommendProduct() {
             ref={ingredientScrollRef}
             onScroll={handleIngredientScroll}
           >
-            {loopedIngredients.map((ingredient, index) => (
-              <S.IngredientCardWrapper
-                key={`${ingredient.id}-${index}`}
-                data-ingredient-id={ingredient.id}
-                data-loop-index={index}
-              >
-                <RecommendedIngredientCard
-                  category={getIngredientCategoryLabel(ingredient.category)}
-                  ingredient={ingredient.name}
-                  description={`${ingredient.name} 성분을 활용한 맞춤 제품을 확인해보세요.`}
-                  image={getIngredientImage(ingredient.category)}
-                />
-              </S.IngredientCardWrapper>
-            ))}
+            {loopedIngredients.map((ingredient, index) => {
+              const cardInfo = getIngredientCardInfo(ingredient.name);
+
+              return (
+                <S.IngredientCardWrapper
+                  key={`${ingredient.id}-${index}`}
+                  data-ingredient-id={ingredient.id}
+                  data-loop-index={index}
+                >
+                  <RecommendedIngredientCard
+                    category={cardInfo.categories}
+                    ingredient={ingredient.name}
+                    description={cardInfo.description}
+                    image={getIngredientImage(ingredient.category)}
+                  />
+                </S.IngredientCardWrapper>
+              );
+            })}
           </S.IngredientScroll>
         </S.IngredientSection>
 
