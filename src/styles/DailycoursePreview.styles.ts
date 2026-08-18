@@ -269,11 +269,11 @@ export const ToastNotice = styled.div`
 
 export const NowRoutine = styled.div`
   position: absolute;
-  top: -15px;
+  top: -13px;
   left: 16px;
-  background-color: #eaf5ff;
-  color: #0088ff;
+  background-color: ${colorPalette.DailyTertiary};
+  color: ${colorPalette.DailyPrimary};
   ${applyTypography("Body2Bold")}
   padding: 4px 12px;
-  border-radius: 999px;
+  border-radius: 12px;
 `;
