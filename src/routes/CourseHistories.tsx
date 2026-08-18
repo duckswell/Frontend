@@ -101,7 +101,7 @@ const CourseHistories: React.FC = () => {
 
       <S.Container>
         <S.Section>
-          <S.SectionTitle>현재 진행중인 코스</S.SectionTitle>
+          <S.SectionTitle1>현재 진행중인 코스</S.SectionTitle1>
           {isLoading ? (
             <Courses
               iconSrc="/assets/Home_Focus.png"

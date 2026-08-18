@@ -65,7 +65,7 @@ const Mypage: React.FC = () => {
 
       <S.Container>
         <S.Section>
-          <S.SectionTitle>등록된 시술</S.SectionTitle>
+          <S.SectionTitle1>등록된 시술</S.SectionTitle1>
           {latestProcedure ? (
             <S.TreatmentCard>
               <div

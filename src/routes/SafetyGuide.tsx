@@ -18,10 +18,10 @@ const SafetyGuide: React.FC = () => {
       <S.Container>
         <S.LeftColumn>
           <S.Section>
-            <S.Title>이상 증상 안전 안내</S.Title>
+            <S.Title1>이상 증상 안전 안내</S.Title1>
             <S.SubDesc>
-              아래 증상이 확인되면 오늘 루틴을 중단하고 시술 병원 또는
-              의료기관에 상담하세요.
+              아래 증상이 확인되면 오늘 루틴을 중단하고, <br></br> 시술 병원
+              또는 의료기관에 상담하세요.
             </S.SubDesc>
           </S.Section>
 

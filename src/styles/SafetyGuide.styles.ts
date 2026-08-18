@@ -30,6 +30,15 @@ export const Section = styled.section`
   margin-bottom: 36px;
 `;
 
+export const Title1 = styled.h2`
+  ${applyTypography("H3")}
+  color: ${colorPalette.Black};
+  margin: 0;
+  height: 40px;
+  display: flex;
+  align-items: center;
+`;
+
 export const Title = styled.h2`
   ${applyTypography("H3")}
   color: ${colorPalette.Black};

@@ -26,6 +26,15 @@ export const Section = styled.section`
   margin-bottom: 32px;
 `;
 
+export const SectionTitle1 = styled.h3`
+  ${applyTypography("H3")}
+  color: ${colorPalette.Black};
+  margin: 0 0 12px 0;
+  height: 40px;
+  display: flex;
+  align-items: center;
+`;
+
 export const SectionTitle = styled.h3`
   ${applyTypography("H3")}
   color: ${colorPalette.Black};
