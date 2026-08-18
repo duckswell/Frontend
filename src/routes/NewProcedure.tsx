@@ -89,7 +89,7 @@ const NewProcedure: React.FC = () => {
     maxDate.setHours(0, 0, 0, 0);
 
     const minDate = new Date(currentYear, currentMonth - 1, currentDate);
-    minDate.setDate(minDate.getDate() - 6);
+    minDate.setDate(minDate.getDate() - 7);
     minDate.setHours(0, 0, 0, 0);
 
     return targetDate >= minDate && targetDate <= maxDate;
@@ -98,58 +98,68 @@ const NewProcedure: React.FC = () => {
   useEffect(() => {
     let isMounted = true;
 
-    const loadProcedures = async () => {
+    const loadInitialData = async () => {
       try {
-        const data = await procedureApi.getCurrentProcedures();
+        const currentCourse = await courseApi
+          .getCurrentCourse()
+          .catch(() => null);
         if (!isMounted) return;
 
-        if (data && data.length > 0) {
-          const sortedData = [...data].sort(
-            (a, b) => Number(a.id) - Number(b.id),
-          );
+        if (currentCourse && currentCourse.courseType === "FOCUS") {
+          const data = await procedureApi
+            .getCurrentProcedures()
+            .catch(() => []);
+          if (!isMounted) return;
 
-          const mappedList: ProcedureData[] = sortedData.map((item, idx) => {
-            const displayType =
-              REVERSE_PROCEDURE_MAP[item.procedureType] ||
-              item.procedureTypeName ||
-              item.procedureType;
+          if (data && data.length > 0) {
+            const sortedData = [...data].sort(
+              (a, b) => Number(a.id) - Number(b.id),
+            );
 
-            return {
-              id: item.id,
-              isOpen: idx === sortedData.length - 1,
-              type: displayType,
-              date: item.procedureDate
-                ? item.procedureDate.replace(/-/g, ".")
-                : "",
-              currentCount: String(item.currentCount ?? ""),
-              totalCount: String(item.totalCount ?? ""),
-              selectedParts: (item.areas || []).map(
-                (area) => REVERSE_BODY_PART_MAP[area] || area,
-              ),
-              isNew: false,
-            };
-          });
-          setProcedures(mappedList);
-        } else {
-          setProcedures([
-            {
-              id: Date.now(),
-              isOpen: true,
-              type: "",
-              date: "",
-              currentCount: "",
-              totalCount: "",
-              selectedParts: [],
-              isNew: true,
-            },
-          ]);
+            const mappedList: ProcedureData[] = sortedData.map((item, idx) => {
+              const displayType =
+                REVERSE_PROCEDURE_MAP[item.procedureType] ||
+                item.procedureTypeName ||
+                item.procedureType;
+
+              return {
+                id: item.id,
+                isOpen: idx === sortedData.length - 1,
+                type: displayType,
+                date: item.procedureDate
+                  ? item.procedureDate.replace(/-/g, ".")
+                  : "",
+                currentCount: String(item.currentCount ?? ""),
+                totalCount: String(item.totalCount ?? ""),
+                selectedParts: (item.areas || []).map(
+                  (area) => REVERSE_BODY_PART_MAP[area] || area,
+                ),
+                isNew: false,
+              };
+            });
+            setProcedures(mappedList);
+            return;
+          }
         }
+
+        setProcedures([
+          {
+            id: Date.now(),
+            isOpen: true,
+            type: "",
+            date: "",
+            currentCount: "",
+            totalCount: "",
+            selectedParts: [],
+            isNew: true,
+          },
+        ]);
       } catch (error) {
-        console.error("현재 코스 시술 목록 불러오기 실패:", error);
+        console.error("시술 정보 초기화 실패:", error);
       }
     };
 
-    loadProcedures();
+    loadInitialData();
 
     return () => {
       isMounted = false;
@@ -280,18 +290,21 @@ const NewProcedure: React.FC = () => {
     try {
       if (newProcedures.length > 0) {
         try {
-          const currentCourse = await courseApi.getCurrentCourse();
+          const currentCourse = await courseApi
+            .getCurrentCourse()
+            .catch(() => null);
+          const currentCourseId =
+            currentCourse?.courseId ??
+            (currentCourse as unknown as { id?: number })?.id;
+
           if (!currentCourse || currentCourse.courseType !== "FOCUS") {
-            if (currentCourse?.courseId) {
-              await courseApi.endCourse(currentCourse.courseId);
+            if (currentCourseId) {
+              await courseApi.endCourse(currentCourseId);
             }
             await courseApi.startCourse({ courseType: "FOCUS" });
           }
         } catch (courseError) {
-          console.warn(
-            "집중 코스 전환 시도 중 오류 (기존 집중 코스 재시작 시도):",
-            courseError,
-          );
+          console.warn("집중 코스 전환 중 오류:", courseError);
           await courseApi.restartFocusCourse().catch(() => {});
         }
       }
