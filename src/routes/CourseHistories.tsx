@@ -9,6 +9,18 @@ import {
   type PastCourseHistoryItem,
 } from "../api/course";
 
+type ExtendedCurrentCourse = CurrentCourseResponse & {
+  routineTypeName?: string;
+  routineType?: string;
+  label?: string;
+  id?: number;
+};
+
+type ExtendedPastCourse = PastCourseHistoryItem & {
+  routineType?: string;
+  label?: string;
+};
+
 interface CourseViewItem {
   id: number;
   iconSrc: string;
@@ -34,17 +46,21 @@ const CourseHistories: React.FC = () => {
       ]);
 
       if (currentRes.status === "fulfilled" && currentRes.value) {
-        const cur: CurrentCourseResponse = currentRes.value;
+        const cur = currentRes.value as ExtendedCurrentCourse;
+        const routineName = cur.routineTypeName || cur.routineType || cur.label;
+
         setCurrentCourse({
-          id: cur.courseId,
+          id: cur.courseId ?? cur.id ?? 0,
           iconSrc:
             cur.courseType === "DAILY"
               ? "/assets/Home_Daily.png"
               : "/assets/Home_Focus.png",
-          description:
-            cur.label ||
-            (cur.courseType === "DAILY" ? "데일리 코스" : "집중 코스"),
-          title: `연속 ${cur.streakDays}일째`,
+          description: routineName
+            ? `데일리 ${routineName} 루틴 진행 중`
+            : cur.courseType === "DAILY"
+              ? "데일리 코스 진행 중"
+              : "집중 코스 진행 중",
+          title: `연속 ${cur.streakDays ?? 0}일째`,
         });
       } else {
         setCurrentCourse(null);
@@ -54,7 +70,7 @@ const CourseHistories: React.FC = () => {
         historyRes.status === "fulfilled" &&
         Array.isArray(historyRes.value)
       ) {
-        const list: PastCourseHistoryItem[] = historyRes.value;
+        const list = historyRes.value as ExtendedPastCourse[];
 
         const completedList = list
           .filter((c) => Boolean(c.endedAt))
@@ -66,6 +82,7 @@ const CourseHistories: React.FC = () => {
               ? `${c.startedAt.replace(/-/g, ".")} ~ `
               : "";
             const end = c.endedAt ? c.endedAt.replace(/-/g, ".") : "";
+            const routineName = c.routineTypeName || c.routineType || c.label;
 
             return {
               id: c.id,
@@ -74,8 +91,8 @@ const CourseHistories: React.FC = () => {
                   ? "/assets/Home_Daily.png"
                   : "/assets/Home_Focus.png",
               description: `${start}${end}`,
-              title: c.routineTypeName
-                ? `데일리 ${c.routineTypeName} 루틴 완료`
+              title: routineName
+                ? `데일리 ${routineName} 루틴 완료`
                 : c.courseType === "DAILY"
                   ? "데일리 코스 완료"
                   : "집중 코스 완료",
