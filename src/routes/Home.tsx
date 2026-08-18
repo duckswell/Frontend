@@ -413,8 +413,8 @@ const Home: React.FC = () => {
           </S.BannerCard>
 
           <S.SectionHeader>
-            <h3>{`오늘 하루 신경 써야 하는 것 (${completedCount}/${totalTodos})`}</h3>
-            <p>데이터를 바탕으로 AI가 추천한 안내</p>
+            <h3>{`오늘 챙기면 좋은 것 (${completedCount}/${totalTodos})`}</h3>
+            <p>시술 및 루틴 내역을 바탕으로 AI가 추천해 드려요</p>
           </S.SectionHeader>
 
           {todos.map((todo) => (
