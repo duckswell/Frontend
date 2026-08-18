@@ -276,7 +276,7 @@ const Home: React.FC = () => {
         <S.LeftColumn>
           <S.HeroCard $isFocus={isFocus}>
             <S.Badge $isFocus={isFocus}>
-              {isFocus ? getFocusBadgeText() : getDailyBadgeText()}
+              시술 {isFocus ? getFocusBadgeText() : getDailyBadgeText()}
             </S.Badge>
 
             <S.HeroTitle>
