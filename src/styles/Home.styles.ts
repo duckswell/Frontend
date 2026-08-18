@@ -67,34 +67,50 @@ export const HeroTitle = styled.h2`
 
 export const StatGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
   margin-bottom: 16px;
+
+  @media (min-width: 380px) {
+    gap: 12px;
+  }
 `;
 
 export const StatItem = styled.div`
   background-color: ${colorPalette.OffWhite};
   border-radius: 8px;
-  padding: 10px 13px 12px 13px;
+  padding: 10px 4px 12px 4px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   min-height: 80px;
   box-sizing: border-box;
+  overflow: hidden;
+
+  @media (min-width: 360px) {
+    padding: 10px 6px 12px 6px;
+  }
+
+  @media (min-width: 380px) {
+    padding: 10px 10px 12px 10px;
+  }
 
   .label {
     display: block;
     ${applyTypography("Body1")}
     color: ${colorPalette.Black};
     margin-bottom: 6px;
+    white-space: nowrap;
+    padding-left: 4px;
   }
 
   .value-wrap {
     display: flex;
-    align-items: center;
+    align-items: baseline;
     justify-content: center;
     line-height: 1;
     width: 100%;
+    white-space: nowrap;
 
     .number {
       font-size: 32px;
@@ -108,7 +124,6 @@ export const StatItem = styled.div`
       font-weight: 900;
       color: ${colorPalette.Black};
       margin-left: 1px;
-      margin-top: 10px;
     }
 
     .arrow-icon {
@@ -117,6 +132,8 @@ export const StatItem = styled.div`
       object-fit: contain;
       margin-left: 5px;
       margin-bottom: 10px;
+      align-self: center;
+      flex-shrink: 0;
     }
   }
 `;
