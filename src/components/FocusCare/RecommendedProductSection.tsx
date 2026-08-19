@@ -9,11 +9,21 @@ export interface Product {
   brand: string;
   name: string;
 
+  /*
+   * RecommendProduct에서
+   * Care 추천 성분 카드 생성에 사용
+   */
   ingredientId?: number;
   ingredientName?: string;
 
+  /*
+   * 기존 코드 호환
+   */
   categories?: string[];
 
+  /*
+   * 제품 카테고리
+   */
   category?: ProductCategory;
 
   imageUrl?: string | null;
@@ -24,14 +34,14 @@ interface RecommendedProductSectionProps {
   title?: string;
 
   /*
-   * 실제 섹션에 표시할 제품
+   * 현재 섹션에 표시할 제품
    */
   products?: Product[];
 
   /*
    * 더보기 클릭 시 RecommendProduct로 넘길 데이터
    *
-   * 지정하지 않으면 기존처럼 products를 사용한다.
+   * 지정하지 않으면 products를 그대로 사용한다.
    */
   moreProducts?: Product[];
 }
@@ -67,13 +77,19 @@ export default function RecommendedProductSection({
         <S.MoreButton type="button" onClick={handleMoveToRecommend}>
           <S.MoreText>더보기</S.MoreText>
 
-          <S.MoreIcon src="/assets/Goto.svg" alt="" aria-hidden="true" />
+          <S.MoreIcon
+            src="/assets/Goto.svg"
+            alt=""
+            aria-hidden="true"
+          />
         </S.MoreButton>
       </S.Header>
 
       <S.ProductScroll $isDragging={false}>
-        {products.map((product) => (
-          <S.ProductCard key={product.id}>
+        {products.map((product, index) => (
+          <S.ProductCard
+            key={`${product.id}-${product.ingredientId ?? "none"}-${index}`}
+          >
             <S.ProductImagePlaceholder
               $imageUrl={product.imageUrl ?? undefined}
               role={product.imageUrl ? "img" : undefined}
