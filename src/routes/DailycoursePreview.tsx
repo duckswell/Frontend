@@ -86,7 +86,7 @@ const DailycoursePreview: React.FC = () => {
       ([entry]) => {
         setIsButtonVisible(entry.isIntersecting);
       },
-      { threshold: 0.1 },
+      { threshold: 0.1 }
     );
 
     if (buttonRef.current) {
@@ -183,7 +183,7 @@ const DailycoursePreview: React.FC = () => {
 
       if (isAxiosError(error)) {
         alert(
-          error.response?.data?.message || "데일리 코스 시작에 실패했습니다.",
+          error.response?.data?.message || "데일리 코스 시작에 실패했습니다."
         );
       } else {
         alert("알 수 없는 오류가 발생했습니다.");
