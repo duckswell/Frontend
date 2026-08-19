@@ -60,6 +60,7 @@ const Mypage: React.FC = () => {
     };
   }, []);
 
+  const isFocus = currentCourse?.courseType === "FOCUS";
   const latestProcedure = procedures[0];
   const remainingCount = latestProcedure
     ? Math.max(0, latestProcedure.totalCount - latestProcedure.currentCount)
@@ -90,7 +91,9 @@ const Mypage: React.FC = () => {
 
       <S.Container>
         <S.Section>
-          <S.SectionTitle1>등록된 시술</S.SectionTitle1>
+          <S.SectionTitle1>
+            {isFocus ? "등록된 시술" : "최근 시술"}
+          </S.SectionTitle1>
           {latestProcedure ? (
             <S.TreatmentCard>
               <div
@@ -101,7 +104,10 @@ const Mypage: React.FC = () => {
               >
                 <div className="info">
                   <h4>{latestProcedure.procedureTypeName}</h4>
-                  <p>{formatKoreanDate(latestProcedure.procedureDate)} 시작</p>
+                  <p>
+                    {formatKoreanDate(latestProcedure.procedureDate)}
+                    {isFocus ? " 시작" : ""}
+                  </p>
                 </div>
                 <img
                   src="/assets/Setting.svg"

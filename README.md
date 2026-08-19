@@ -1,4 +1,4 @@
-# 🦆DucksWell-FE
+# 💆 Hale-FE
 
 ## 🖥️ FE Developer  
 **덕성여자대학교 멋쟁이사자처럼 14기 프론트엔드 운영진 2인**

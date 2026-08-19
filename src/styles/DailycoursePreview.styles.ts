@@ -209,9 +209,9 @@ export const SubmitButton = styled.button`
   }
 `;
 
-export const ToastNotice = styled.div`
+export const ToastNotice = styled.div<{ $hasButton?: boolean }>`
   position: fixed;
-  bottom: 84px;
+  bottom: ${({ $hasButton }) => ($hasButton ? "84px" : "24px")};
   left: 50%;
   transform: translateX(-50%);
 
@@ -233,6 +233,7 @@ export const ToastNotice = styled.div`
 
   pointer-events: none;
   z-index: 99;
+  transition: bottom 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 
   animation: ${slideUpDown} 2.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 
