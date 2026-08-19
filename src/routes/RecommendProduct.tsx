@@ -22,7 +22,10 @@ import ProductCard from "../components/ProductCard";
 import RecommendedIngredientCard from "../components/RecommendedIngredientCard";
 import { TabBar } from "../components/TabBar";
 
-import type { Product as CareRecommendedProduct } from "../components/FocusCare/RecommendedProductSection";
+import type {
+  CareIngredient,
+  Product as CareRecommendedProduct,
+} from "../components/FocusCare/RecommendedProductSection";
 
 import * as S from "../styles/RecommendProduct.styles";
 
@@ -69,7 +72,25 @@ interface IngredientCardInfo {
 }
 
 interface RecommendProductLocationState {
+  /*
+   * FinishRoutine 등.
+   */
   recommendedProducts?: CareRecommendedProduct[];
+
+  /*
+   * FinishSelectRoutine.
+   *
+   * ingredientId를 아직 모르는 상태.
+   */
+  recommendedIngredientNames?: string[];
+
+  /*
+   * TodayRoutineSummary.
+   *
+   * 실제 ingredientId를 알고 있는
+   * 루틴 전체 성분.
+   */
+  recommendedIngredients?: CareIngredient[];
 }
 
 interface DisplayProduct {
@@ -153,14 +174,27 @@ function normalizeIngredientName(name: string) {
   return name.replace(/\s/g, "").trim();
 }
 
-/*
- * 화면에 표시할 성분 이름
- *
- * 백엔드에서는 징크 PCA / 징크PCA 등으로 내려올 수 있지만
- * 사용자 화면에서는 모두 "징크"로 표시한다.
- *
- * 실제 ingredientId와 API 요청 값은 변경하지 않는다.
- */
+function isSameIngredientName(firstName: string, secondName: string) {
+  const first = normalizeIngredientName(firstName);
+
+  const second = normalizeIngredientName(secondName);
+
+  if (first === second) {
+    return true;
+  }
+
+  const aliases = [
+    ["징크", "징크PCA"],
+    ["알로에", "알로에베라"],
+  ];
+
+  return aliases.some(
+    ([firstAlias, secondAlias]) =>
+      (first === firstAlias && second === secondAlias) ||
+      (first === secondAlias && second === firstAlias)
+  );
+}
+
 function getDisplayIngredientName(name: string) {
   const normalizedName = normalizeIngredientName(name);
 
@@ -186,7 +220,8 @@ function getIngredientCardInfo(name: string): IngredientCardInfo {
 
   const matchedEntry = Object.entries(INGREDIENT_CARD_INFO).find(
     ([ingredientName]) =>
-      ingredientName.replace(/\s/g, "") === normalizedName.replace(/\s/g, ""),
+      normalizeIngredientName(ingredientName) ===
+      normalizeIngredientName(normalizedName)
   );
 
   if (matchedEntry) {
@@ -199,16 +234,9 @@ function getIngredientCardInfo(name: string): IngredientCardInfo {
   };
 }
 
-/*
- * 일반 추천 페이지:
- * API에서 받은 category로 이미지 결정
- *
- * Care에서 넘어온 성분:
- * ROUTINE_STEP이므로 성분 이름으로 이미지 결정
- */
 function getIngredientImage(
   category: DisplayIngredientCategory,
-  ingredientName: string,
+  ingredientName: string
 ) {
   const normalizedName = normalizeIngredientName(ingredientName);
 
@@ -250,7 +278,7 @@ function getIngredientImage(
 }
 
 function isProductCategory(
-  value: string | null | undefined,
+  value: string | null | undefined
 ): value is ProductCategory {
   return (
     value === "CLEANSER" ||
@@ -263,21 +291,27 @@ function isProductCategory(
 
 export default function RecommendProduct() {
   const navigate = useNavigate();
+
   const location = useLocation();
+
   const [searchParams] = useSearchParams();
 
   const locationState = location.state as RecommendProductLocationState | null;
 
   const pageRef = useRef<HTMLDivElement>(null);
+
   const ingredientScrollRef = useRef<HTMLDivElement>(null);
+
   const productCategoryScrollRef = useRef<HTMLDivElement>(null);
 
   const scrollEndTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const isProgrammaticScrollRef = useRef(false);
+
   const hasInitialCenteredRef = useRef(false);
 
   const dragStartXRef = useRef(0);
+
   const dragStartScrollLeftRef = useRef(0);
 
   const draggingPointerIdRef = useRef<number | null>(null);
@@ -288,10 +322,29 @@ export default function RecommendProduct() {
 
   const careRecommendedProducts = locationState?.recommendedProducts;
 
+  const careRecommendedIngredientNames =
+    locationState?.recommendedIngredientNames;
+
+  /*
+   * TodayRoutineSummary에서 전달되는
+   * 실제 ID 포함 전체 루틴 성분.
+   */
+  const careRecommendedIngredients = locationState?.recommendedIngredients;
+
+  const hasCareRecommendedIngredientsState =
+    fromCare &&
+    Array.isArray(careRecommendedIngredients) &&
+    careRecommendedIngredients.length > 0;
+
   const hasCareRecommendedProductsState =
     fromCare &&
     Array.isArray(careRecommendedProducts) &&
     careRecommendedProducts.length > 0;
+
+  const hasCareRecommendedIngredientNamesState =
+    fromCare &&
+    Array.isArray(careRecommendedIngredientNames) &&
+    careRecommendedIngredientNames.length > 0;
 
   const requestedIngredientIdText = searchParams.get("ingredientId");
 
@@ -314,12 +367,8 @@ export default function RecommendProduct() {
     : null;
 
   /*
-   * 완료 페이지에서 전달받은 추천 제품에서
-   * ingredientId + ingredientName만 뽑아서
-   * 성분 카드 목록으로 사용한다.
-   *
-   * 제품 자체는 여기서 사용하지 않고
-   * 아래 제품 조회 API를 다시 호출한다.
+   * FinishRoutine에서 전달된
+   * recommendedProducts의 성분.
    */
   const careIngredients = useMemo<DisplayIngredient[]>(() => {
     if (!Array.isArray(careRecommendedProducts)) {
@@ -403,9 +452,6 @@ export default function RecommendProduct() {
     selectedIngredientId !== null &&
     visibleProducts.length === 0;
 
-  /*
-   * 선택된 제품 카테고리를 가운데로 이동
-   */
   useEffect(() => {
     const container = productCategoryScrollRef.current;
 
@@ -414,7 +460,7 @@ export default function RecommendProduct() {
     }
 
     const selectedButton = container.querySelector<HTMLElement>(
-      '[data-selected="true"]',
+      '[data-selected="true"]'
     );
 
     if (!selectedButton) {
@@ -435,7 +481,9 @@ export default function RecommendProduct() {
   }, [selectedProductCategory]);
 
   /*
+   * ==========================
    * 성분 조회
+   * ==========================
    */
   useEffect(() => {
     let isCancelled = false;
@@ -446,7 +494,129 @@ export default function RecommendProduct() {
       setIsIngredientLoading(true);
 
       /*
-       * Finish 페이지 더보기
+       * ==================================
+       * 1.
+       * TodayRoutineSummary → 더보기
+       * ==================================
+       *
+       * 실제 ingredientId를 이미 알고 있으므로
+       * 어떤 추가 성분 API도 호출하지 않는다.
+       */
+      if (
+        hasCareRecommendedIngredientsState &&
+        Array.isArray(careRecommendedIngredients)
+      ) {
+        const routineIngredients: DisplayIngredient[] =
+          careRecommendedIngredients.map((ingredient) => ({
+            id: ingredient.id,
+
+            name: ingredient.name,
+
+            category: "ROUTINE_STEP",
+          }));
+
+        console.log(
+          "🔥 TodayRoutineSummary 전체 루틴 성분카드:",
+          routineIngredients
+        );
+
+        setIngredients(routineIngredients);
+
+        if (routineIngredients.length > 0) {
+          setSelectedIngredientId(routineIngredients[0].id);
+        } else {
+          setSelectedIngredientId(null);
+        }
+
+        setSelectedProductCategory(initialProductCategory);
+
+        setIsIngredientLoading(false);
+
+        return;
+      }
+
+      /*
+       * ==================================
+       * 2.
+       * FinishSelectRoutine → 더보기
+       * ==================================
+       *
+       * 현재는 ingredientId를 별도 API로
+       * 찾아야 하는 기존 구조 유지.
+       */
+      if (
+        hasCareRecommendedIngredientNamesState &&
+        Array.isArray(careRecommendedIngredientNames)
+      ) {
+        try {
+          const availableIngredients =
+            await productApi.getRecommendedIngredients();
+
+          if (isCancelled) {
+            return;
+          }
+
+          console.log("🔥 실제 추천 성분 목록:", availableIngredients);
+
+          console.log(
+            "🔥 선택 루틴 성분 이름:",
+            careRecommendedIngredientNames
+          );
+
+          const matchedIngredients: DisplayIngredient[] = [];
+
+          careRecommendedIngredientNames.forEach((ingredientName) => {
+            const matchedIngredient = availableIngredients.find((ingredient) =>
+              isSameIngredientName(ingredient.name, ingredientName)
+            );
+
+            if (!matchedIngredient) {
+              console.warn("⚠️ 실제 ingredientId 매칭 실패:", ingredientName);
+
+              return;
+            }
+
+            matchedIngredients.push({
+              id: matchedIngredient.id,
+
+              name: ingredientName,
+
+              category: "ROUTINE_STEP",
+            });
+          });
+
+          setIngredients(matchedIngredients);
+
+          if (matchedIngredients.length > 0) {
+            setSelectedIngredientId(matchedIngredients[0].id);
+          } else {
+            setSelectedIngredientId(null);
+          }
+
+          setSelectedProductCategory(initialProductCategory);
+        } catch (error) {
+          if (isCancelled) {
+            return;
+          }
+
+          console.error("선택 루틴 성분 조회 실패:", error);
+
+          setIngredients([]);
+          setSelectedIngredientId(null);
+        } finally {
+          if (!isCancelled) {
+            setIsIngredientLoading(false);
+          }
+        }
+
+        return;
+      }
+
+      /*
+       * ==================================
+       * 3.
+       * FinishRoutine
+       * ==================================
        */
       if (hasCareRecommendedProductsState) {
         setIngredients(careIngredients);
@@ -465,13 +635,18 @@ export default function RecommendProduct() {
       }
 
       /*
-       * ThirdFocusCare / ThirdDailyCare에서
-       * 특정 추천 성분 버튼을 눌러 진입
+       * ==================================
+       * 4.
+       * ThirdFocusCare / ThirdDailyCare
+       * 개별 성분 버튼
+       * ==================================
        */
       if (fromCare && initialIngredientId !== null && requestedIngredientName) {
         const stepIngredient: DisplayIngredient = {
           id: initialIngredientId,
+
           name: requestedIngredientName,
+
           category: "ROUTINE_STEP",
         };
 
@@ -487,7 +662,10 @@ export default function RecommendProduct() {
       }
 
       /*
+       * ==================================
+       * 5.
        * 일반 제품 탭
+       * ==================================
        */
       try {
         const response = await productApi.getRecommendedIngredients();
@@ -495,8 +673,6 @@ export default function RecommendProduct() {
         if (isCancelled) {
           return;
         }
-
-        console.log("🔥 추천 성분 API 응답:", response);
 
         setIngredients(response);
 
@@ -521,22 +697,35 @@ export default function RecommendProduct() {
       }
     }
 
-    fetchIngredients();
+    void fetchIngredients();
 
     return () => {
       isCancelled = true;
     };
   }, [
     fromCare,
+
+    hasCareRecommendedIngredientsState,
+    careRecommendedIngredients,
+
+    hasCareRecommendedIngredientNamesState,
+    careRecommendedIngredientNames,
+
     hasCareRecommendedProductsState,
     careIngredients,
+
     initialIngredientId,
     initialProductCategory,
     requestedIngredientName,
   ]);
 
   /*
+   * ==========================
    * 제품 조회
+   * ==========================
+   *
+   * 실제 ingredientId 기준으로
+   * 해당 성분의 모든 추천 제품 조회.
    */
   useEffect(() => {
     if (selectedIngredientId === null) {
@@ -551,7 +740,7 @@ export default function RecommendProduct() {
 
     async function fetchProducts() {
       try {
-        console.log("🔥 전체 추천 제품 요청:", {
+        console.log("🔥 성분 전체 제품 요청:", {
           ingredientId,
           productCategory: selectedProductCategory,
         });
@@ -559,14 +748,14 @@ export default function RecommendProduct() {
         const response: RecommendedProduct[] =
           await productApi.getRecommendedProducts(
             ingredientId,
-            selectedProductCategory ?? undefined,
+            selectedProductCategory ?? undefined
           );
 
         if (isCancelled) {
           return;
         }
 
-        console.log("🔥 전체 추천 제품 API 응답:", {
+        console.log("🔥 성분 전체 제품 응답:", {
           ingredientId,
           productCategory: selectedProductCategory,
           products: response,
@@ -588,7 +777,7 @@ export default function RecommendProduct() {
       }
     }
 
-    fetchProducts();
+    void fetchProducts();
 
     return () => {
       isCancelled = true;
@@ -597,7 +786,7 @@ export default function RecommendProduct() {
 
   function scrollCardToCenter(
     card: HTMLElement,
-    behavior: ScrollBehavior = "auto",
+    behavior: ScrollBehavior = "auto"
   ) {
     const container = ingredientScrollRef.current;
 
@@ -625,13 +814,10 @@ export default function RecommendProduct() {
       () => {
         isProgrammaticScrollRef.current = false;
       },
-      behavior === "smooth" ? 350 : 50,
+      behavior === "smooth" ? 350 : 50
     );
   }
 
-  /*
-   * 처음 선택된 성분 카드 가운데 배치
-   */
   useEffect(() => {
     const container = ingredientScrollRef.current;
 
@@ -646,7 +832,7 @@ export default function RecommendProduct() {
 
     const animationFrame = window.requestAnimationFrame(() => {
       const cards = Array.from(
-        container.querySelectorAll<HTMLElement>("[data-ingredient-id]"),
+        container.querySelectorAll<HTMLElement>("[data-ingredient-id]")
       );
 
       if (cards.length === 0) {
@@ -657,7 +843,7 @@ export default function RecommendProduct() {
 
       if (fromCare || ingredients.length === 1) {
         targetCard = cards.find(
-          (card) => Number(card.dataset.ingredientId) === selectedIngredientId,
+          (card) => Number(card.dataset.ingredientId) === selectedIngredientId
         );
       } else {
         const ingredientCount = ingredients.length;
@@ -666,7 +852,7 @@ export default function RecommendProduct() {
           (card, index) =>
             index >= ingredientCount &&
             index < ingredientCount * 2 &&
-            Number(card.dataset.ingredientId) === selectedIngredientId,
+            Number(card.dataset.ingredientId) === selectedIngredientId
         );
       }
 
@@ -694,7 +880,7 @@ export default function RecommendProduct() {
 
   function handleProductCategoryClick(
     category: ProductCategory | null,
-    event: React.MouseEvent<HTMLButtonElement>,
+    event: React.MouseEvent<HTMLButtonElement>
   ) {
     setSelectedProductCategory(category);
 
@@ -723,7 +909,7 @@ export default function RecommendProduct() {
     }
 
     const cards = Array.from(
-      container.querySelectorAll<HTMLElement>("[data-ingredient-id]"),
+      container.querySelectorAll<HTMLElement>("[data-ingredient-id]")
     );
 
     if (cards.length === 0) {
@@ -735,7 +921,9 @@ export default function RecommendProduct() {
     const containerCenter = containerRect.left + containerRect.width / 2;
 
     let closestCard = cards[0];
+
     let closestCardIndex = 0;
+
     let closestDistance = Infinity;
 
     cards.forEach((card, index) => {
@@ -747,7 +935,9 @@ export default function RecommendProduct() {
 
       if (distance < closestDistance) {
         closestDistance = distance;
+
         closestCard = card;
+
         closestCardIndex = index;
       }
     });
@@ -777,12 +967,8 @@ export default function RecommendProduct() {
     const nextIngredientId = Number(ingredientIdText);
 
     if (nextIngredientId !== selectedIngredientId) {
-      console.log("🔥 중앙 카드 성분 변경:", {
-        이전: selectedIngredientId,
-        현재: nextIngredientId,
-      });
-
       setSelectedIngredientId(nextIngredientId);
+
       setSelectedProductCategory(null);
     }
 
@@ -792,11 +978,9 @@ export default function RecommendProduct() {
 
     const ingredientCount = ingredients.length;
 
-    /*
-     * 첫 번째 세트 → 가운데 세트
-     */
     if (closestCardIndex < ingredientCount) {
       const equivalentIndex = closestCardIndex + ingredientCount;
+
       const equivalentCard = cards[equivalentIndex];
 
       if (equivalentCard) {
@@ -823,11 +1007,9 @@ export default function RecommendProduct() {
       return;
     }
 
-    /*
-     * 세 번째 세트 → 가운데 세트
-     */
     if (closestCardIndex >= ingredientCount * 2) {
       const equivalentIndex = closestCardIndex - ingredientCount;
+
       const equivalentCard = cards[equivalentIndex];
 
       if (equivalentCard) {
@@ -874,7 +1056,7 @@ export default function RecommendProduct() {
   }
 
   function handleIngredientPointerDown(
-    event: ReactPointerEvent<HTMLDivElement>,
+    event: ReactPointerEvent<HTMLDivElement>
   ) {
     if (ingredients.length <= 1 || event.pointerType !== "mouse") {
       return;
@@ -900,7 +1082,7 @@ export default function RecommendProduct() {
   }
 
   function handleIngredientPointerMove(
-    event: ReactPointerEvent<HTMLDivElement>,
+    event: ReactPointerEvent<HTMLDivElement>
   ) {
     if (
       !isDraggingIngredient ||
@@ -947,7 +1129,7 @@ export default function RecommendProduct() {
   }
 
   function handleIngredientPointerCancel(
-    event: ReactPointerEvent<HTMLDivElement>,
+    event: ReactPointerEvent<HTMLDivElement>
   ) {
     if (draggingPointerIdRef.current !== event.pointerId) {
       return;
@@ -1059,7 +1241,7 @@ export default function RecommendProduct() {
                       description={cardInfo.description}
                       image={getIngredientImage(
                         ingredient.category,
-                        ingredient.name,
+                        ingredient.name
                       )}
                     />
                   </S.IngredientCardWrapper>

@@ -9,44 +9,98 @@ export interface Product {
   brand: string;
   name: string;
 
+  /*
+   * RecommendProduct에서
+   * Care 추천 성분 카드 생성에 사용
+   */
   ingredientId?: number;
   ingredientName?: string;
 
+  /*
+   * 기존 코드 호환
+   */
   categories?: string[];
 
+  /*
+   * 제품 카테고리
+   */
   category?: ProductCategory;
 
   imageUrl?: string | null;
   linkUrl?: string | null;
 }
 
+/*
+ * 실제 ingredientId를 이미 알고 있는
+ * 루틴 성분 데이터.
+ *
+ * TodayRoutineSummary → 더보기에서 사용.
+ */
+export interface CareIngredient {
+  id: number;
+  name: string;
+}
+
 interface RecommendedProductSectionProps {
   title?: string;
 
   /*
-   * 실제 섹션에 표시할 제품
+   * 현재 섹션에 표시할 제품
    */
   products?: Product[];
 
   /*
-   * 더보기 클릭 시 RecommendProduct로 넘길 데이터
-   *
-   * 지정하지 않으면 기존처럼 products를 사용한다.
+   * 더보기 클릭 시
+   * RecommendProduct로 넘길 제품 데이터.
    */
   moreProducts?: Product[];
+
+  /*
+   * FinishSelectRoutine 전용.
+   *
+   * 아직 ingredientId를 모르는 상태에서
+   * 성분 이름만 전달한다.
+   */
+  moreIngredientNames?: string[];
+
+  /*
+   * TodayRoutineSummary 전용.
+   *
+   * 실제 ingredientId + ingredientName을
+   * 이미 알고 있는 경우.
+   */
+  moreIngredients?: CareIngredient[];
 }
 
 export default function RecommendedProductSection({
   title = "오늘의 추천 성분 제품",
   products = [],
   moreProducts,
+  moreIngredientNames,
+  moreIngredients,
 }: RecommendedProductSectionProps) {
   const navigate = useNavigate();
 
   function handleMoveToRecommend() {
     navigate("/recommend?from=care", {
       state: {
+        /*
+         * FinishRoutine 등 기존 흐름.
+         */
         recommendedProducts: moreProducts ?? products,
+
+        /*
+         * FinishSelectRoutine.
+         */
+        recommendedIngredientNames: moreIngredientNames,
+
+        /*
+         * TodayRoutineSummary.
+         *
+         * 실제 ingredientId가 포함된
+         * 루틴 전체 성분.
+         */
+        recommendedIngredients: moreIngredients,
       },
     });
   }
@@ -72,8 +126,10 @@ export default function RecommendedProductSection({
       </S.Header>
 
       <S.ProductScroll $isDragging={false}>
-        {products.map((product) => (
-          <S.ProductCard key={product.id}>
+        {products.map((product, index) => (
+          <S.ProductCard
+            key={`${product.id}-${product.ingredientId ?? "none"}-${index}`}
+          >
             <S.ProductImagePlaceholder
               $imageUrl={product.imageUrl ?? undefined}
               role={product.imageUrl ? "img" : undefined}

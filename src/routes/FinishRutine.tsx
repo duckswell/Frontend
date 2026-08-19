@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { routineApi, type RoutineCompletionData } from "../api/routine";
@@ -19,10 +19,11 @@ interface FinishRoutineLocationState {
   completionData: RoutineCompletionData;
 
   /*
-   * ThirdFocusCare에서 넘겨준 데이터
+   * ThirdFocusCare에서 넘겨준 추천 제품 데이터
    *
-   * 화면 제품 표시용이 아니라
-   * 더보기 → 성분 카드 이동용
+   * ingredientId / ingredientName이 포함되어 있어서
+   * 더보기 → RecommendProduct에서
+   * 추천 성분 카드 생성에 사용한다.
    */
   recommendedProducts?: Product[];
 }
@@ -38,23 +39,24 @@ export default function FinishRoutine() {
   const routineId = state?.routineId;
 
   /*
-   * ThirdFocusCare에서 전달받은
-   * ingredientId가 포함된 데이터.
+   * ThirdFocusCare에서 전달받은 추천 데이터
    *
-   * 오직 더보기 이동에 사용한다.
+   * ingredientId가 포함되어 있기 때문에
+   * RecommendedProductSection의 "더보기"를 통해
+   * RecommendProduct 페이지로 전달한다.
    */
   const moreProducts = state?.recommendedProducts ?? [];
-
-  const hasRequestedProductsRef = useRef(false);
 
   const storageKey =
     routineId != null ? `routine-recommended-products-${routineId}` : null;
 
   /*
-   * 화면에 보여주는 추천 제품.
+   * FinishRoutine 화면에 실제로 표시할 추천 제품
    *
-   * 기존 방식 그대로:
-   * routineId 기준 추천 제품 API 사용.
+   * GET
+   * /api/routines/{routineId}/recommended-products
+   *
+   * 응답 결과를 Product 형태로 변환해서 사용한다.
    */
   const [recommendedProducts, setRecommendedProducts] = useState<Product[]>(
     () => {
@@ -88,27 +90,31 @@ export default function FinishRoutine() {
     }
 
     /*
-     * 기존 캐시가 있으면
-     * 화면용 제품을 다시 랜덤 조회하지 않는다.
+     * 같은 루틴에서 이미 조회한 추천 제품이 있으면
+     * 다시 API를 호출하지 않는다.
+     *
+     * 뒤로 갔다가 다시 FinishRoutine에 들어오더라도
+     * 같은 제품을 유지하기 위함.
      */
-    if (sessionStorage.getItem(storageKey)) {
+    const storedProducts = sessionStorage.getItem(storageKey);
+
+    if (storedProducts) {
       return;
     }
-
-    if (hasRequestedProductsRef.current) {
-      return;
-    }
-
-    hasRequestedProductsRef.current = true;
 
     const currentRoutineId = routineId;
-
     const currentStorageKey = storageKey;
 
     let isCancelled = false;
 
     async function fetchRecommendedProducts() {
       try {
+        console.log("🔥 집중 루틴 추천 제품 요청:", currentRoutineId);
+
+        /*
+         * GET
+         * /api/routines/{routineId}/recommended-products
+         */
         const response = await routineApi.getRecommendedProducts(
           currentRoutineId
         );
@@ -117,19 +123,43 @@ export default function FinishRoutine() {
           return;
         }
 
-        console.log("집중 루틴 추천 제품 조회 성공:", response);
+        console.log("🔥 집중 루틴 추천 제품 조회 성공:", response);
 
         /*
-         * 여기서는 화면 표시만 목적이므로
-         * ingredientId가 필요하지 않다.
+         * API 응답
+         *
+         * {
+         *   ingredientName,
+         *   product: {
+         *     id,
+         *     name,
+         *     brand,
+         *     category,
+         *     imageUrl,
+         *     linkUrl
+         *   }
+         * }
+         *
+         * ↓
+         *
+         * RecommendedProductSection에서 사용하는
+         * Product 형태로 변환한다.
+         *
+         * 여기서 ingredientId는 필요 없다.
+         * 화면에 제품을 표시하기 위한 데이터이기 때문.
          */
         const mappedProducts: Product[] = response.map((item) => ({
           id: item.product.id,
+
           brand: item.product.brand,
+
           name: item.product.name,
 
           ingredientName: item.ingredientName,
 
+          /*
+           * 기존 컴포넌트 호환
+           */
           categories: [item.ingredientName],
 
           category: item.product.category,
@@ -141,6 +171,10 @@ export default function FinishRoutine() {
 
         setRecommendedProducts(mappedProducts);
 
+        /*
+         * 동일 routineId로 다시 들어왔을 때
+         * 추천 제품이 달라지는 것을 방지한다.
+         */
         sessionStorage.setItem(
           currentStorageKey,
           JSON.stringify(mappedProducts)
@@ -221,12 +255,17 @@ export default function FinishRoutine() {
         <RecommendedProductSection
           title="오늘의 추천 성분 제품"
           /*
-           * 화면에는 기존 제품
+           * FinishRoutine 화면에 보이는 제품
+           *
+           * GET
+           * /api/routines/{routineId}/recommended-products
            */
           products={recommendedProducts}
           /*
-           * 더보기에는
-           * ThirdFocusCare 성분 정보
+           * "더보기"를 눌렀을 때 넘기는 데이터
+           *
+           * ThirdFocusCare에서 만들어준
+           * ingredientId + ingredientName 포함 데이터
            */
           moreProducts={moreProducts}
         />
