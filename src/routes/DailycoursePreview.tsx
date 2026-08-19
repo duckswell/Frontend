@@ -59,7 +59,7 @@ const ROUTINE_DATA: RoutineItem[] = [
     id: "sebum",
     title: "피지컨트롤 루틴",
     description: "과도한 피지가 고민인 피부를 산뜻하고 깨끗하게",
-    tags: ["나이아신아마이드", "징크 PCA"],
+    tags: ["나이아신아마이드", "징크"],
     iconSrc: "/assets/Daily_pore.png",
   },
   {
