@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import * as S from "../styles/DailycoursePreview.styles";
 import { NavBar } from "../components/NavBar";
@@ -77,6 +77,26 @@ const DailycoursePreview: React.FC = () => {
   const [currentRoutineId, setCurrentRoutineId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [showToast, setShowToast] = useState<boolean>(false);
+
+  const [isButtonVisible, setIsButtonVisible] = useState<boolean>(false);
+  const buttonRef = useRef<HTMLButtonElement | null>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsButtonVisible(entry.isIntersecting);
+      },
+      { threshold: 0.1 },
+    );
+
+    if (buttonRef.current) {
+      observer.observe(buttonRef.current);
+    }
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -229,6 +249,7 @@ const DailycoursePreview: React.FC = () => {
         </S.RoutineList>
 
         <S.SubmitButton
+          ref={buttonRef}
           type="button"
           disabled={
             !selectedId || selectedId === currentRoutineId || isSubmitting
@@ -239,7 +260,7 @@ const DailycoursePreview: React.FC = () => {
         </S.SubmitButton>
 
         {showToast && (
-          <S.ToastNotice>
+          <S.ToastNotice $hasButton={isButtonVisible}>
             <span className="info-icon">!</span> 현재 진행 중인 루틴은 선택할 수
             없습니다.
           </S.ToastNotice>
