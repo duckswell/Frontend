@@ -106,7 +106,7 @@ const Mypage: React.FC = () => {
                   <h4>{latestProcedure.procedureTypeName}</h4>
                   <p>
                     {formatKoreanDate(latestProcedure.procedureDate)}
-                    {isFocus ? "시작" : ""}
+                    {isFocus ? " 시작" : ""}
                   </p>
                 </div>
                 <img
