@@ -59,7 +59,7 @@ const ROUTINE_DATA: RoutineItem[] = [
     id: "sebum",
     title: "피지컨트롤 루틴",
     description: "과도한 피지가 고민인 피부를 산뜻하고 깨끗하게",
-    tags: ["나이아신아마이드", "징크 PCA"],
+    tags: ["나이아신아마이드", "징크"],
     iconSrc: "/assets/Daily_pore.png",
   },
   {
@@ -86,7 +86,7 @@ const DailycoursePreview: React.FC = () => {
       ([entry]) => {
         setIsButtonVisible(entry.isIntersecting);
       },
-      { threshold: 0.1 },
+      { threshold: 0.1 }
     );
 
     if (buttonRef.current) {
@@ -183,7 +183,7 @@ const DailycoursePreview: React.FC = () => {
 
       if (isAxiosError(error)) {
         alert(
-          error.response?.data?.message || "데일리 코스 시작에 실패했습니다.",
+          error.response?.data?.message || "데일리 코스 시작에 실패했습니다."
         );
       } else {
         alert("알 수 없는 오류가 발생했습니다.");

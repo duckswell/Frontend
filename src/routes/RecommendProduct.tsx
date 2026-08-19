@@ -136,6 +136,12 @@ const INGREDIENT_CARD_INFO: Record<string, IngredientCardInfo> = {
       "칙칙한 피부톤을 맑게 관리하고 외부 환경으로 인한 피부 산화를 방지하는 데 도움을 줘요",
   },
 
+  징크: {
+    categories: ["피지 조절", "번들거림 완화", "피부 청결"],
+    description:
+      "과도한 피지와 번들거림을 조절해 피부를 산뜻하고 깨끗한 상태로 유지하도록 도와줘요",
+  },
+
   "징크 PCA": {
     categories: ["피지 조절", "번들거림 완화", "피부 청결"],
     description:
@@ -151,6 +157,24 @@ const INGREDIENT_CARD_INFO: Record<string, IngredientCardInfo> = {
 
 function normalizeIngredientName(name: string) {
   return name.replace(/\s/g, "").trim();
+}
+
+/*
+ * 화면에 표시할 성분 이름
+ *
+ * 백엔드에서는 징크 PCA / 징크PCA 등으로 내려올 수 있지만
+ * 사용자 화면에서는 모두 "징크"로 표시한다.
+ *
+ * 실제 ingredientId와 API 요청 값은 변경하지 않는다.
+ */
+function getDisplayIngredientName(name: string) {
+  const normalizedName = normalizeIngredientName(name);
+
+  if (normalizedName === "징크PCA" || normalizedName === "징크") {
+    return "징크";
+  }
+
+  return name;
 }
 
 function getCareIngredientName(product: CareRecommendedProduct) {
@@ -429,10 +453,6 @@ export default function RecommendProduct() {
 
       /*
        * Finish 페이지 더보기
-       *
-       * 완료 API에서 받은 추천 제품의
-       * ingredientId / ingredientName을 이용해서
-       * 성분 카드만 구성한다.
        */
       if (hasCareRecommendedProductsState) {
         setIngredients(careIngredients);
@@ -523,13 +543,6 @@ export default function RecommendProduct() {
 
   /*
    * 제품 조회
-   *
-   * 중요:
-   * Care에서 넘어왔더라도
-   * location.state의 제품을 필터링하지 않는다.
-   *
-   * 선택된 ingredientId를 기준으로
-   * 항상 백엔드 전체 제품 API를 호출한다.
    */
   useEffect(() => {
     if (selectedIngredientId === null) {
@@ -769,9 +782,6 @@ export default function RecommendProduct() {
 
     const nextIngredientId = Number(ingredientIdText);
 
-    /*
-     * 선택 성분만 먼저 변경
-     */
     if (nextIngredientId !== selectedIngredientId) {
       console.log("🔥 중앙 카드 성분 변경:", {
         이전: selectedIngredientId,
@@ -782,10 +792,6 @@ export default function RecommendProduct() {
       setSelectedProductCategory(null);
     }
 
-    /*
-     * Care 진입이거나 카드가 1개뿐이면
-     * 무한 스크롤 보정 필요 없음
-     */
     if (fromCare || ingredients.length <= 1) {
       return;
     }
@@ -793,8 +799,7 @@ export default function RecommendProduct() {
     const ingredientCount = ingredients.length;
 
     /*
-     * 첫 번째 세트로 넘어간 경우
-     * 같은 카드를 가운데 세트로 조용히 이동
+     * 첫 번째 세트 → 가운데 세트
      */
     if (closestCardIndex < ingredientCount) {
       const equivalentIndex = closestCardIndex + ingredientCount;
@@ -825,8 +830,7 @@ export default function RecommendProduct() {
     }
 
     /*
-     * 세 번째 세트로 넘어간 경우
-     * 같은 카드를 가운데 세트로 조용히 이동
+     * 세 번째 세트 → 가운데 세트
      */
     if (closestCardIndex >= ingredientCount * 2) {
       const equivalentIndex = closestCardIndex - ingredientCount;
@@ -854,6 +858,7 @@ export default function RecommendProduct() {
       }
     }
   }
+
   function handleIngredientScroll() {
     if (isProgrammaticScrollRef.current || isDraggingIngredient) {
       return;
@@ -1045,6 +1050,10 @@ export default function RecommendProduct() {
               {displayedIngredients.map((ingredient, index) => {
                 const cardInfo = getIngredientCardInfo(ingredient.name);
 
+                const displayIngredientName = getDisplayIngredientName(
+                  ingredient.name
+                );
+
                 return (
                   <S.IngredientCardWrapper
                     key={`${ingredient.id}-${index}`}
@@ -1052,7 +1061,7 @@ export default function RecommendProduct() {
                   >
                     <RecommendedIngredientCard
                       category={cardInfo.categories}
-                      ingredient={ingredient.name}
+                      ingredient={displayIngredientName}
                       description={cardInfo.description}
                       image={getIngredientImage(
                         ingredient.category,
