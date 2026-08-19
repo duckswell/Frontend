@@ -1,7 +1,26 @@
-import styled from "styled-components";
+import styled, { keyframes } from "styled-components";
 
 import { colorPalette } from "../../lib/colorPalette";
 import { typography } from "../../lib/typography";
+
+const slideUpDown = keyframes`
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 15px);
+  }
+  15% {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+  85% {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, 15px);
+  }
+`;
 
 export const Page = styled.div`
   min-height: 100dvh;
@@ -176,7 +195,54 @@ export const SubmitButton = styled.button`
 
   cursor: pointer;
 
-  &:active {
+  &:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+
+  &:not(:disabled):active {
     opacity: 0.85;
+  }
+`;
+
+export const ToastNotice = styled.div`
+  position: fixed;
+  bottom: 84px;
+  left: 50%;
+  transform: translateX(-50%);
+
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  width: calc(100% - 32px);
+  max-width: 370px;
+  padding: 16px;
+  box-sizing: border-box;
+
+  background-color: ${colorPalette.OffWhite};
+  border: 0.5px solid ${colorPalette.Quaternary};
+  border-radius: 12px;
+
+  ${typography.Body1Bold};
+  color: ${colorPalette.Black};
+
+  pointer-events: none;
+  z-index: 99;
+
+  animation: ${slideUpDown} 2.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+
+  .info-icon {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: ${colorPalette.Black};
+    color: ${colorPalette.OffWhite};
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
   }
 `;
