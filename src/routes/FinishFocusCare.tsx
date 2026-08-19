@@ -123,7 +123,7 @@ export default function FinishFocusCare() {
     useState<SymptomSummaryResponse | null>(null);
 
   const [selectedRoutine, setSelectedRoutine] = useState<RoutineId | null>(
-    null
+    null,
   );
 
   const [isStartingDailyCourse, setIsStartingDailyCourse] = useState(false);
@@ -141,7 +141,7 @@ export default function FinishFocusCare() {
       .filter((concern): concern is SkinConcern => Boolean(concern)) ?? [];
 
   const secondaryConcerns = SKIN_CONCERNS.filter(
-    (concern) => !primaryConcerns.includes(concern)
+    (concern) => !primaryConcerns.includes(concern),
   );
 
   const secondaryConcernRows = (() => {
@@ -341,7 +341,7 @@ export default function FinishFocusCare() {
     }
 
     const selectedRoutineOption = ROUTINE_OPTIONS.find(
-      (routine) => routine.id === selectedRoutine
+      (routine) => routine.id === selectedRoutine,
     );
 
     if (!selectedRoutineOption) {
@@ -366,7 +366,7 @@ export default function FinishFocusCare() {
         JSON.stringify({
           courseId: course.id,
           routineTypeCode,
-        })
+        }),
       );
 
       navigate("/care/finish_select_routine", {
@@ -563,8 +563,8 @@ export default function FinishFocusCare() {
               {primaryConcerns.length >= 2
                 ? `데일리 코스에서 ${primaryConcerns[0]}와 ${primaryConcerns[1]}를 좀 더 케어해볼까요?`
                 : primaryConcerns.length === 1
-                ? `데일리 코스에서 ${primaryConcerns[0]}를 좀 더 케어해볼까요?`
-                : "최근 피부 기록을 바탕으로 데일리 케어를 시작해볼까요?"}
+                  ? `데일리 코스에서 ${primaryConcerns[0]}를 좀 더 케어해볼까요?`
+                  : "최근 피부 기록을 바탕으로 데일리 케어를 시작해볼까요?"}
             </S.SectionDescription>
 
             <S.ConcernArea>

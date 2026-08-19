@@ -142,12 +142,6 @@ const INGREDIENT_CARD_INFO: Record<string, IngredientCardInfo> = {
       "과도한 피지와 번들거림을 조절해 피부를 산뜻하고 깨끗한 상태로 유지하도록 도와줘요",
   },
 
-  "징크 PCA": {
-    categories: ["피지 조절", "번들거림 완화", "피부 청결"],
-    description:
-      "과도한 피지와 번들거림을 조절해 피부를 산뜻하고 깨끗한 상태로 유지하도록 도와줘요",
-  },
-
   징크PCA: {
     categories: ["피지 조절", "번들거림 완화", "피부 청결"],
     description:
@@ -192,7 +186,7 @@ function getIngredientCardInfo(name: string): IngredientCardInfo {
 
   const matchedEntry = Object.entries(INGREDIENT_CARD_INFO).find(
     ([ingredientName]) =>
-      ingredientName.replace(/\s/g, "") === normalizedName.replace(/\s/g, "")
+      ingredientName.replace(/\s/g, "") === normalizedName.replace(/\s/g, ""),
   );
 
   if (matchedEntry) {
@@ -214,7 +208,7 @@ function getIngredientCardInfo(name: string): IngredientCardInfo {
  */
 function getIngredientImage(
   category: DisplayIngredientCategory,
-  ingredientName: string
+  ingredientName: string,
 ) {
   const normalizedName = normalizeIngredientName(ingredientName);
 
@@ -256,7 +250,7 @@ function getIngredientImage(
 }
 
 function isProductCategory(
-  value: string | null | undefined
+  value: string | null | undefined,
 ): value is ProductCategory {
   return (
     value === "CLEANSER" ||
@@ -420,7 +414,7 @@ export default function RecommendProduct() {
     }
 
     const selectedButton = container.querySelector<HTMLElement>(
-      '[data-selected="true"]'
+      '[data-selected="true"]',
     );
 
     if (!selectedButton) {
@@ -565,7 +559,7 @@ export default function RecommendProduct() {
         const response: RecommendedProduct[] =
           await productApi.getRecommendedProducts(
             ingredientId,
-            selectedProductCategory ?? undefined
+            selectedProductCategory ?? undefined,
           );
 
         if (isCancelled) {
@@ -603,7 +597,7 @@ export default function RecommendProduct() {
 
   function scrollCardToCenter(
     card: HTMLElement,
-    behavior: ScrollBehavior = "auto"
+    behavior: ScrollBehavior = "auto",
   ) {
     const container = ingredientScrollRef.current;
 
@@ -631,7 +625,7 @@ export default function RecommendProduct() {
       () => {
         isProgrammaticScrollRef.current = false;
       },
-      behavior === "smooth" ? 350 : 50
+      behavior === "smooth" ? 350 : 50,
     );
   }
 
@@ -652,7 +646,7 @@ export default function RecommendProduct() {
 
     const animationFrame = window.requestAnimationFrame(() => {
       const cards = Array.from(
-        container.querySelectorAll<HTMLElement>("[data-ingredient-id]")
+        container.querySelectorAll<HTMLElement>("[data-ingredient-id]"),
       );
 
       if (cards.length === 0) {
@@ -663,7 +657,7 @@ export default function RecommendProduct() {
 
       if (fromCare || ingredients.length === 1) {
         targetCard = cards.find(
-          (card) => Number(card.dataset.ingredientId) === selectedIngredientId
+          (card) => Number(card.dataset.ingredientId) === selectedIngredientId,
         );
       } else {
         const ingredientCount = ingredients.length;
@@ -672,7 +666,7 @@ export default function RecommendProduct() {
           (card, index) =>
             index >= ingredientCount &&
             index < ingredientCount * 2 &&
-            Number(card.dataset.ingredientId) === selectedIngredientId
+            Number(card.dataset.ingredientId) === selectedIngredientId,
         );
       }
 
@@ -700,7 +694,7 @@ export default function RecommendProduct() {
 
   function handleProductCategoryClick(
     category: ProductCategory | null,
-    event: React.MouseEvent<HTMLButtonElement>
+    event: React.MouseEvent<HTMLButtonElement>,
   ) {
     setSelectedProductCategory(category);
 
@@ -729,7 +723,7 @@ export default function RecommendProduct() {
     }
 
     const cards = Array.from(
-      container.querySelectorAll<HTMLElement>("[data-ingredient-id]")
+      container.querySelectorAll<HTMLElement>("[data-ingredient-id]"),
     );
 
     if (cards.length === 0) {
@@ -880,7 +874,7 @@ export default function RecommendProduct() {
   }
 
   function handleIngredientPointerDown(
-    event: ReactPointerEvent<HTMLDivElement>
+    event: ReactPointerEvent<HTMLDivElement>,
   ) {
     if (ingredients.length <= 1 || event.pointerType !== "mouse") {
       return;
@@ -906,7 +900,7 @@ export default function RecommendProduct() {
   }
 
   function handleIngredientPointerMove(
-    event: ReactPointerEvent<HTMLDivElement>
+    event: ReactPointerEvent<HTMLDivElement>,
   ) {
     if (
       !isDraggingIngredient ||
@@ -953,7 +947,7 @@ export default function RecommendProduct() {
   }
 
   function handleIngredientPointerCancel(
-    event: ReactPointerEvent<HTMLDivElement>
+    event: ReactPointerEvent<HTMLDivElement>,
   ) {
     if (draggingPointerIdRef.current !== event.pointerId) {
       return;
@@ -1065,7 +1059,7 @@ export default function RecommendProduct() {
                       description={cardInfo.description}
                       image={getIngredientImage(
                         ingredient.category,
-                        ingredient.name
+                        ingredient.name,
                       )}
                     />
                   </S.IngredientCardWrapper>
