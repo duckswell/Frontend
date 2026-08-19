@@ -211,7 +211,7 @@ const DailycoursePreview: React.FC = () => {
                 }}
                 onClick={() => handleRoutineClick(item.id)}
               >
-                {isCurrent && <S.NowRoutine>현재 진행 중인 루틴</S.NowRoutine>}
+                {isCurrent && <S.NowRoutine>현재 루틴</S.NowRoutine>}
 
                 <S.IconImage src={item.iconSrc} alt={item.title} />
                 <S.ContentBox>
