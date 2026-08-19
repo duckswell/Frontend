@@ -109,6 +109,7 @@ const DailycoursePreview: React.FC = () => {
         if (current.courseType === "DAILY" && current.label) {
           const matchedId = REVERSE_ROUTINE_ID_MAP[current.label] || null;
           setCurrentRoutineId(matchedId);
+          setSelectedId(matchedId);
         }
       } catch (error) {
         console.error("현재 코스 조회 실패:", error);
@@ -192,6 +193,9 @@ const DailycoursePreview: React.FC = () => {
     }
   };
 
+  const isButtonDisabled =
+    !selectedId || selectedId === currentRoutineId || isSubmitting;
+
   return (
     <>
       <NavBar title="데일리 코스 루틴" />
@@ -251,9 +255,7 @@ const DailycoursePreview: React.FC = () => {
         <S.SubmitButton
           ref={buttonRef}
           type="button"
-          disabled={
-            !selectedId || selectedId === currentRoutineId || isSubmitting
-          }
+          disabled={isButtonDisabled}
           onClick={handleSubmit}
         >
           {isSubmitting ? "변경하는 중..." : "이 루틴으로 변경하기"}
