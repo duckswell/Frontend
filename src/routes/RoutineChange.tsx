@@ -45,6 +45,7 @@ function getStoredDailyCourse(): StoredDailyCourse | null {
     return null;
   }
 }
+
 const ROUTINES: RoutineOption[] = [
   {
     id: "cooldown",
@@ -99,11 +100,12 @@ export default function RoutineChange() {
     useState<RoutineTypeCode | null>(state?.routineTypeCode ?? null);
 
   const [selectedRoutineTypeCode, setSelectedRoutineTypeCode] =
-    useState<RoutineTypeCode | null>(state?.routineTypeCode ?? null);
+    useState<RoutineTypeCode | null>(null);
 
   const [isChangingRoutine, setIsChangingRoutine] = useState(false);
 
   const [isLoadingCourse, setIsLoadingCourse] = useState(true);
+  const [showToast, setShowToast] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchCurrentCourse = async () => {
@@ -127,7 +129,7 @@ export default function RoutineChange() {
         if (course.courseType !== "DAILY") {
           console.error(
             "루틴 변경 페이지인데 현재 코스가 DAILY가 아닙니다.",
-            course
+            course,
           );
 
           setCurrentCourse(null);
@@ -150,7 +152,7 @@ export default function RoutineChange() {
         if (!routineTypeCode) {
           console.error(
             "현재 데일리 루틴 타입을 판단하지 못했습니다.",
-            course.label
+            course.label,
           );
 
           setCurrentRoutineTypeCode(null);
@@ -160,8 +162,6 @@ export default function RoutineChange() {
         }
 
         setCurrentRoutineTypeCode(routineTypeCode);
-
-        setSelectedRoutineTypeCode(routineTypeCode);
       } catch (error) {
         console.error("현재 진행 중인 코스 조회 실패:", error);
 
@@ -183,11 +183,18 @@ export default function RoutineChange() {
   }, [state?.routineTypeCode]);
 
   const currentRoutine = ROUTINES.find(
-    (routine) => routine.routineTypeCode === currentRoutineTypeCode
+    (routine) => routine.routineTypeCode === currentRoutineTypeCode,
   );
 
   const handleSelectRoutine = (routineTypeCode: RoutineTypeCode) => {
     if (isChangingRoutine) {
+      return;
+    }
+
+    if (routineTypeCode === currentRoutineTypeCode) {
+      setShowToast(false);
+      setTimeout(() => setShowToast(true), 10);
+      setTimeout(() => setShowToast(false), 2500);
       return;
     }
 
@@ -211,7 +218,7 @@ export default function RoutineChange() {
       if (axios.isAxiosError(error) && error.response?.status === 409) {
         console.warn(
           "새 DAILY 코스 시작 409 발생 - 잠시 후 재시도합니다.",
-          error.response?.data
+          error.response?.data,
         );
 
         await wait(300);
@@ -231,6 +238,7 @@ export default function RoutineChange() {
       !currentCourse ||
       !currentRoutineTypeCode ||
       !selectedRoutineTypeCode ||
+      selectedRoutineTypeCode === currentRoutineTypeCode ||
       isChangingRoutine
     ) {
       console.error("루틴 변경에 필요한 정보가 없습니다.", {
@@ -255,7 +263,7 @@ export default function RoutineChange() {
         JSON.stringify({
           courseId: currentCourse.courseId,
           routineTypeCode: currentRoutineTypeCode,
-        })
+        }),
       );
 
       navigate("/care/daily_care", {
@@ -296,7 +304,7 @@ export default function RoutineChange() {
         JSON.stringify({
           courseId: newCourse.id,
           routineTypeCode: selectedRoutineTypeCode,
-        })
+        }),
       );
       console.log("새 데일리 코스 시작 성공:", newCourse);
 
@@ -340,6 +348,7 @@ export default function RoutineChange() {
     !currentCourse ||
     !currentRoutineTypeCode ||
     !selectedRoutineTypeCode ||
+    selectedRoutineTypeCode === currentRoutineTypeCode ||
     isChangingRoutine;
 
   return (
@@ -402,6 +411,13 @@ export default function RoutineChange() {
         >
           {isChangingRoutine ? "루틴 변경 중..." : "이 루틴으로 시작하기"}
         </S.SubmitButton>
+
+        {showToast && (
+          <S.ToastNotice>
+            <span className="info-icon">!</span> 현재 진행 중인 루틴은 선택할 수
+            없습니다.
+          </S.ToastNotice>
+        )}
       </S.BottomArea>
     </S.Page>
   );
