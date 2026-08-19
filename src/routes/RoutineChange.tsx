@@ -100,7 +100,7 @@ export default function RoutineChange() {
     useState<RoutineTypeCode | null>(state?.routineTypeCode ?? null);
 
   const [selectedRoutineTypeCode, setSelectedRoutineTypeCode] =
-    useState<RoutineTypeCode | null>(null);
+    useState<RoutineTypeCode | null>(state?.routineTypeCode ?? null);
 
   const [isChangingRoutine, setIsChangingRoutine] = useState(false);
 
@@ -162,6 +162,7 @@ export default function RoutineChange() {
         }
 
         setCurrentRoutineTypeCode(routineTypeCode);
+        setSelectedRoutineTypeCode(routineTypeCode);
       } catch (error) {
         console.error("현재 진행 중인 코스 조회 실패:", error);
 
