@@ -34,7 +34,7 @@ export const Content = styled.main`
 
   margin: 0 auto;
 
-  padding: 16px;
+  padding: 8px 16px;
 
   box-sizing: border-box;
 `;

@@ -238,7 +238,7 @@ export default function CareInputForm({
         <S.HiddenInput
           ref={fileInputRef}
           type="file"
-          accept="image/*"
+          accept="image/*;capture=camera"
           onChange={handleChangeImage}
         />
       </S.Section>

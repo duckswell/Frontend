@@ -59,16 +59,22 @@ export const Description = styled.p`
 export const RoutineList = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 11px;
 
   width: 100%;
 `;
 
-export const RoutineCardWrapper = styled.div`
+export const RoutineCardWrapper = styled.div<{
+  $isCurrentRoutine: boolean;
+  $isFirst: boolean;
+}>`
   position: relative;
 
   width: 100%;
   max-width: 370px;
+
+  margin-top: ${({ $isCurrentRoutine, $isFirst }) =>
+    $isCurrentRoutine && !$isFirst ? "14px" : "0"};
 
   box-sizing: border-box;
 

@@ -377,6 +377,8 @@ export default function FinishFocusCare() {
           routineTitle: selectedRoutineOption.title,
           routineImage: selectedRoutineOption.iconSrc,
           routineCategories: selectedRoutineOption.tags,
+          isRecommended: selectedRoutine === recommendedRoutineId,
+          recommendedBadgeText,
         },
       });
     } catch (error) {
@@ -606,11 +608,15 @@ export default function FinishFocusCare() {
             </S.RoutineHeader>
 
             <S.RoutineList>
-              {ROUTINE_OPTIONS.map((routine) => {
+              {ROUTINE_OPTIONS.map((routine, index) => {
                 const isRecommended = recommendedRoutineId === routine.id;
 
                 return (
-                  <S.RoutineCardWrapper key={routine.id}>
+                  <S.RoutineCardWrapper
+                    key={routine.id}
+                    $isRecommended={isRecommended}
+                    $isFirst={index === 0}
+                  >
                     {isRecommended && (
                       <S.RecommendedBadge>
                         {recommendedBadgeText}

@@ -86,6 +86,8 @@ export const Title = styled.h1`
 `;
 
 export const RoutineCard = styled.div`
+  position: relative;
+
   box-sizing: border-box;
 
   display: flex;
@@ -102,6 +104,28 @@ export const RoutineCard = styled.div`
   border-radius: 12px;
 
   background-color: ${colorPalette.White};
+`;
+export const RecommendedBadge = styled.div`
+  ${typography.Body2Bold};
+
+  position: absolute;
+  z-index: 3;
+
+  top: -14px;
+  left: 20px;
+
+  width: fit-content;
+
+  padding: 6px 12px;
+
+  border-radius: 999px;
+
+  background-color: ${colorPalette.FocusTertiary};
+  color: ${colorPalette.FocusPrimary};
+
+  white-space: nowrap;
+
+  pointer-events: none;
 `;
 export const CategoryList = styled.div`
   display: flex;

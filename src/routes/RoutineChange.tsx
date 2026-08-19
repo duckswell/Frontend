@@ -362,7 +362,7 @@ export default function RoutineChange() {
         </S.IntroSection>
 
         <S.RoutineList>
-          {ROUTINES.map((routine) => {
+          {ROUTINES.map((routine, index) => {
             const isCurrentRoutine =
               routine.routineTypeCode === currentRoutineTypeCode;
 
@@ -370,7 +370,11 @@ export default function RoutineChange() {
               routine.routineTypeCode === selectedRoutineTypeCode;
 
             return (
-              <S.RoutineCardWrapper key={routine.id}>
+              <S.RoutineCardWrapper
+                key={routine.id}
+                $isCurrentRoutine={isCurrentRoutine}
+                $isFirst={index === 0}
+              >
                 {isCurrentRoutine && (
                   <S.CurrentRoutineBadge>현재 루틴</S.CurrentRoutineBadge>
                 )}

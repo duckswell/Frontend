@@ -87,7 +87,7 @@ export const IngredientSection = styled.section`
 
   width: 100%;
 
-  padding-top: 16px;
+  padding-top: 8px;
 `;
 
 export const SectionTitle = styled.h2`

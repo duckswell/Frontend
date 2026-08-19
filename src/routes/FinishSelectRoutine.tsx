@@ -20,6 +20,9 @@ interface FinishSelectRoutineLocationState {
   routineTitle: string;
   routineImage: string;
   routineCategories: string[];
+
+  isRecommended?: boolean;
+  recommendedBadgeText?: string;
 }
 
 export default function FinishSelectRoutine() {
@@ -107,6 +110,12 @@ export default function FinishSelectRoutine() {
 
         <S.IntroSection>
           <S.RoutineCard>
+            {state?.isRecommended && (
+              <S.RecommendedBadge>
+                {state.recommendedBadgeText ?? "맞춤 추천"}
+              </S.RecommendedBadge>
+            )}
+
             <S.RoutineImage src={routineImage} alt={routineDisplayName} />
 
             <S.RoutineName>{routineDisplayName}</S.RoutineName>

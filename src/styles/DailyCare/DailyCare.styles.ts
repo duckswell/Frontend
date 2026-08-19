@@ -33,7 +33,7 @@ export const Content = styled.main`
   max-width: 402px;
 
   margin: 0 auto;
-  padding: 16px 16px 0;
+  padding: 8px 16px;
 
   box-sizing: border-box;
 `;
@@ -152,6 +152,8 @@ export const CourseSection = styled.section`
   gap: 16px;
 
   width: 100%;
+
+  margin-top: 20px;
 `;
 
 export const CourseCard = styled.div`
