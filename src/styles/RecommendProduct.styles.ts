@@ -122,7 +122,7 @@ export const IngredientScroll = styled.div<IngredientScrollProps>`
   overflow-y: hidden;
 
   scroll-snap-type: ${({ $isDragging }) =>
-    $isDragging ? "none" : "x mandatory"};
+    $isDragging ? "none" : "x proximity"};
 
   overscroll-behavior-x: contain;
 
@@ -220,23 +220,28 @@ export const EmptyIngredientInfo = styled.div`
 
   overflow: hidden;
 
-  border: 0.5px solid rgba(255, 255, 255, 0.5);
+  border: 0.5px solid rgba(255, 255, 255, 0.72);
   border-radius: 12px;
 
-  background-color: rgba(255, 255, 255, 0.6);
+  /*
+   * Figma Glass
+   * FFFFFF / 60%
+   */
+  background: rgba(255, 255, 255, 0.6);
 
   /*
-   * Figma의 유리 효과
-   * 빛 -45 / 80%
-   * 굴절·깊이·분산 값은 CSS와 1:1 대응되지 않아서
-   * backdrop + highlight + shadow로 최대한 가깝게 표현
+   * Frost가 0이라 강한 blur 제거
+   * 뒤 로고 형태가 어느 정도 남도록 아주 약하게만
    */
-  backdrop-filter: blur(8px) saturate(1.15);
-  -webkit-backdrop-filter: blur(8px) saturate(1.15);
+  backdrop-filter: blur(1.5px);
+  -webkit-backdrop-filter: blur(1.5px);
 
-  box-shadow: inset 1px 1px 1.5px rgba(255, 255, 255, 0.8),
-    inset -1px -1px 2px rgba(255, 255, 255, 0.18),
-    0 2px 8px rgba(0, 0, 0, 0.025);
+  /*
+   * Glass의 깊이감만 살짝
+   */
+  box-shadow: inset 0.8px 0.8px 1px rgba(255, 255, 255, 0.9),
+    inset -0.8px -0.8px 1px rgba(120, 120, 120, 0.04),
+    0 1px 3px rgba(0, 0, 0, 0.025);
 
   &::before {
     content: "";
@@ -246,11 +251,15 @@ export const EmptyIngredientInfo = styled.div`
 
     border-radius: inherit;
 
+    /*
+     * Figma Light -45°
+     * 너무 하얗게 덮지 않도록 매우 약하게
+     */
     background: linear-gradient(
       135deg,
-      rgba(255, 255, 255, 0.8) 0%,
-      rgba(255, 255, 255, 0.28) 26%,
-      rgba(255, 255, 255, 0) 52%
+      rgba(255, 255, 255, 0.25) 0%,
+      rgba(255, 255, 255, 0.1) 30%,
+      rgba(255, 255, 255, 0) 55%
     );
 
     pointer-events: none;
@@ -264,8 +273,8 @@ export const EmptyIngredientInfo = styled.div`
 
     border-radius: 11px;
 
-    box-shadow: inset 0.5px 0.5px 1px rgba(255, 255, 255, 0.8),
-      inset -0.5px -0.5px 1px rgba(80, 80, 80, 0.04);
+    box-shadow: inset 0.5px 0.5px 0.8px rgba(255, 255, 255, 0.65),
+      inset -0.5px -0.5px 0.8px rgba(100, 100, 100, 0.025);
 
     pointer-events: none;
   }
