@@ -56,7 +56,9 @@ const CourseHistories: React.FC = () => {
               ? "/assets/Home_Daily.png"
               : "/assets/Home_Focus.png",
           description: routineName
-            ? `데일리 ${routineName} 루틴 진행 중`
+            ? cur.courseType === "DAILY"
+              ? `데일리 ${routineName} 루틴 진행 중`
+              : "집중 코스 진행 중"
             : cur.courseType === "DAILY"
               ? "데일리 코스 진행 중"
               : "집중 코스 진행 중",

@@ -74,7 +74,9 @@ const Mypage: React.FC = () => {
       currentCourse.label;
 
     if (routineName) {
-      return `데일리 ${routineName} 루틴 진행 중`;
+      return currentCourse.courseType === "DAILY"
+        ? `데일리 ${routineName} 루틴 진행 중`
+        : "집중 코스 진행 중";
     }
 
     return currentCourse.courseType === "DAILY"
