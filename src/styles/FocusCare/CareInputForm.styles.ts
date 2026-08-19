@@ -318,10 +318,6 @@ export const UploadToast = styled.div`
 
   background-color: ${colorPalette.OffWhite};
 
-  /*
-   * X축 중앙 정렬은 translate 속성으로 따로 처리해서
-   * 기존 toast 애니메이션의 transform과 충돌하지 않게 함
-   */
   translate: -50% 0;
 
   animation: ${showToast} 2s cubic-bezier(0.16, 1, 0.3, 1) forwards;

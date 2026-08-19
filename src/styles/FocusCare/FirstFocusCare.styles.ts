@@ -26,16 +26,13 @@ export const Main = styled.main`
   display: flex;
   flex-direction: column;
 
-  /*
-   * ProgressBar 아래 다음 콘텐츠까지 정확히 16px
-   */
   gap: 16px;
 
   width: 100%;
   max-width: 402px;
 
   margin: 0 auto;
-  padding: 16px 16px 0;
+  padding: 8px 16px 0;
 
   box-sizing: border-box;
 `;

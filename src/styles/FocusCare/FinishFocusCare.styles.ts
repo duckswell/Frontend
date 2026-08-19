@@ -326,26 +326,30 @@ export const RoutineHeader = styled.div`
 
   margin-bottom: 20px;
 `;
-
 export const RoutineList = styled.div`
   display: flex;
   flex-direction: column;
 
-  gap: 20px;
+  gap: 11px;
 
   width: 100%;
   max-width: 370px;
 `;
 
-export const RoutineCardWrapper = styled.div`
+export const RoutineCardWrapper = styled.div<{
+  $isRecommended: boolean;
+  $isFirst: boolean;
+}>`
   position: relative;
 
   box-sizing: border-box;
 
   width: 100%;
   max-width: 370px;
-`;
 
+  margin-top: ${({ $isRecommended, $isFirst }) =>
+    $isRecommended && !$isFirst ? "17px" : "0"};
+`;
 export const RecommendedBadge = styled.div`
   ${typography.Body2Bold};
 
