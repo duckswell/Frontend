@@ -54,7 +54,40 @@ const DAILY_ROUTINE_INFO: Record<RoutineTypeCode, DailyRoutineInfo> = {
     categories: ["갈라짐", "각질", "건조"],
   },
 };
+function getRoutineTypeCodeFromLabel(label: string): RoutineTypeCode | null {
+  const normalizedLabel = label.replace(/\s/g, "");
 
+  if (normalizedLabel.includes("쿨다운") || normalizedLabel.includes("진정")) {
+    return "COOLDOWN";
+  }
+
+  if (
+    normalizedLabel.includes("클리어업") ||
+    normalizedLabel.includes("피부톤") ||
+    normalizedLabel.includes("흔적") ||
+    normalizedLabel.includes("미백")
+  ) {
+    return "CLEAR_UP";
+  }
+
+  if (
+    normalizedLabel.includes("피지") ||
+    normalizedLabel.includes("트러블") ||
+    normalizedLabel.includes("기름")
+  ) {
+    return "SEBUM_CONTROL";
+  }
+
+  if (
+    normalizedLabel.includes("수분") ||
+    normalizedLabel.includes("보습") ||
+    normalizedLabel.includes("건조")
+  ) {
+    return "HYDRATION";
+  }
+
+  return null;
+}
 function getStoredDailyCourse(): StoredDailyCourse | null {
   try {
     const stored = sessionStorage.getItem("currentDailyCourse");
@@ -140,6 +173,9 @@ export default function DailyCare() {
           routineTypeCode = stored.routineTypeCode;
         }
 
+        if (!routineTypeCode) {
+          routineTypeCode = getRoutineTypeCodeFromLabel(course.label);
+        }
         console.log("DailyCare 현재 course:", course);
         console.log("DailyCare 전달 state:", state);
         console.log("DailyCare 저장 정보:", stored);
