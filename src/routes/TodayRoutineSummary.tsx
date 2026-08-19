@@ -72,63 +72,67 @@ export default function TodayRoutineSummary() {
     state?.completionData?.completionSummaryText ??
     "오늘의 데일리 루틴을 완료했어요.";
 
-  useEffect(() => {
-    if (!routineId || !storageKey) {
-      console.error("추천 제품 조회에 필요한 routineId가 없습니다.");
-
-      return;
-    }
-
-    if (sessionStorage.getItem(storageKey)) {
-      return;
-    }
-
-    if (hasRequestedProductsRef.current) {
-      return;
-    }
-
-    hasRequestedProductsRef.current = true;
-
-    async function fetchRecommendedProducts() {
-      try {
-        const response = await routineApi.getRecommendedProducts(routineId);
-
-        console.log("데일리 루틴 추천 제품 조회 성공:", response);
-
-        const mappedProducts: Product[] = response.map((item) => ({
-          id: item.product.id,
-          brand: item.product.brand,
-          name: item.product.name,
-
-          categories: [item.ingredientName],
-
-          ingredientName: item.ingredientName,
-
-          category: item.product.category,
-
-          imageUrl: item.product.imageUrl,
-
-          linkUrl: item.product.linkUrl,
-        }));
-
-        setRecommendedProducts(mappedProducts);
-
-        sessionStorage.setItem(storageKey, JSON.stringify(mappedProducts));
-      } catch (error) {
-        console.error("데일리 루틴 추천 제품 조회 실패:", error);
-
-        if (axios.isAxiosError(error)) {
-          console.error("HTTP Status:", error.response?.status);
-
-          console.error("API Error Response:", error.response?.data);
-
-          console.error("요청 URL:", error.config?.url);
+    useEffect(() => {
+      if (routineId == null || storageKey == null) {
+        console.error("추천 제품 조회에 필요한 routineId가 없습니다.");
+        return;
+      }
+    
+      const currentRoutineId = routineId;
+      const currentStorageKey = storageKey;
+    
+      if (sessionStorage.getItem(currentStorageKey)) {
+        return;
+      }
+    
+      if (hasRequestedProductsRef.current) {
+        return;
+      }
+    
+      hasRequestedProductsRef.current = true;
+    
+      async function fetchRecommendedProducts() {
+        try {
+          const response =
+            await routineApi.getRecommendedProducts(currentRoutineId);
+    
+          console.log("데일리 루틴 추천 제품 조회 성공:", response);
+    
+          const mappedProducts: Product[] = response.map((item) => ({
+            id: item.product.id,
+            brand: item.product.brand,
+            name: item.product.name,
+    
+            categories: [item.ingredientName],
+    
+            ingredientName: item.ingredientName,
+    
+            category: item.product.category,
+    
+            imageUrl: item.product.imageUrl,
+    
+            linkUrl: item.product.linkUrl,
+          }));
+    
+          setRecommendedProducts(mappedProducts);
+    
+          sessionStorage.setItem(
+            currentStorageKey,
+            JSON.stringify(mappedProducts)
+          );
+        } catch (error) {
+          console.error("데일리 루틴 추천 제품 조회 실패:", error);
+    
+          if (axios.isAxiosError(error)) {
+            console.error("HTTP Status:", error.response?.status);
+            console.error("API Error Response:", error.response?.data);
+            console.error("요청 URL:", error.config?.url);
+          }
         }
       }
-    }
-
-    fetchRecommendedProducts();
-  }, [routineId, storageKey]);
+    
+      fetchRecommendedProducts();
+    }, [routineId, storageKey]);
 
   function handleMoveToHome() {
     navigate("/");

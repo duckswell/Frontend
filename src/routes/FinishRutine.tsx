@@ -80,103 +80,68 @@ export default function FinishRoutine() {
   });
 
   useEffect(() => {
-    if (!routineId || !storageKey) {
-      console.error(
-        "추천 제품 조회에 필요한 routineId가 없습니다."
-      );
-
+    if (routineId == null || storageKey == null) {
+      console.error("추천 제품 조회에 필요한 routineId가 없습니다.");
       return;
     }
-
+  
+    const currentRoutineId = routineId;
+    const currentStorageKey = storageKey;
+  
     /*
      * 이미 한 번 받아둔 제품이 있으면
      * 다시 랜덤 추천 API를 호출하지 않는다.
      */
-    if (
-      sessionStorage.getItem(storageKey)
-    ) {
+    if (sessionStorage.getItem(currentStorageKey)) {
       return;
     }
-
-    if (
-      hasRequestedProductsRef.current
-    ) {
+  
+    if (hasRequestedProductsRef.current) {
       return;
     }
-
-    hasRequestedProductsRef.current =
-      true;
-
+  
+    hasRequestedProductsRef.current = true;
+  
     async function fetchRecommendedProducts() {
       try {
         const response =
-          await routineApi.getRecommendedProducts(
-            routineId
-          );
-
-        console.log(
-          "집중 루틴 추천 제품 조회 성공:",
-          response
-        );
-
-        const mappedProducts: Product[] =
-          response.map((item) => ({
-            id: item.product.id,
-            brand: item.product.brand,
-            name: item.product.name,
-
-            categories: [
-              item.ingredientName,
-            ],
-
-            ingredientName:
-              item.ingredientName,
-
-            category:
-              item.product.category,
-
-            imageUrl:
-              item.product.imageUrl,
-
-            linkUrl:
-              item.product.linkUrl,
-          }));
-
-        setRecommendedProducts(
-          mappedProducts
-        );
-
+          await routineApi.getRecommendedProducts(currentRoutineId);
+  
+        console.log("집중 루틴 추천 제품 조회 성공:", response);
+  
+        const mappedProducts: Product[] = response.map((item) => ({
+          id: item.product.id,
+          brand: item.product.brand,
+          name: item.product.name,
+  
+          categories: [item.ingredientName],
+  
+          ingredientName: item.ingredientName,
+  
+          category: item.product.category,
+  
+          imageUrl: item.product.imageUrl,
+  
+          linkUrl: item.product.linkUrl,
+        }));
+  
+        setRecommendedProducts(mappedProducts);
+  
         sessionStorage.setItem(
-          storageKey,
+          currentStorageKey,
           JSON.stringify(mappedProducts)
         );
       } catch (error) {
-        console.error(
-          "집중 루틴 추천 제품 조회 실패:",
-          error
-        );
-
-        if (
-          axios.isAxiosError(error)
-        ) {
-          console.error(
-            "HTTP Status:",
-            error.response?.status
-          );
-
-          console.error(
-            "API Error Response:",
-            error.response?.data
-          );
-
-          console.error(
-            "요청 URL:",
-            error.config?.url
-          );
+        console.error("집중 루틴 추천 제품 조회 실패:", error);
+  
+        if (axios.isAxiosError(error)) {
+          console.error("HTTP Status:", error.response?.status);
+          console.error("API Error Response:", error.response?.data);
+          console.error("요청 URL:", error.config?.url);
         }
       }
     }
-
+  
     fetchRecommendedProducts();
   }, [routineId, storageKey]);
 
