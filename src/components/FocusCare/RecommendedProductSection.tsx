@@ -9,22 +9,11 @@ export interface Product {
   brand: string;
   name: string;
 
-  /*
-   * 해당 제품을 추천한 성분
-   *
-   * RecommendProduct의 성분 카드 구성에 사용
-   */
   ingredientId?: number;
   ingredientName?: string;
 
-  /*
-   * 기존 코드 호환
-   */
   categories?: string[];
 
-  /*
-   * RecommendProduct 제품 카테고리
-   */
   category?: ProductCategory;
 
   imageUrl?: string | null;
@@ -33,27 +22,31 @@ export interface Product {
 
 interface RecommendedProductSectionProps {
   title?: string;
+
+  /*
+   * 실제 섹션에 표시할 제품
+   */
   products?: Product[];
+
+  /*
+   * 더보기 클릭 시 RecommendProduct로 넘길 데이터
+   *
+   * 지정하지 않으면 기존처럼 products를 사용한다.
+   */
+  moreProducts?: Product[];
 }
 
 export default function RecommendedProductSection({
   title = "오늘의 추천 성분 제품",
   products = [],
+  moreProducts,
 }: RecommendedProductSectionProps) {
   const navigate = useNavigate();
 
   function handleMoveToRecommend() {
-    /*
-     * FinishRoutine에서 받은 추천 제품을
-     * 제품 추천 페이지로 그대로 전달한다.
-     *
-     * RecommendProduct에서는
-     * ingredientId + ingredientName을 기준으로
-     * 성분 카드를 구성한다.
-     */
     navigate("/recommend?from=care", {
       state: {
-        recommendedProducts: products,
+        recommendedProducts: moreProducts ?? products,
       },
     });
   }
