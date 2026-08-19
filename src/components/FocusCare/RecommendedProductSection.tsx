@@ -10,7 +10,9 @@ export interface Product {
   name: string;
 
   /*
-   * 추천 성분 식별
+   * 해당 제품을 추천한 성분
+   *
+   * RecommendProduct의 성분 카드 구성에 사용
    */
   ingredientId?: number;
   ingredientName?: string;
@@ -21,7 +23,7 @@ export interface Product {
   categories?: string[];
 
   /*
-   * RecommendProduct 페이지에서 사용
+   * RecommendProduct 제품 카테고리
    */
   category?: ProductCategory;
 
@@ -41,6 +43,14 @@ export default function RecommendedProductSection({
   const navigate = useNavigate();
 
   function handleMoveToRecommend() {
+    /*
+     * FinishRoutine에서 받은 추천 제품을
+     * 제품 추천 페이지로 그대로 전달한다.
+     *
+     * RecommendProduct에서는
+     * ingredientId + ingredientName을 기준으로
+     * 성분 카드를 구성한다.
+     */
     navigate("/recommend?from=care", {
       state: {
         recommendedProducts: products,

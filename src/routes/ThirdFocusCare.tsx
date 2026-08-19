@@ -1,7 +1,7 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-
+import type { Product } from "../components/FocusCare/RecommendedProductSection";
 import { courseApi } from "../api/course";
 import { procedureApi } from "../api/procedure";
 import {
@@ -21,16 +21,6 @@ interface ThirdFocusCareLocationState {
   routine: RoutineDifficultyResponse;
 }
 
-/**
- * 시술 날짜 기준 현재 몇 일차인지 계산
- *
- * 예)
- * 8/13 시술
- * 8/13 → 1일차
- * 8/14 → 2일차
- * ...
- * 8/19 → 7일차
- */
 function calculateProcedureDay(procedureDate: string): number {
   const [year, month, day] = procedureDate.split("-").map(Number);
 
@@ -171,14 +161,7 @@ export default function ThirdFocusCare() {
        * 추천 제품 API가 실패하더라도
        * 루틴 완료 및 이후 페이지 이동은 계속 진행한다.
        */
-      let recommendedProducts: {
-        id: number;
-        brand: string;
-        name: string;
-        categories: string[];
-        imageUrl: string;
-        linkUrl: string;
-      }[] = [];
+      let recommendedProducts: Product[] = [];
 
       try {
         const recommendedProductResponse =
@@ -186,14 +169,31 @@ export default function ThirdFocusCare() {
 
         console.log("추천 제품 조회 성공:", recommendedProductResponse);
 
-        recommendedProducts = recommendedProductResponse.map((item) => ({
-          id: item.product.id,
-          brand: item.product.brand,
-          name: item.product.name,
-          categories: [item.ingredientName],
-          imageUrl: item.product.imageUrl,
-          linkUrl: item.product.linkUrl,
-        }));
+        recommendedProducts = recommendedProductResponse.map((item) => {
+          const matchedStep = stepSummaries.find(
+            (step) =>
+              step.ingredientName === item.ingredientName &&
+              step.ingredientId !== null
+          );
+
+          return {
+            id: item.product.id,
+            brand: item.product.brand,
+            name: item.product.name,
+
+            ingredientId: matchedStep?.ingredientId ?? undefined,
+            ingredientName: item.ingredientName,
+
+            categories: [item.ingredientName],
+
+            category: item.product.category,
+
+            imageUrl: item.product.imageUrl,
+            linkUrl: item.product.linkUrl,
+          };
+        });
+
+        console.log("ingredientId 포함 추천 제품:", recommendedProducts);
       } catch (error) {
         console.error("추천 제품 조회 실패 - 이후 흐름은 계속 진행:", error);
       }
