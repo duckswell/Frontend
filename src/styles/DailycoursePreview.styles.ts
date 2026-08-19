@@ -42,13 +42,8 @@ export const BannerCard = styled.div`
   background-color: ${colorPalette.White};
   border: 0.5px solid ${colorPalette.Quaternary};
   border-radius: 12px;
-  padding: 20px;
-  margin-bottom: 28px;
-
-  @media (min-width: 768px) {
-    padding: 24px 28px;
-    margin-bottom: 36px;
-  }
+  padding: 16px;
+  margin-bottom: 35px;
 `;
 
 export const BannerTitle = styled.h3`
@@ -120,14 +115,9 @@ export const CardContainer = styled.div<{ $isSelected: boolean }>`
       ? `0.5px solid ${colorPalette.Black}`
       : `0.5px solid ${colorPalette.Quaternary}`};
   border-radius: 12px;
-  padding: 15px 16px;
+  padding: 16px;
   cursor: pointer;
   transition: all 0.15s ease;
-
-  @media (min-width: 768px) {
-    padding: 20px 24px;
-    gap: 20px;
-  }
 `;
 
 export const IconImage = styled.img`
@@ -137,12 +127,6 @@ export const IconImage = styled.img`
   object-fit: cover;
   flex-shrink: 0;
   margin-top: 20px;
-
-  @media (min-width: 768px) {
-    width: 52px;
-    height: 52px;
-    margin-top: 8px;
-  }
 `;
 
 export const ContentBox = styled.div`
