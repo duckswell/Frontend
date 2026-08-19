@@ -6,6 +6,12 @@ import { TabBar, type TabType } from "../components/TabBar";
 import { procedureApi, type ProcedureItem } from "../api/procedure";
 import { courseApi, type CurrentCourseResponse } from "../api/course";
 
+type ExtendedCurrentCourse = CurrentCourseResponse & {
+  routineTypeName?: string;
+  routineType?: string;
+  label?: string;
+};
+
 const formatKoreanDate = (dateStr?: string) => {
   if (!dateStr) return "";
   const parts = dateStr.split("-");
@@ -22,7 +28,7 @@ const Mypage: React.FC = () => {
 
   const [procedures, setProcedures] = useState<ProcedureItem[]>([]);
   const [currentCourse, setCurrentCourse] =
-    useState<CurrentCourseResponse | null>(null);
+    useState<ExtendedCurrentCourse | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -38,8 +44,8 @@ const Mypage: React.FC = () => {
           if (procRes.status === "fulfilled" && Array.isArray(procRes.value)) {
             setProcedures(procRes.value);
           }
-          if (courseRes.status === "fulfilled") {
-            setCurrentCourse(courseRes.value);
+          if (courseRes.status === "fulfilled" && courseRes.value) {
+            setCurrentCourse(courseRes.value as ExtendedCurrentCourse);
           }
         }
       } catch (error) {
@@ -58,6 +64,23 @@ const Mypage: React.FC = () => {
   const remainingCount = latestProcedure
     ? Math.max(0, latestProcedure.totalCount - latestProcedure.currentCount)
     : 0;
+
+  const getCurrentCourseDescription = () => {
+    if (!currentCourse) return "진행 중인 코스가 없습니다";
+
+    const routineName =
+      currentCourse.routineTypeName ||
+      currentCourse.routineType ||
+      currentCourse.label;
+
+    if (routineName) {
+      return `데일리 ${routineName} 루틴 진행 중`;
+    }
+
+    return currentCourse.courseType === "DAILY"
+      ? "데일리 코스 진행 중"
+      : "집중 코스 진행 중";
+  };
 
   return (
     <>
@@ -126,7 +149,7 @@ const Mypage: React.FC = () => {
                 alt="코스 아이콘"
               />
               <div>
-                <div className="desc">{currentCourse?.label || "-"}</div>
+                <div className="desc">{getCurrentCourseDescription()}</div>
                 <div className="title">
                   {currentCourse?.streakDays !== undefined
                     ? `연속 ${currentCourse.streakDays}일째`
