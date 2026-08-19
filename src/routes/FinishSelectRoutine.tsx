@@ -1,76 +1,112 @@
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
-import type { RoutineTypeCode } from "../api/course";
-import { routineApi } from "../api/routine";
+import { routineApi, type RoutineCompletionData } from "../api/routine";
 
 import CareButton from "../components/CareButton";
 import FocusConfetti from "../components/FocusCare/FocusConfetti";
 import RecommendedProductSection, {
   type Product,
 } from "../components/FocusCare/RecommendedProductSection";
+import RoutineRecordCard from "../components/FocusCare/RoutineRecordCard";
 
-import * as S from "../styles/FocusCare/FinishSelectRoutine.styles";
+import * as S from "../styles/FocusCare/FinishRoutine.styles";
 
-interface FinishSelectRoutineLocationState {
+interface FinishRoutineLocationState {
   courseId: number;
-  routineTypeCode: RoutineTypeCode;
-  routineTypeName: string | null;
-  routineTitle: string;
-  routineImage: string;
-  routineCategories: string[];
-
-  isRecommended?: boolean;
-  recommendedBadgeText?: string;
+  routineId: number;
+  completionData: RoutineCompletionData;
 }
 
-export default function FinishSelectRoutine() {
+export default function FinishRoutine() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const state = location.state as FinishSelectRoutineLocationState | null;
+  const state = location.state as FinishRoutineLocationState | null;
 
-  const [recommendedProducts, setRecommendedProducts] = useState<Product[]>([]);
+  const hasRequestedProductsRef = useRef(false);
 
-  const routineTitle =
-    state?.routineTitle ?? state?.routineTypeName ?? "데일리 루틴";
+  const completionData = state?.completionData;
 
-  const routineImage = state?.routineImage ?? "/assets/Daily_cooldown.png";
+  const routineId = state?.routineId;
 
-  const routineCategories = state?.routineCategories ?? [];
+  const storageKey = routineId
+    ? `routine-recommended-products-${routineId}`
+    : null;
 
-  const routineDisplayName = routineTitle.replace(" 루틴", "");
+  const [recommendedProducts, setRecommendedProducts] = useState<Product[]>(
+    () => {
+      if (!storageKey) {
+        return [];
+      }
+
+      const storedProducts = sessionStorage.getItem(storageKey);
+
+      if (!storedProducts) {
+        return [];
+      }
+
+      try {
+        return JSON.parse(storedProducts) as Product[];
+      } catch (error) {
+        console.error("저장된 추천 제품 파싱 실패:", error);
+
+        sessionStorage.removeItem(storageKey);
+
+        return [];
+      }
+    }
+  );
 
   useEffect(() => {
-    if (!state?.routineTypeCode) {
-      console.error("추천 제품 조회에 필요한 routineTypeCode가 없습니다.");
+    if (!routineId || !storageKey) {
+      console.error("추천 제품 조회에 필요한 routineId가 없습니다.");
 
       return;
     }
 
-    const routineTypeCode = state.routineTypeCode;
+    /*
+     * 이미 한 번 받아둔 제품이 있으면
+     * 다시 랜덤 추천 API를 호출하지 않는다.
+     */
+    if (sessionStorage.getItem(storageKey)) {
+      return;
+    }
+
+    if (hasRequestedProductsRef.current) {
+      return;
+    }
+
+    hasRequestedProductsRef.current = true;
 
     async function fetchRecommendedProducts() {
       try {
-        const response = await routineApi.getRecommendedProductsByRoutineType(
-          routineTypeCode
-        );
+        const response = await routineApi.getRecommendedProducts(routineId);
 
-        console.log("데일리 루틴 타입 추천 제품 조회 성공:", response);
+        console.log("집중 루틴 추천 제품 조회 성공:", response);
 
         const mappedProducts: Product[] = response.map((item) => ({
           id: item.product.id,
           brand: item.product.brand,
           name: item.product.name,
+
           categories: [item.ingredientName],
+
+          ingredientName: item.ingredientName,
+
+          category: item.product.category,
+
           imageUrl: item.product.imageUrl,
+
           linkUrl: item.product.linkUrl,
         }));
 
         setRecommendedProducts(mappedProducts);
+
+        sessionStorage.setItem(storageKey, JSON.stringify(mappedProducts));
       } catch (error) {
-        console.error("데일리 루틴 타입 추천 제품 조회 실패:", error);
+        console.error("집중 루틴 추천 제품 조회 실패:", error);
 
         if (axios.isAxiosError(error)) {
           console.error("HTTP Status:", error.response?.status);
@@ -79,16 +115,18 @@ export default function FinishSelectRoutine() {
 
           console.error("요청 URL:", error.config?.url);
         }
-
-        setRecommendedProducts([]);
       }
     }
 
     fetchRecommendedProducts();
-  }, [state?.routineTypeCode]);
+  }, [routineId, storageKey]);
 
   function handleMoveToHome() {
     navigate("/");
+  }
+
+  function handleMoveToDaily() {
+    navigate("/preview");
   }
 
   return (
@@ -97,49 +135,51 @@ export default function FinishSelectRoutine() {
         <S.CompletionSection>
           <FocusConfetti />
 
-          <S.IntroTextArea>
-            <S.Title>
-              내일부터 {routineDisplayName} 루틴으로
-              <br />
-              매일 함께해요!
-            </S.Title>
-
-            <S.Description>데일리 코스 루틴 선택을 완료했어요</S.Description>
-          </S.IntroTextArea>
+          <S.CompletionTitle>
+            오늘의 루틴을
+            <br />
+            모두 마쳤어요!
+          </S.CompletionTitle>
         </S.CompletionSection>
 
-        <S.IntroSection>
-          <S.RoutineCard>
-            {state?.isRecommended && (
-              <S.RecommendedBadge>
-                {state.recommendedBadgeText ?? "맞춤 추천"}
-              </S.RecommendedBadge>
-            )}
-
-            <S.RoutineImage src={routineImage} alt={routineDisplayName} />
-
-            <S.RoutineName>{routineDisplayName}</S.RoutineName>
-
-            <S.CategoryList>
-              {routineCategories.map((category) => (
-                <S.Category key={category}>{category}</S.Category>
-              ))}
-            </S.CategoryList>
-          </S.RoutineCard>
-        </S.IntroSection>
-
-        <S.ProductSection>
-          <RecommendedProductSection
-            title="이 제품들과 함께하면 좋아요"
-            products={recommendedProducts}
+        <S.InformationSection>
+          <RoutineRecordCard
+            completionSummaryText={
+              completionData?.completionSummaryText ??
+              "오늘의 루틴을 완료했어요."
+            }
+            ingredients={completionData?.recommendedIngredients ?? []}
           />
-        </S.ProductSection>
 
-        <S.ButtonArea>
+          <S.DailyCard type="button" onClick={handleMoveToDaily}>
+            <S.DailyImage
+              src="/assets/Home_Daily.png"
+              alt=""
+              aria-hidden="true"
+            />
+
+            <S.DailyTextArea>
+              <S.DailyDescription>
+                집중 코스가 끝나면 데일리로 이어가요
+              </S.DailyDescription>
+
+              <S.DailyTitle>데일리 코스 살펴보기</S.DailyTitle>
+            </S.DailyTextArea>
+
+            <S.GotoIcon src="/assets/Goto.svg" alt="" aria-hidden="true" />
+          </S.DailyCard>
+        </S.InformationSection>
+
+        <RecommendedProductSection
+          title="오늘의 추천 성분 제품"
+          products={recommendedProducts}
+        />
+
+        <S.ButtonWrapper>
           <CareButton variant="black" onClick={handleMoveToHome}>
             홈으로
           </CareButton>
-        </S.ButtonArea>
+        </S.ButtonWrapper>
       </S.Content>
     </S.Page>
   );

@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/set-state-in-effect */
+
 import {
   useEffect,
   useMemo,
@@ -5,7 +7,8 @@ import {
   useState,
   type PointerEvent as ReactPointerEvent,
 } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 
 import {
   productApi,
@@ -18,6 +21,8 @@ import { NavBar } from "../components/NavBar";
 import ProductCard from "../components/ProductCard";
 import RecommendedIngredientCard from "../components/RecommendedIngredientCard";
 import { TabBar } from "../components/TabBar";
+
+import type { Product as CareRecommendedProduct } from "../components/FocusCare/RecommendedProductSection";
 
 import * as S from "../styles/RecommendProduct.styles";
 
@@ -61,6 +66,19 @@ interface DisplayIngredient {
 interface IngredientCardInfo {
   categories: string[];
   description: string;
+}
+
+interface RecommendProductLocationState {
+  recommendedProducts?: CareRecommendedProduct[];
+}
+
+interface DisplayProduct {
+  id: number;
+  brand: string;
+  name: string;
+  category?: ProductCategory;
+  imageUrl?: string | null;
+  linkUrl?: string | null;
 }
 
 const INGREDIENT_CARD_INFO: Record<string, IngredientCardInfo> = {
@@ -131,6 +149,14 @@ const INGREDIENT_CARD_INFO: Record<string, IngredientCardInfo> = {
   },
 };
 
+function normalizeIngredientName(name: string) {
+  return name.replace(/\s/g, "").trim();
+}
+
+function getCareIngredientName(product: CareRecommendedProduct) {
+  return product.ingredientName ?? product.categories?.[0] ?? "";
+}
+
 function getIngredientCardInfo(name: string): IngredientCardInfo {
   const normalizedName = name.trim();
 
@@ -155,7 +181,41 @@ function getIngredientCardInfo(name: string): IngredientCardInfo {
   };
 }
 
-function getIngredientImage(category: DisplayIngredientCategory) {
+/*
+ * 일반 추천 페이지:
+ * API에서 받은 category로 이미지 결정
+ *
+ * Care에서 넘어온 성분:
+ * ROUTINE_STEP이므로 성분 이름으로 이미지 결정
+ */
+function getIngredientImage(
+  category: DisplayIngredientCategory,
+  ingredientName: string
+) {
+  const normalizedName = normalizeIngredientName(ingredientName);
+
+  if (category === "ROUTINE_STEP") {
+    if (normalizedName === "비타민C" || normalizedName === "나이아신아마이드") {
+      return "/assets/Ingridient_yellow.svg";
+    }
+
+    if (
+      normalizedName === "히알루론산" ||
+      normalizedName === "판테놀" ||
+      normalizedName === "세라마이드"
+    ) {
+      return "/assets/Ingridient_pink.svg";
+    }
+
+    if (
+      normalizedName === "센텔라" ||
+      normalizedName === "알로에" ||
+      normalizedName === "알로에베라"
+    ) {
+      return "/assets/Ingridient_clover.svg";
+    }
+  }
+
   switch (category) {
     case "VITAMIN":
       return "/assets/Ingridient_yellow.svg";
@@ -166,15 +226,14 @@ function getIngredientImage(category: DisplayIngredientCategory) {
     case "PLANT_EXTRACT":
       return "/assets/Ingridient_clover.svg";
 
-    case "ROUTINE_STEP":
-      return "/assets/Ingridient_clover.svg";
-
     default:
       return "/assets/Ingridient_pink.svg";
   }
 }
 
-function isProductCategory(value: string | null): value is ProductCategory {
+function isProductCategory(
+  value: string | null | undefined
+): value is ProductCategory {
   return (
     value === "CLEANSER" ||
     value === "SKIN_TONER" ||
@@ -186,7 +245,10 @@ function isProductCategory(value: string | null): value is ProductCategory {
 
 export default function RecommendProduct() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
+
+  const locationState = location.state as RecommendProductLocationState | null;
 
   const pageRef = useRef<HTMLDivElement>(null);
   const ingredientScrollRef = useRef<HTMLDivElement>(null);
@@ -199,14 +261,24 @@ export default function RecommendProduct() {
 
   const dragStartXRef = useRef(0);
   const dragStartScrollLeftRef = useRef(0);
+
   const draggingPointerIdRef = useRef<number | null>(null);
 
   const [isDraggingIngredient, setIsDraggingIngredient] = useState(false);
 
   const fromCare = searchParams.get("from") === "care";
 
+  const careRecommendedProducts = locationState?.recommendedProducts;
+
+  const hasCareRecommendedProductsState =
+    fromCare &&
+    Array.isArray(careRecommendedProducts) &&
+    careRecommendedProducts.length > 0;
+
   const requestedIngredientIdText = searchParams.get("ingredientId");
+
   const requestedIngredientName = searchParams.get("ingredientName");
+
   const requestedCategory = searchParams.get("category");
 
   const parsedIngredientId =
@@ -223,6 +295,46 @@ export default function RecommendProduct() {
     ? requestedCategory
     : null;
 
+  /*
+   * 완료 페이지에서 전달받은 추천 제품에서
+   * ingredientId + ingredientName만 뽑아서
+   * 성분 카드 목록으로 사용한다.
+   *
+   * 제품 자체는 여기서 사용하지 않고
+   * 아래 제품 조회 API를 다시 호출한다.
+   */
+  const careIngredients = useMemo<DisplayIngredient[]>(() => {
+    if (!Array.isArray(careRecommendedProducts)) {
+      return [];
+    }
+
+    const ingredientMap = new Map<number, DisplayIngredient>();
+
+    careRecommendedProducts.forEach((product) => {
+      const ingredientId = product.ingredientId;
+
+      const ingredientName = getCareIngredientName(product);
+
+      if (
+        ingredientId === undefined ||
+        ingredientId === null ||
+        !ingredientName
+      ) {
+        return;
+      }
+
+      if (!ingredientMap.has(ingredientId)) {
+        ingredientMap.set(ingredientId, {
+          id: ingredientId,
+          name: ingredientName,
+          category: "ROUTINE_STEP",
+        });
+      }
+    });
+
+    return Array.from(ingredientMap.values());
+  }, [careRecommendedProducts]);
+
   const [ingredients, setIngredients] = useState<DisplayIngredient[]>([]);
 
   const [selectedIngredientId, setSelectedIngredientId] = useState<
@@ -232,7 +344,7 @@ export default function RecommendProduct() {
   const [selectedProductCategory, setSelectedProductCategory] =
     useState<ProductCategory | null>(initialProductCategory);
 
-  const [products, setProducts] = useState<RecommendedProduct[]>([]);
+  const [products, setProducts] = useState<DisplayProduct[]>([]);
 
   const [loadedProductKey, setLoadedProductKey] = useState<string | null>(null);
 
@@ -262,13 +374,20 @@ export default function RecommendProduct() {
   const hasNoRoutine =
     !fromCare && !isIngredientLoading && ingredients.length === 0;
 
+  const hasNoCareRecommendations =
+    fromCare && !isIngredientLoading && ingredients.length === 0;
+
   const hasNoProducts =
     !hasNoRoutine &&
+    !hasNoCareRecommendations &&
     !isIngredientLoading &&
     !isProductLoading &&
     selectedIngredientId !== null &&
     visibleProducts.length === 0;
 
+  /*
+   * 선택된 제품 카테고리를 가운데로 이동
+   */
   useEffect(() => {
     const container = productCategoryScrollRef.current;
 
@@ -297,6 +416,9 @@ export default function RecommendProduct() {
     };
   }, [selectedProductCategory]);
 
+  /*
+   * 성분 조회
+   */
   useEffect(() => {
     let isCancelled = false;
 
@@ -305,6 +427,33 @@ export default function RecommendProduct() {
     async function fetchIngredients() {
       setIsIngredientLoading(true);
 
+      /*
+       * Finish 페이지 더보기
+       *
+       * 완료 API에서 받은 추천 제품의
+       * ingredientId / ingredientName을 이용해서
+       * 성분 카드만 구성한다.
+       */
+      if (hasCareRecommendedProductsState) {
+        setIngredients(careIngredients);
+
+        if (careIngredients.length > 0) {
+          setSelectedIngredientId(careIngredients[0].id);
+        } else {
+          setSelectedIngredientId(null);
+        }
+
+        setSelectedProductCategory(initialProductCategory);
+
+        setIsIngredientLoading(false);
+
+        return;
+      }
+
+      /*
+       * ThirdFocusCare / ThirdDailyCare에서
+       * 특정 추천 성분 버튼을 눌러 진입
+       */
       if (fromCare && initialIngredientId !== null && requestedIngredientName) {
         const stepIngredient: DisplayIngredient = {
           id: initialIngredientId,
@@ -313,12 +462,19 @@ export default function RecommendProduct() {
         };
 
         setIngredients([stepIngredient]);
+
         setSelectedIngredientId(initialIngredientId);
+
+        setSelectedProductCategory(initialProductCategory);
+
         setIsIngredientLoading(false);
 
         return;
       }
 
+      /*
+       * 일반 제품 탭
+       */
       try {
         const response = await productApi.getRecommendedIngredients();
 
@@ -356,8 +512,25 @@ export default function RecommendProduct() {
     return () => {
       isCancelled = true;
     };
-  }, [fromCare, initialIngredientId, requestedIngredientName]);
+  }, [
+    fromCare,
+    hasCareRecommendedProductsState,
+    careIngredients,
+    initialIngredientId,
+    initialProductCategory,
+    requestedIngredientName,
+  ]);
 
+  /*
+   * 제품 조회
+   *
+   * 중요:
+   * Care에서 넘어왔더라도
+   * location.state의 제품을 필터링하지 않는다.
+   *
+   * 선택된 ingredientId를 기준으로
+   * 항상 백엔드 전체 제품 API를 호출한다.
+   */
   useEffect(() => {
     if (selectedIngredientId === null) {
       return;
@@ -366,26 +539,34 @@ export default function RecommendProduct() {
     let isCancelled = false;
 
     const ingredientId = selectedIngredientId;
+
     const productKey = `${ingredientId}-${selectedProductCategory ?? "ALL"}`;
 
     async function fetchProducts() {
       try {
-        const response = await productApi.getRecommendedProducts(
+        console.log("🔥 전체 추천 제품 요청:", {
           ingredientId,
-          selectedProductCategory ?? undefined
-        );
+          productCategory: selectedProductCategory,
+        });
+
+        const response: RecommendedProduct[] =
+          await productApi.getRecommendedProducts(
+            ingredientId,
+            selectedProductCategory ?? undefined
+          );
 
         if (isCancelled) {
           return;
         }
 
-        console.log("🔥 추천 제품 API 응답:", {
+        console.log("🔥 전체 추천 제품 API 응답:", {
           ingredientId,
           productCategory: selectedProductCategory,
           products: response,
         });
 
         setProducts(response);
+
         setLoadedProductKey(productKey);
       } catch (error) {
         if (isCancelled) {
@@ -395,6 +576,7 @@ export default function RecommendProduct() {
         console.error("추천 제품 조회 실패:", error);
 
         setProducts([]);
+
         setLoadedProductKey(productKey);
       }
     }
@@ -418,6 +600,7 @@ export default function RecommendProduct() {
 
     if (scrollEndTimerRef.current) {
       clearTimeout(scrollEndTimerRef.current);
+
       scrollEndTimerRef.current = null;
     }
 
@@ -439,6 +622,9 @@ export default function RecommendProduct() {
     );
   }
 
+  /*
+   * 처음 선택된 성분 카드 가운데 배치
+   */
   useEffect(() => {
     const container = ingredientScrollRef.current;
 
@@ -567,10 +753,6 @@ export default function RecommendProduct() {
   }
 
   function updateSelectedIngredient() {
-    if (fromCare) {
-      return;
-    }
-
     const result = getClosestIngredientCard();
 
     if (!result) {
@@ -587,6 +769,9 @@ export default function RecommendProduct() {
 
     const nextIngredientId = Number(ingredientIdText);
 
+    /*
+     * 선택 성분만 먼저 변경
+     */
     if (nextIngredientId !== selectedIngredientId) {
       console.log("🔥 중앙 카드 성분 변경:", {
         이전: selectedIngredientId,
@@ -597,35 +782,80 @@ export default function RecommendProduct() {
       setSelectedProductCategory(null);
     }
 
-    if (ingredients.length <= 1) {
+    /*
+     * Care 진입이거나 카드가 1개뿐이면
+     * 무한 스크롤 보정 필요 없음
+     */
+    if (fromCare || ingredients.length <= 1) {
       return;
     }
 
     const ingredientCount = ingredients.length;
 
+    /*
+     * 첫 번째 세트로 넘어간 경우
+     * 같은 카드를 가운데 세트로 조용히 이동
+     */
     if (closestCardIndex < ingredientCount) {
       const equivalentIndex = closestCardIndex + ingredientCount;
       const equivalentCard = cards[equivalentIndex];
 
       if (equivalentCard) {
-        scrollCardToCenter(equivalentCard, "auto");
+        const container = ingredientScrollRef.current;
+
+        if (!container) {
+          return;
+        }
+
+        const targetScrollLeft =
+          equivalentCard.offsetLeft +
+          equivalentCard.offsetWidth / 2 -
+          container.clientWidth / 2;
+
+        isProgrammaticScrollRef.current = true;
+
+        container.scrollLeft = targetScrollLeft;
+
+        requestAnimationFrame(() => {
+          isProgrammaticScrollRef.current = false;
+        });
       }
 
       return;
     }
 
+    /*
+     * 세 번째 세트로 넘어간 경우
+     * 같은 카드를 가운데 세트로 조용히 이동
+     */
     if (closestCardIndex >= ingredientCount * 2) {
       const equivalentIndex = closestCardIndex - ingredientCount;
       const equivalentCard = cards[equivalentIndex];
 
       if (equivalentCard) {
-        scrollCardToCenter(equivalentCard, "auto");
+        const container = ingredientScrollRef.current;
+
+        if (!container) {
+          return;
+        }
+
+        const targetScrollLeft =
+          equivalentCard.offsetLeft +
+          equivalentCard.offsetWidth / 2 -
+          container.clientWidth / 2;
+
+        isProgrammaticScrollRef.current = true;
+
+        container.scrollLeft = targetScrollLeft;
+
+        requestAnimationFrame(() => {
+          isProgrammaticScrollRef.current = false;
+        });
       }
     }
   }
-
   function handleIngredientScroll() {
-    if (fromCare || isProgrammaticScrollRef.current || isDraggingIngredient) {
+    if (isProgrammaticScrollRef.current || isDraggingIngredient) {
       return;
     }
 
@@ -641,13 +871,13 @@ export default function RecommendProduct() {
       updateSelectedIngredient();
 
       scrollEndTimerRef.current = null;
-    }, 150);
+    }, 100);
   }
 
   function handleIngredientPointerDown(
     event: ReactPointerEvent<HTMLDivElement>
   ) {
-    if (fromCare || ingredients.length <= 1 || event.pointerType !== "mouse") {
+    if (ingredients.length <= 1 || event.pointerType !== "mouse") {
       return;
     }
 
@@ -660,6 +890,7 @@ export default function RecommendProduct() {
     draggingPointerIdRef.current = event.pointerId;
 
     dragStartXRef.current = event.clientX;
+
     dragStartScrollLeftRef.current = container.scrollLeft;
 
     setIsDraggingIngredient(true);
@@ -713,7 +944,7 @@ export default function RecommendProduct() {
 
     window.setTimeout(() => {
       updateSelectedIngredient();
-    }, 180);
+    }, 80);
   }
 
   function handleIngredientPointerCancel(
@@ -741,12 +972,8 @@ export default function RecommendProduct() {
     });
   }
 
-  /*
-   * 임시
-   * 오늘의 루틴 시작하기 → /
-   */
   function handleStartDailyRoutine() {
-    navigate("/");
+    navigate("/care/daily_care");
   }
 
   return (
@@ -783,12 +1010,32 @@ export default function RecommendProduct() {
                 </S.EmptyIngredientInfo>
               </S.EmptyIngredientCard>
             </S.EmptyIngredientCardArea>
+          ) : hasNoCareRecommendations ? (
+            <S.EmptyIngredientCardArea>
+              <S.EmptyIngredientCard>
+                <S.EmptyIngredientLogo
+                  src="/assets/HALE.svg"
+                  alt=""
+                  aria-hidden="true"
+                />
+
+                <S.EmptyIngredientInfo>
+                  <S.EmptyIngredientTitle>
+                    추천 성분이 없어요
+                  </S.EmptyIngredientTitle>
+
+                  <S.EmptyIngredientDescription>
+                    현재 추천 가능한 성분을 찾지 못했어요
+                  </S.EmptyIngredientDescription>
+                </S.EmptyIngredientInfo>
+              </S.EmptyIngredientCard>
+            </S.EmptyIngredientCardArea>
           ) : (
             <S.IngredientScroll
               ref={ingredientScrollRef}
               $isDragging={isDraggingIngredient}
-              $isScrollable={!fromCare && ingredients.length > 1}
-              onScroll={fromCare ? undefined : handleIngredientScroll}
+              $isScrollable={ingredients.length > 1}
+              onScroll={handleIngredientScroll}
               onPointerDown={handleIngredientPointerDown}
               onPointerMove={handleIngredientPointerMove}
               onPointerUp={finishIngredientDrag}
@@ -807,7 +1054,10 @@ export default function RecommendProduct() {
                       category={cardInfo.categories}
                       ingredient={ingredient.name}
                       description={cardInfo.description}
-                      image={getIngredientImage(ingredient.category)}
+                      image={getIngredientImage(
+                        ingredient.category,
+                        ingredient.name
+                      )}
                     />
                   </S.IngredientCardWrapper>
                 );
@@ -854,6 +1104,18 @@ export default function RecommendProduct() {
                 </S.StartRoutineButton>
               </S.NoRoutineContent>
             </S.NoRoutineArea>
+          ) : hasNoCareRecommendations ? (
+            <S.EmptyProductArea>
+              <S.EmptyProductContent>
+                <S.EmptyProductTitle>추천 제품이 없어요</S.EmptyProductTitle>
+
+                <S.EmptyProductDescription>
+                  현재 신규 상품을 검수 및 업데이트하고 있습니다.
+                  <br />
+                  빠른 시일 내에 찾아뵙겠습니다.
+                </S.EmptyProductDescription>
+              </S.EmptyProductContent>
+            </S.EmptyProductArea>
           ) : hasNoProducts ? (
             <S.EmptyProductArea>
               <S.EmptyProductContent>
