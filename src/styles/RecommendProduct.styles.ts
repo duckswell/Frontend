@@ -118,17 +118,16 @@ export const IngredientScroll = styled.div<IngredientScrollProps>`
   margin-top: 16px;
   padding: 0 60px;
 
-  overflow-x: ${({ $isScrollable }) => ($isScrollable ? "auto" : "hidden")};
+  /*
+   * 브라우저 자체 가로 스크롤을 막고
+   * TSX의 pointer drag 로직만 사용.
+   */
+  overflow-x: hidden;
   overflow-y: hidden;
-
-  scroll-snap-type: ${({ $isDragging }) =>
-    $isDragging ? "none" : "x proximity"};
 
   overscroll-behavior-x: contain;
 
-  scrollbar-width: none;
-
-  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
 
   cursor: ${({ $isScrollable, $isDragging }) => {
     if (!$isScrollable) {
@@ -138,7 +137,9 @@ export const IngredientScroll = styled.div<IngredientScrollProps>`
     return $isDragging ? "grabbing" : "grab";
   }};
 
-  user-select: ${({ $isDragging }) => ($isDragging ? "none" : "auto")};
+  user-select: none;
+
+  scrollbar-width: none;
 
   &::-webkit-scrollbar {
     display: none;
@@ -147,9 +148,6 @@ export const IngredientScroll = styled.div<IngredientScrollProps>`
 
 export const IngredientCardWrapper = styled.div`
   flex: 0 0 282px;
-
-  scroll-snap-align: center;
-  scroll-snap-stop: always;
 `;
 
 /* =========================
@@ -223,22 +221,11 @@ export const EmptyIngredientInfo = styled.div`
   border: 0.5px solid rgba(255, 255, 255, 0.72);
   border-radius: 12px;
 
-  /*
-   * Figma Glass
-   * FFFFFF / 60%
-   */
   background: rgba(255, 255, 255, 0.6);
 
-  /*
-   * Frost가 0이라 강한 blur 제거
-   * 뒤 로고 형태가 어느 정도 남도록 아주 약하게만
-   */
   backdrop-filter: blur(1.5px);
   -webkit-backdrop-filter: blur(1.5px);
 
-  /*
-   * Glass의 깊이감만 살짝
-   */
   box-shadow: inset 0.8px 0.8px 1px rgba(255, 255, 255, 0.9),
     inset -0.8px -0.8px 1px rgba(120, 120, 120, 0.04),
     0 1px 3px rgba(0, 0, 0, 0.025);
@@ -251,10 +238,6 @@ export const EmptyIngredientInfo = styled.div`
 
     border-radius: inherit;
 
-    /*
-     * Figma Light -45°
-     * 너무 하얗게 덮지 않도록 매우 약하게
-     */
     background: linear-gradient(
       135deg,
       rgba(255, 255, 255, 0.25) 0%,
@@ -462,10 +445,6 @@ export const NoRoutineContent = styled.div`
 
   width: 100%;
 
-  /*
-   * 카테고리 ~ TabBar 사이의 중앙에
-   * 문구 + 버튼 묶음 자체가 오도록 약간 아래 여백 보정
-   */
   transform: translateY(-4px);
 `;
 

@@ -2,12 +2,14 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
-import type { RoutineTypeCode } from "../api/course";
+import { courseApi, type RoutineTypeCode } from "../api/course";
+
 import { routineApi } from "../api/routine";
 
 import CareButton from "../components/CareButton";
 import FocusConfetti from "../components/FocusCare/FocusConfetti";
 import RecommendedProductSection, {
+  type CareIngredient,
   type Product,
 } from "../components/FocusCare/RecommendedProductSection";
 
@@ -27,11 +29,13 @@ interface FinishSelectRoutineLocationState {
 
 export default function FinishSelectRoutine() {
   const navigate = useNavigate();
+
   const location = useLocation();
 
   const state = location.state as FinishSelectRoutineLocationState | null;
 
   const courseId = state?.courseId;
+
   const routineTypeCode = state?.routineTypeCode;
 
   const routineTitle =
@@ -40,37 +44,53 @@ export default function FinishSelectRoutine() {
   const routineImage = state?.routineImage ?? "/assets/Daily_cooldown.png";
 
   /*
-   * FinishFocusCare에서 선택한 루틴의 성분.
+   * FinishFocusCare에서 전달받은 루틴 태그.
    *
-   * 예)
-   * COOLDOWN
-   * → 센텔라 / 판테놀 / 알로에
+   * 이 값은 현재 루틴 카드 안에서
+   * 성분 이름을 보여주는 용도로만 사용한다.
+   *
+   * 더보기의 성분카드 데이터는
+   * 더 이상 이 문자열 배열을 사용하지 않는다.
    */
   const routineCategories = state?.routineCategories ?? [];
 
   const routineDisplayName = routineTitle.replace(" 루틴", "");
 
   /*
-   * 제품 추천 페이지에서 뒤로 돌아왔을 때
-   * FinishSelectRoutine의 추천 제품이 바뀌지 않도록
-   * 최초 조회 결과를 sessionStorage에 저장한다.
+   * ==================================================
+   * 추천 제품 sessionStorage
+   * ==================================================
    */
-  const storageKey =
+  const productStorageKey =
     courseId !== undefined && routineTypeCode !== undefined
       ? `finish-select-routine-products-${courseId}-${routineTypeCode}`
       : null;
 
   /*
-   * 이미 저장된 추천 제품이 있다면
-   * 초기 렌더링부터 바로 사용한다.
+   * ==================================================
+   * 루틴 전체 성분 sessionStorage
+   *
+   * 새 API에서 받은
+   * ingredientId + ingredientName을 저장한다.
+   * ==================================================
+   */
+  const ingredientStorageKey =
+    courseId !== undefined && routineTypeCode !== undefined
+      ? `finish-select-routine-ingredients-${courseId}-${routineTypeCode}`
+      : null;
+
+  /*
+   * ==================================================
+   * 추천 제품
+   * ==================================================
    */
   const [recommendedProducts, setRecommendedProducts] = useState<Product[]>(
     () => {
-      if (!storageKey) {
+      if (!productStorageKey) {
         return [];
       }
 
-      const storedProducts = sessionStorage.getItem(storageKey);
+      const storedProducts = sessionStorage.getItem(productStorageKey);
 
       if (!storedProducts) {
         return [];
@@ -81,7 +101,7 @@ export default function FinishSelectRoutine() {
       } catch (error) {
         console.error("저장된 데일리 추천 제품 파싱 실패:", error);
 
-        sessionStorage.removeItem(storageKey);
+        sessionStorage.removeItem(productStorageKey);
 
         return [];
       }
@@ -90,60 +110,122 @@ export default function FinishSelectRoutine() {
 
   /*
    * ==================================================
-   * TEST
+   * 선택한 데일리 루틴의 전체 성분
    *
-   * FinishSelectRoutine 시점에
-   * 이미 오늘의 DAILY routine이 생성되어 있는지 확인.
+   * RecommendProduct의 성분카드에 사용.
+   * ==================================================
+   */
+  const [routineIngredients, setRoutineIngredients] = useState<
+    CareIngredient[]
+  >(() => {
+    if (!ingredientStorageKey) {
+      return [];
+    }
+
+    const storedIngredients = sessionStorage.getItem(ingredientStorageKey);
+
+    if (!storedIngredients) {
+      return [];
+    }
+
+    try {
+      return JSON.parse(storedIngredients) as CareIngredient[];
+    } catch (error) {
+      console.error("저장된 데일리 루틴 성분 파싱 실패:", error);
+
+      sessionStorage.removeItem(ingredientStorageKey);
+
+      return [];
+    }
+  });
+
+  /*
+   * ==================================================
+   * 데일리 루틴 전체 성분 조회
    *
-   * 확인하려는 것:
+   * GET
+   * /api/courses/routine-types/{routineTypeCode}/ingredients
    *
-   * GET /api/routines/today
+   * 예:
    *
-   * routineId가 존재한다면
+   * CLEAR_UP
+   * →
+   * [
+   *   {
+   *     ingredientId: 3,
+   *     ingredientName: "나이아신아마이드"
+   *   },
+   *   {
+   *     ingredientId: 5,
+   *     ingredientName: "비타민C"
+   *   }
+   * ]
    *
-   * GET /api/routines/{routineId}/steps
-   *
-   * 으로 ingredientId + ingredientName을
-   * 가져올 수 있는지 확인한다.
+   * 이 값 전체를 더보기에서
+   * RecommendProduct에 전달한다.
    * ==================================================
    */
   useEffect(() => {
+    if (routineTypeCode === undefined || ingredientStorageKey === null) {
+      console.error("루틴 성분 조회에 필요한 routineTypeCode가 없습니다.");
+
+      return;
+    }
+
+    /*
+     * 이미 받아온 성분이 있다면
+     * 제품 페이지 갔다가 돌아왔을 때
+     * 다시 호출하지 않는다.
+     */
+    if (sessionStorage.getItem(ingredientStorageKey)) {
+      return;
+    }
+
+    const currentRoutineTypeCode: RoutineTypeCode = routineTypeCode;
+
+    const currentStorageKey = ingredientStorageKey;
+
     let isCancelled = false;
 
-    async function testTodayRoutine() {
+    async function fetchRoutineIngredients() {
       try {
-        const todayRoutineId = await routineApi.getTodayRoutine();
+        console.log("🔥 데일리 루틴 전체 성분 요청:", currentRoutineTypeCode);
 
-        if (isCancelled) {
-          return;
-        }
-
-        console.log(
-          "🔥 FinishSelectRoutine 현재 오늘 routineId:",
-          todayRoutineId
+        const response = await courseApi.getRoutineTypeIngredients(
+          currentRoutineTypeCode
         );
 
-        if (todayRoutineId === null) {
-          console.log("🔥 아직 생성된 DAILY routine 없음");
-
-          return;
-        }
-
-        const steps = await routineApi.getRoutineSteps(todayRoutineId);
-
         if (isCancelled) {
           return;
         }
 
-        console.log("🔥 오늘 DAILY 루틴 steps:", steps);
+        console.log("🔥 데일리 루틴 전체 성분 API 응답:", response);
 
-        console.log("🔥 FinishFocusCare 선택 루틴 성분:", routineCategories);
+        /*
+         * RecommendedProductSection이 사용하는
+         * CareIngredient 형태로 변환.
+         */
+        const mappedIngredients: CareIngredient[] = response.map(
+          (ingredient) => ({
+            id: ingredient.ingredientId,
+            name: ingredient.ingredientName,
+          })
+        );
+
+        console.log("🔥 더보기로 전달할 전체 성분:", mappedIngredients);
+
+        setRoutineIngredients(mappedIngredients);
+
+        sessionStorage.setItem(
+          currentStorageKey,
+          JSON.stringify(mappedIngredients)
+        );
       } catch (error) {
         if (isCancelled) {
           return;
         }
 
-        console.error("🔥 오늘 DAILY 루틴 테스트 실패:", error);
+        console.error("데일리 루틴 전체 성분 조회 실패:", error);
 
         if (axios.isAxiosError(error)) {
           console.error("HTTP Status:", error.response?.status);
@@ -155,12 +237,12 @@ export default function FinishSelectRoutine() {
       }
     }
 
-    void testTodayRoutine();
+    void fetchRoutineIngredients();
 
     return () => {
       isCancelled = true;
     };
-  }, [routineCategories]);
+  }, [routineTypeCode, ingredientStorageKey]);
 
   /*
    * ==================================================
@@ -169,30 +251,31 @@ export default function FinishSelectRoutine() {
    * GET
    * /api/courses/routine-types/{routineTypeCode}/recommended-products
    *
-   * 이 API는 FinishSelectRoutine 섹션에 보여줄 제품용.
+   * 이 API는 아래에 보여주는
+   * "이 제품들과 함께하면 좋아요" 영역 전용.
+   *
+   * 성분카드용 API와 역할을 분리한다.
    * ==================================================
    */
   useEffect(() => {
-    if (routineTypeCode === undefined || storageKey === null) {
+    if (routineTypeCode === undefined || productStorageKey === null) {
       console.error("추천 제품 조회에 필요한 routineTypeCode가 없습니다.");
 
       return;
     }
 
     /*
-     * 이전에 같은 완료 페이지에서 이미 조회했다면
-     * 다시 API를 호출하지 않는다.
-     *
-     * 제품 추천 페이지 갔다가 뒤로 와도
-     * 섹션 제품 유지.
+     * 이전에 같은 완료 페이지에서
+     * 이미 추천 제품을 조회했다면
+     * 다시 호출하지 않는다.
      */
-    if (sessionStorage.getItem(storageKey)) {
+    if (sessionStorage.getItem(productStorageKey)) {
       return;
     }
 
     const currentRoutineTypeCode: RoutineTypeCode = routineTypeCode;
 
-    const currentStorageKey = storageKey;
+    const currentStorageKey = productStorageKey;
 
     let isCancelled = false;
 
@@ -235,10 +318,6 @@ export default function FinishSelectRoutine() {
 
         setRecommendedProducts(mappedProducts);
 
-        /*
-         * 처음 받아온 추천 제품을 저장해서
-         * 뒤로 왔을 때 다시 랜덤 조회되지 않게 한다.
-         */
         sessionStorage.setItem(
           currentStorageKey,
           JSON.stringify(mappedProducts)
@@ -265,7 +344,7 @@ export default function FinishSelectRoutine() {
     return () => {
       isCancelled = true;
     };
-  }, [routineTypeCode, storageKey]);
+  }, [routineTypeCode, productStorageKey]);
 
   function handleMoveToHome() {
     navigate("/");
@@ -313,22 +392,23 @@ export default function FinishSelectRoutine() {
             title="이 제품들과 함께하면 좋아요"
             /*
              * FinishSelectRoutine 화면에
-             * 실제 표시되는 추천 제품.
+             * 실제 표시할 제품.
              */
             products={recommendedProducts}
             /*
-             * 기존 RecommendedProductSection
-             * 호환용.
+             * 기존 더보기 제품 데이터.
              */
             moreProducts={recommendedProducts}
             /*
-             * 더보기 →
-             * RecommendProduct의 성분카드 기준.
+             * 핵심.
              *
-             * FinishFocusCare에서 선택한
-             * 루틴의 성분 전체를 전달한다.
+             * 새 API로 조회한
+             * 해당 데일리 루틴의 전체 성분.
+             *
+             * ingredientId +
+             * ingredientName이 들어 있다.
              */
-            moreIngredientNames={routineCategories}
+            moreIngredients={routineIngredients}
           />
         </S.ProductSection>
 

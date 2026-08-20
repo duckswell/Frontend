@@ -4,8 +4,6 @@ import { useLocation, useNavigate } from "react-router-dom";
 
 import type { RoutineTypeCode } from "../api/course";
 
-import { productApi, type RecommendedIngredient } from "../api/product";
-
 import { routineApi, type RoutineCompletionData } from "../api/routine";
 
 import CareButton from "../components/CareButton";
@@ -26,16 +24,19 @@ interface TodayRoutineSummaryLocationState {
 
   /*
    * ThirdDailyCare에서 전달받은
-   * 섹션 추천 제품.
+   * 완료 페이지 섹션 추천 제품.
    */
   recommendedProducts?: Product[];
 
   /*
-   * 기존 state 호환용.
+   * ThirdDailyCare의 /steps 기준
+   * 현재 데일리 루틴의 전체 성분.
    *
-   * 지금은 TodayRoutineSummary에서
-   * productApi.getRecommendedIngredients()를
-   * 다시 조회해서 실제 맞춤 성분을 사용한다.
+   * 예:
+   * 수분충전
+   * → 히알루론산
+   * → 세라마이드
+   * → 판테놀
    */
   routineIngredients?: CareIngredient[];
 }
@@ -49,11 +50,35 @@ const ROUTINE_TITLE_MAP: Record<RoutineTypeCode, string> = {
 
 export default function TodayRoutineSummary() {
   const navigate = useNavigate();
+
   const location = useLocation();
 
   const state = location.state as TodayRoutineSummaryLocationState | null;
 
   const routineId = state?.routineId;
+
+  /*
+   * ==================================
+   * 루틴 전체 성분
+   * ==================================
+   *
+   * 중요:
+   *
+   * TodayRoutineSummary에서
+   * 추천 성분 API를 다시 호출하지 않는다.
+   *
+   * ThirdDailyCare가 /steps를 조회해서
+   * 넘겨준 실제 루틴 전체 성분을 그대로 사용한다.
+   *
+   * 따라서 오늘 추천 제품이
+   * 히알루론산 / 세라마이드만 있더라도
+   *
+   * 수분충전 루틴 전체 성분이
+   * 히알루론산 / 세라마이드 / 판테놀이라면
+   *
+   * 더보기에서는 세 성분 모두 표시된다.
+   */
+  const routineIngredients: CareIngredient[] = state?.routineIngredients ?? [];
 
   /*
    * 같은 완료 페이지에서
@@ -96,27 +121,6 @@ export default function TodayRoutineSummary() {
     }
   );
 
-  /*
-   * ==================================
-   * 더보기로 넘길 실제 맞춤 성분
-   * ==================================
-   *
-   * /api/products/recommendations/ingredients
-   *
-   * 응답:
-   * {
-   *   id,
-   *   name,
-   *   category
-   * }
-   *
-   * 여기서 받은 실제 ingredientId를
-   * RecommendProduct로 넘긴다.
-   */
-  const [routineIngredients, setRoutineIngredients] = useState<
-    CareIngredient[]
-  >([]);
-
   const routineTitle = state?.routineTypeCode
     ? ROUTINE_TITLE_MAP[state.routineTypeCode]
     : "데일리";
@@ -125,85 +129,6 @@ export default function TodayRoutineSummary() {
     state?.completionData?.completionSummaryText ??
     "오늘의 데일리 루틴을 완료했어요.";
 
-  /*
-   * ==================================
-   * 맞춤 성분 조회
-   * ==================================
-   *
-   * DAILY 코스의 실제 루틴이 완료된 시점이므로
-   * /api/products/recommendations/ingredients
-   * 응답의 id를 그대로 사용할 수 있다.
-   *
-   * 예:
-   * 클리어업
-   * → 나이아신아마이드
-   * → 비타민C
-   */
-  useEffect(() => {
-    let isCancelled = false;
-
-    async function fetchRoutineIngredients() {
-      try {
-        const response: RecommendedIngredient[] =
-          await productApi.getRecommendedIngredients();
-
-        if (isCancelled) {
-          return;
-        }
-
-        console.log("🔥 TodayRoutineSummary 맞춤 성분 API 응답:", response);
-
-        const ingredients: CareIngredient[] = response.map((ingredient) => ({
-          id: ingredient.id,
-          name: ingredient.name,
-        }));
-
-        console.log("🔥 TodayRoutineSummary 더보기 전달 성분:", ingredients);
-
-        setRoutineIngredients(ingredients);
-      } catch (error) {
-        if (isCancelled) {
-          return;
-        }
-
-        console.error("TodayRoutineSummary 맞춤 성분 조회 실패:", error);
-
-        if (axios.isAxiosError(error)) {
-          console.error("HTTP Status:", error.response?.status);
-
-          console.error("API Error Response:", error.response?.data);
-
-          console.error("요청 URL:", error.config?.url);
-        }
-
-        /*
-         * 맞춤 성분 조회 실패 시
-         * 기존 ThirdDailyCare state가 있다면
-         * 최후 fallback으로 사용.
-         */
-        setRoutineIngredients(state?.routineIngredients ?? []);
-      }
-    }
-
-    void fetchRoutineIngredients();
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [state?.routineIngredients]);
-
-  /*
-   * ==================================
-   * 섹션 추천 제품 조회
-   * ==================================
-   *
-   * GET
-   * /api/routines/{routineId}/recommended-products
-   *
-   * ThirdDailyCare에서 이미
-   * sessionStorage에 저장했다면
-   * 다시 조회하지 않는다.
-   */
   useEffect(() => {
     if (routineId == null || storageKey == null) {
       console.error("추천 제품 조회에 필요한 routineId가 없습니다.");
@@ -211,10 +136,6 @@ export default function TodayRoutineSummary() {
       return;
     }
 
-    /*
-     * 기존 추천 제품이 있다면
-     * 다시 랜덤 추천 API를 호출하지 않는다.
-     */
     if (sessionStorage.getItem(storageKey)) {
       return;
     }
@@ -322,8 +243,8 @@ export default function TodayRoutineSummary() {
           <RecommendedProductSection
             title={`${routineTitle} 루틴 추천 제품`}
             /*
-             * 완료 페이지 섹션에
-             * 실제 표시되는 추천 제품.
+             * TodayRoutineSummary 화면에
+             * 실제로 표시할 추천 제품.
              */
             products={recommendedProducts}
             /*
@@ -333,12 +254,12 @@ export default function TodayRoutineSummary() {
             /*
              * 핵심.
              *
-             * /steps가 아니라
-             * /api/products/recommendations/ingredients
-             * 응답의 실제 ingredientId + name을 전달.
+             * ThirdDailyCare의 /steps 기준
+             * 실제 루틴 전체 성분을 전달한다.
              *
-             * RecommendProduct에서는
-             * 이 값을 최우선으로 성분카드로 사용한다.
+             * 추천 제품에 포함되지 않은 성분도
+             * RecommendProduct의 성분카드에는
+             * 반드시 표시된다.
              */
             moreIngredients={routineIngredients}
           />
