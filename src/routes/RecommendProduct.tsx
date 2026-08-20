@@ -72,24 +72,8 @@ interface IngredientCardInfo {
 }
 
 interface RecommendProductLocationState {
-  /*
-   * FinishRoutine 등.
-   */
   recommendedProducts?: CareRecommendedProduct[];
-
-  /*
-   * FinishSelectRoutine.
-   *
-   * ingredientId를 아직 모르는 상태.
-   */
   recommendedIngredientNames?: string[];
-
-  /*
-   * TodayRoutineSummary.
-   *
-   * 실제 ingredientId를 알고 있는
-   * 루틴 전체 성분.
-   */
   recommendedIngredients?: CareIngredient[];
 }
 
@@ -304,10 +288,6 @@ export default function RecommendProduct() {
 
   const productCategoryScrollRef = useRef<HTMLDivElement>(null);
 
-  const scrollEndTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const isProgrammaticScrollRef = useRef(false);
-
   const hasInitialCenteredRef = useRef(false);
 
   const dragStartXRef = useRef(0);
@@ -315,6 +295,14 @@ export default function RecommendProduct() {
   const dragStartScrollLeftRef = useRef(0);
 
   const draggingPointerIdRef = useRef<number | null>(null);
+
+  const dragStartCardIndexRef = useRef<number | null>(null);
+
+  const currentCardIndexRef = useRef<number | null>(null);
+
+  const ingredientMoveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null
+  );
 
   const [isDraggingIngredient, setIsDraggingIngredient] = useState(false);
 
@@ -325,10 +313,6 @@ export default function RecommendProduct() {
   const careRecommendedIngredientNames =
     locationState?.recommendedIngredientNames;
 
-  /*
-   * TodayRoutineSummary에서 전달되는
-   * 실제 ID 포함 전체 루틴 성분.
-   */
   const careRecommendedIngredients = locationState?.recommendedIngredients;
 
   const hasCareRecommendedIngredientsState =
@@ -366,10 +350,6 @@ export default function RecommendProduct() {
     ? requestedCategory
     : null;
 
-  /*
-   * FinishRoutine에서 전달된
-   * recommendedProducts의 성분.
-   */
   const careIngredients = useMemo<DisplayIngredient[]>(() => {
     if (!Array.isArray(careRecommendedProducts)) {
       return [];
@@ -490,18 +470,11 @@ export default function RecommendProduct() {
 
     hasInitialCenteredRef.current = false;
 
+    currentCardIndexRef.current = null;
+
     async function fetchIngredients() {
       setIsIngredientLoading(true);
 
-      /*
-       * ==================================
-       * 1.
-       * TodayRoutineSummary → 더보기
-       * ==================================
-       *
-       * 실제 ingredientId를 이미 알고 있으므로
-       * 어떤 추가 성분 API도 호출하지 않는다.
-       */
       if (
         hasCareRecommendedIngredientsState &&
         Array.isArray(careRecommendedIngredients)
@@ -509,16 +482,9 @@ export default function RecommendProduct() {
         const routineIngredients: DisplayIngredient[] =
           careRecommendedIngredients.map((ingredient) => ({
             id: ingredient.id,
-
             name: ingredient.name,
-
             category: "ROUTINE_STEP",
           }));
-
-        console.log(
-          "🔥 TodayRoutineSummary 전체 루틴 성분카드:",
-          routineIngredients
-        );
 
         setIngredients(routineIngredients);
 
@@ -535,15 +501,6 @@ export default function RecommendProduct() {
         return;
       }
 
-      /*
-       * ==================================
-       * 2.
-       * FinishSelectRoutine → 더보기
-       * ==================================
-       *
-       * 현재는 ingredientId를 별도 API로
-       * 찾아야 하는 기존 구조 유지.
-       */
       if (
         hasCareRecommendedIngredientNamesState &&
         Array.isArray(careRecommendedIngredientNames)
@@ -556,13 +513,6 @@ export default function RecommendProduct() {
             return;
           }
 
-          console.log("🔥 실제 추천 성분 목록:", availableIngredients);
-
-          console.log(
-            "🔥 선택 루틴 성분 이름:",
-            careRecommendedIngredientNames
-          );
-
           const matchedIngredients: DisplayIngredient[] = [];
 
           careRecommendedIngredientNames.forEach((ingredientName) => {
@@ -571,16 +521,12 @@ export default function RecommendProduct() {
             );
 
             if (!matchedIngredient) {
-              console.warn("⚠️ 실제 ingredientId 매칭 실패:", ingredientName);
-
               return;
             }
 
             matchedIngredients.push({
               id: matchedIngredient.id,
-
               name: ingredientName,
-
               category: "ROUTINE_STEP",
             });
           });
@@ -602,6 +548,7 @@ export default function RecommendProduct() {
           console.error("선택 루틴 성분 조회 실패:", error);
 
           setIngredients([]);
+
           setSelectedIngredientId(null);
         } finally {
           if (!isCancelled) {
@@ -612,12 +559,6 @@ export default function RecommendProduct() {
         return;
       }
 
-      /*
-       * ==================================
-       * 3.
-       * FinishRoutine
-       * ==================================
-       */
       if (hasCareRecommendedProductsState) {
         setIngredients(careIngredients);
 
@@ -634,19 +575,10 @@ export default function RecommendProduct() {
         return;
       }
 
-      /*
-       * ==================================
-       * 4.
-       * ThirdFocusCare / ThirdDailyCare
-       * 개별 성분 버튼
-       * ==================================
-       */
       if (fromCare && initialIngredientId !== null && requestedIngredientName) {
         const stepIngredient: DisplayIngredient = {
           id: initialIngredientId,
-
           name: requestedIngredientName,
-
           category: "ROUTINE_STEP",
         };
 
@@ -661,12 +593,6 @@ export default function RecommendProduct() {
         return;
       }
 
-      /*
-       * ==================================
-       * 5.
-       * 일반 제품 탭
-       * ==================================
-       */
       try {
         const response = await productApi.getRecommendedIngredients();
 
@@ -689,6 +615,7 @@ export default function RecommendProduct() {
         console.error("추천 성분 조회 실패:", error);
 
         setIngredients([]);
+
         setSelectedIngredientId(null);
       } finally {
         if (!isCancelled) {
@@ -704,16 +631,12 @@ export default function RecommendProduct() {
     };
   }, [
     fromCare,
-
     hasCareRecommendedIngredientsState,
     careRecommendedIngredients,
-
     hasCareRecommendedIngredientNamesState,
     careRecommendedIngredientNames,
-
     hasCareRecommendedProductsState,
     careIngredients,
-
     initialIngredientId,
     initialProductCategory,
     requestedIngredientName,
@@ -723,9 +646,6 @@ export default function RecommendProduct() {
    * ==========================
    * 제품 조회
    * ==========================
-   *
-   * 실제 ingredientId 기준으로
-   * 해당 성분의 모든 추천 제품 조회.
    */
   useEffect(() => {
     if (selectedIngredientId === null) {
@@ -740,11 +660,6 @@ export default function RecommendProduct() {
 
     async function fetchProducts() {
       try {
-        console.log("🔥 성분 전체 제품 요청:", {
-          ingredientId,
-          productCategory: selectedProductCategory,
-        });
-
         const response: RecommendedProduct[] =
           await productApi.getRecommendedProducts(
             ingredientId,
@@ -754,12 +669,6 @@ export default function RecommendProduct() {
         if (isCancelled) {
           return;
         }
-
-        console.log("🔥 성분 전체 제품 응답:", {
-          ingredientId,
-          productCategory: selectedProductCategory,
-          products: response,
-        });
 
         setProducts(response);
 
@@ -784,40 +693,152 @@ export default function RecommendProduct() {
     };
   }, [selectedIngredientId, selectedProductCategory]);
 
-  function scrollCardToCenter(
-    card: HTMLElement,
-    behavior: ScrollBehavior = "auto"
-  ) {
+  /*
+   * ==========================
+   * 카드 유틸
+   * ==========================
+   */
+  function getIngredientCards() {
     const container = ingredientScrollRef.current;
 
     if (!container) {
-      return;
+      return [];
     }
 
-    if (scrollEndTimerRef.current) {
-      clearTimeout(scrollEndTimerRef.current);
-
-      scrollEndTimerRef.current = null;
-    }
-
-    const targetScrollLeft =
-      card.offsetLeft + card.offsetWidth / 2 - container.clientWidth / 2;
-
-    isProgrammaticScrollRef.current = true;
-
-    container.scrollTo({
-      left: targetScrollLeft,
-      behavior,
-    });
-
-    window.setTimeout(
-      () => {
-        isProgrammaticScrollRef.current = false;
-      },
-      behavior === "smooth" ? 350 : 50
+    return Array.from(
+      container.querySelectorAll<HTMLElement>("[data-ingredient-id]")
     );
   }
 
+  function getCenteredScrollLeft(card: HTMLElement) {
+    const container = ingredientScrollRef.current;
+
+    if (!container) {
+      return 0;
+    }
+
+    const containerRect = container.getBoundingClientRect();
+
+    const cardRect = card.getBoundingClientRect();
+
+    const containerCenter = containerRect.left + containerRect.width / 2;
+
+    const cardCenter = cardRect.left + cardRect.width / 2;
+
+    return container.scrollLeft + (cardCenter - containerCenter);
+  }
+
+  function setIngredientFromCard(card: HTMLElement) {
+    const ingredientIdText = card.dataset.ingredientId;
+
+    if (!ingredientIdText) {
+      return;
+    }
+
+    const ingredientId = Number(ingredientIdText);
+
+    if (ingredientId === selectedIngredientId) {
+      return;
+    }
+
+    setSelectedIngredientId(ingredientId);
+
+    setSelectedProductCategory(null);
+  }
+
+  function normalizeInfinitePosition(index: number) {
+    if (fromCare || ingredients.length <= 1) {
+      currentCardIndexRef.current = index;
+
+      return;
+    }
+
+    const container = ingredientScrollRef.current;
+
+    const cards = getIngredientCards();
+
+    if (!container || cards.length === 0) {
+      return;
+    }
+
+    const ingredientCount = ingredients.length;
+
+    let normalizedIndex = index;
+
+    if (index < ingredientCount) {
+      normalizedIndex = index + ingredientCount;
+    }
+
+    if (index >= ingredientCount * 2) {
+      normalizedIndex = index - ingredientCount;
+    }
+
+    if (normalizedIndex === index) {
+      currentCardIndexRef.current = index;
+
+      return;
+    }
+
+    const normalizedCard = cards[normalizedIndex];
+
+    if (!normalizedCard) {
+      return;
+    }
+
+    container.scrollTo({
+      left: getCenteredScrollLeft(normalizedCard),
+      behavior: "auto",
+    });
+
+    currentCardIndexRef.current = normalizedIndex;
+  }
+
+  function moveToIngredientCard(
+    targetIndex: number,
+    behavior: ScrollBehavior = "smooth"
+  ) {
+    const container = ingredientScrollRef.current;
+
+    const cards = getIngredientCards();
+
+    if (!container || cards.length === 0) {
+      return;
+    }
+
+    const safeIndex = Math.max(0, Math.min(targetIndex, cards.length - 1));
+
+    const targetCard = cards[safeIndex];
+
+    if (!targetCard) {
+      return;
+    }
+
+    if (ingredientMoveTimerRef.current) {
+      window.clearTimeout(ingredientMoveTimerRef.current);
+    }
+
+    currentCardIndexRef.current = safeIndex;
+
+    setIngredientFromCard(targetCard);
+
+    container.scrollTo({
+      left: getCenteredScrollLeft(targetCard),
+      behavior,
+    });
+
+    ingredientMoveTimerRef.current = window.setTimeout(
+      () => {
+        normalizeInfinitePosition(safeIndex);
+
+        ingredientMoveTimerRef.current = null;
+      },
+      behavior === "smooth" ? 320 : 20
+    );
+  }
+
+  /*
+   * 최초 중앙정렬
+   */
   useEffect(() => {
     const container = ingredientScrollRef.current;
 
@@ -839,28 +860,34 @@ export default function RecommendProduct() {
         return;
       }
 
-      let targetCard: HTMLElement | undefined;
+      const targetCardIndex =
+        fromCare || ingredients.length === 1
+          ? cards.findIndex(
+              (card) =>
+                Number(card.dataset.ingredientId) === selectedIngredientId
+            )
+          : cards.findIndex((card, index) => {
+              const ingredientCount = ingredients.length;
 
-      if (fromCare || ingredients.length === 1) {
-        targetCard = cards.find(
-          (card) => Number(card.dataset.ingredientId) === selectedIngredientId
-        );
-      } else {
-        const ingredientCount = ingredients.length;
+              return (
+                index >= ingredientCount &&
+                index < ingredientCount * 2 &&
+                Number(card.dataset.ingredientId) === selectedIngredientId
+              );
+            });
 
-        targetCard = cards.find(
-          (card, index) =>
-            index >= ingredientCount &&
-            index < ingredientCount * 2 &&
-            Number(card.dataset.ingredientId) === selectedIngredientId
-        );
-      }
-
-      if (!targetCard) {
+      if (targetCardIndex < 0) {
         return;
       }
 
-      scrollCardToCenter(targetCard, "auto");
+      const targetCard = cards[targetCardIndex];
+
+      container.scrollTo({
+        left: getCenteredScrollLeft(targetCard),
+        behavior: "auto",
+      });
+
+      currentCardIndexRef.current = targetCardIndex;
 
       hasInitialCenteredRef.current = true;
     });
@@ -870,10 +897,144 @@ export default function RecommendProduct() {
     };
   }, [fromCare, ingredients, selectedIngredientId, displayedIngredients]);
 
+  /*
+   * ==========================
+   * 드래그
+   * ==========================
+   */
+  function handleIngredientPointerDown(
+    event: ReactPointerEvent<HTMLDivElement>
+  ) {
+    if (ingredients.length <= 1 || event.pointerType !== "mouse") {
+      return;
+    }
+
+    const container = ingredientScrollRef.current;
+
+    if (!container) {
+      return;
+    }
+
+    if (ingredientMoveTimerRef.current) {
+      window.clearTimeout(ingredientMoveTimerRef.current);
+
+      ingredientMoveTimerRef.current = null;
+    }
+
+    const currentIndex = currentCardIndexRef.current;
+
+    if (currentIndex === null) {
+      return;
+    }
+
+    draggingPointerIdRef.current = event.pointerId;
+
+    dragStartCardIndexRef.current = currentIndex;
+
+    dragStartXRef.current = event.clientX;
+
+    dragStartScrollLeftRef.current = container.scrollLeft;
+
+    setIsDraggingIngredient(true);
+
+    container.setPointerCapture(event.pointerId);
+
+    event.preventDefault();
+  }
+
+  function handleIngredientPointerMove(
+    event: ReactPointerEvent<HTMLDivElement>
+  ) {
+    if (
+      event.pointerType !== "mouse" ||
+      draggingPointerIdRef.current !== event.pointerId
+    ) {
+      return;
+    }
+
+    const container = ingredientScrollRef.current;
+
+    if (!container) {
+      return;
+    }
+
+    const dragDistance = event.clientX - dragStartXRef.current;
+
+    container.scrollLeft = dragStartScrollLeftRef.current - dragDistance;
+
+    event.preventDefault();
+  }
+
+  function finishIngredientDrag(event: ReactPointerEvent<HTMLDivElement>) {
+    if (
+      event.pointerType !== "mouse" ||
+      draggingPointerIdRef.current !== event.pointerId
+    ) {
+      return;
+    }
+
+    const container = ingredientScrollRef.current;
+
+    if (container?.hasPointerCapture(event.pointerId)) {
+      container.releasePointerCapture(event.pointerId);
+    }
+
+    const startIndex = dragStartCardIndexRef.current;
+
+    const dragDistance = event.clientX - dragStartXRef.current;
+
+    draggingPointerIdRef.current = null;
+
+    dragStartCardIndexRef.current = null;
+
+    setIsDraggingIngredient(false);
+
+    if (startIndex === null) {
+      return;
+    }
+
+    /*
+     * 이 값이 클수록 덜 예민함.
+     */
+    const DRAG_THRESHOLD = 90;
+
+    let targetIndex = startIndex;
+
+    if (dragDistance <= -DRAG_THRESHOLD) {
+      targetIndex = startIndex + 1;
+    }
+
+    if (dragDistance >= DRAG_THRESHOLD) {
+      targetIndex = startIndex - 1;
+    }
+
+    moveToIngredientCard(targetIndex);
+  }
+
+  function handleIngredientPointerCancel(
+    event: ReactPointerEvent<HTMLDivElement>
+  ) {
+    if (draggingPointerIdRef.current !== event.pointerId) {
+      return;
+    }
+
+    const startIndex = dragStartCardIndexRef.current;
+
+    draggingPointerIdRef.current = null;
+
+    dragStartCardIndexRef.current = null;
+
+    setIsDraggingIngredient(false);
+
+    if (startIndex !== null) {
+      moveToIngredientCard(startIndex);
+    }
+  }
+
   useEffect(() => {
     return () => {
-      if (scrollEndTimerRef.current) {
-        clearTimeout(scrollEndTimerRef.current);
+      if (ingredientMoveTimerRef.current) {
+        window.clearTimeout(ingredientMoveTimerRef.current);
       }
     };
   }, []);
@@ -899,245 +1060,6 @@ export default function RecommendProduct() {
     }
 
     setShowScrollTopButton(page.scrollTop > 10);
-  }
-
-  function getClosestIngredientCard() {
-    const container = ingredientScrollRef.current;
-
-    if (!container) {
-      return null;
-    }
-
-    const cards = Array.from(
-      container.querySelectorAll<HTMLElement>("[data-ingredient-id]")
-    );
-
-    if (cards.length === 0) {
-      return null;
-    }
-
-    const containerRect = container.getBoundingClientRect();
-
-    const containerCenter = containerRect.left + containerRect.width / 2;
-
-    let closestCard = cards[0];
-
-    let closestCardIndex = 0;
-
-    let closestDistance = Infinity;
-
-    cards.forEach((card, index) => {
-      const cardRect = card.getBoundingClientRect();
-
-      const cardCenter = cardRect.left + cardRect.width / 2;
-
-      const distance = Math.abs(containerCenter - cardCenter);
-
-      if (distance < closestDistance) {
-        closestDistance = distance;
-
-        closestCard = card;
-
-        closestCardIndex = index;
-      }
-    });
-
-    return {
-      cards,
-      closestCard,
-      closestCardIndex,
-    };
-  }
-
-  function updateSelectedIngredient() {
-    const result = getClosestIngredientCard();
-
-    if (!result) {
-      return;
-    }
-
-    const { cards, closestCard, closestCardIndex } = result;
-
-    const ingredientIdText = closestCard.dataset.ingredientId;
-
-    if (!ingredientIdText) {
-      return;
-    }
-
-    const nextIngredientId = Number(ingredientIdText);
-
-    if (nextIngredientId !== selectedIngredientId) {
-      setSelectedIngredientId(nextIngredientId);
-
-      setSelectedProductCategory(null);
-    }
-
-    if (fromCare || ingredients.length <= 1) {
-      return;
-    }
-
-    const ingredientCount = ingredients.length;
-
-    if (closestCardIndex < ingredientCount) {
-      const equivalentIndex = closestCardIndex + ingredientCount;
-
-      const equivalentCard = cards[equivalentIndex];
-
-      if (equivalentCard) {
-        const container = ingredientScrollRef.current;
-
-        if (!container) {
-          return;
-        }
-
-        const targetScrollLeft =
-          equivalentCard.offsetLeft +
-          equivalentCard.offsetWidth / 2 -
-          container.clientWidth / 2;
-
-        isProgrammaticScrollRef.current = true;
-
-        container.scrollLeft = targetScrollLeft;
-
-        requestAnimationFrame(() => {
-          isProgrammaticScrollRef.current = false;
-        });
-      }
-
-      return;
-    }
-
-    if (closestCardIndex >= ingredientCount * 2) {
-      const equivalentIndex = closestCardIndex - ingredientCount;
-
-      const equivalentCard = cards[equivalentIndex];
-
-      if (equivalentCard) {
-        const container = ingredientScrollRef.current;
-
-        if (!container) {
-          return;
-        }
-
-        const targetScrollLeft =
-          equivalentCard.offsetLeft +
-          equivalentCard.offsetWidth / 2 -
-          container.clientWidth / 2;
-
-        isProgrammaticScrollRef.current = true;
-
-        container.scrollLeft = targetScrollLeft;
-
-        requestAnimationFrame(() => {
-          isProgrammaticScrollRef.current = false;
-        });
-      }
-    }
-  }
-
-  function handleIngredientScroll() {
-    if (isProgrammaticScrollRef.current || isDraggingIngredient) {
-      return;
-    }
-
-    if (scrollEndTimerRef.current) {
-      clearTimeout(scrollEndTimerRef.current);
-    }
-
-    scrollEndTimerRef.current = window.setTimeout(() => {
-      if (isProgrammaticScrollRef.current || isDraggingIngredient) {
-        return;
-      }
-
-      updateSelectedIngredient();
-
-      scrollEndTimerRef.current = null;
-    }, 100);
-  }
-
-  function handleIngredientPointerDown(
-    event: ReactPointerEvent<HTMLDivElement>
-  ) {
-    if (ingredients.length <= 1 || event.pointerType !== "mouse") {
-      return;
-    }
-
-    const container = ingredientScrollRef.current;
-
-    if (!container) {
-      return;
-    }
-
-    draggingPointerIdRef.current = event.pointerId;
-
-    dragStartXRef.current = event.clientX;
-
-    dragStartScrollLeftRef.current = container.scrollLeft;
-
-    setIsDraggingIngredient(true);
-
-    container.setPointerCapture(event.pointerId);
-
-    event.preventDefault();
-  }
-
-  function handleIngredientPointerMove(
-    event: ReactPointerEvent<HTMLDivElement>
-  ) {
-    if (
-      !isDraggingIngredient ||
-      event.pointerType !== "mouse" ||
-      draggingPointerIdRef.current !== event.pointerId
-    ) {
-      return;
-    }
-
-    const container = ingredientScrollRef.current;
-
-    if (!container) {
-      return;
-    }
-
-    const moveX = event.clientX - dragStartXRef.current;
-
-    container.scrollLeft = dragStartScrollLeftRef.current - moveX;
-
-    event.preventDefault();
-  }
-
-  function finishIngredientDrag(event: ReactPointerEvent<HTMLDivElement>) {
-    if (
-      event.pointerType !== "mouse" ||
-      draggingPointerIdRef.current !== event.pointerId
-    ) {
-      return;
-    }
-
-    const container = ingredientScrollRef.current;
-
-    if (container?.hasPointerCapture(event.pointerId)) {
-      container.releasePointerCapture(event.pointerId);
-    }
-
-    draggingPointerIdRef.current = null;
-
-    setIsDraggingIngredient(false);
-
-    window.setTimeout(() => {
-      updateSelectedIngredient();
-    }, 80);
-  }
-
-  function handleIngredientPointerCancel(
-    event: ReactPointerEvent<HTMLDivElement>
-  ) {
-    if (draggingPointerIdRef.current !== event.pointerId) {
-      return;
-    }
-
-    draggingPointerIdRef.current = null;
-
-    setIsDraggingIngredient(false);
   }
 
   function handleScrollToTop() {
@@ -1216,7 +1138,6 @@ export default function RecommendProduct() {
               ref={ingredientScrollRef}
               $isDragging={isDraggingIngredient}
               $isScrollable={ingredients.length > 1}
-              onScroll={handleIngredientScroll}
               onPointerDown={handleIngredientPointerDown}
               onPointerMove={handleIngredientPointerMove}
               onPointerUp={finishIngredientDrag}
