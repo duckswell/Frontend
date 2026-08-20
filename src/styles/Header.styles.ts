@@ -62,7 +62,7 @@ export const SwitchToFocusButton = styled.button<{
   outline: none;
   transition: all 0.2s ease;
 
-  @media (hover: hover) {
+  @media (hover: hover) and (pointer: fine) {
     &:hover {
       background-color: ${({ $currentVersion }) =>
         $currentVersion === "focus"
@@ -73,6 +73,11 @@ export const SwitchToFocusButton = styled.button<{
   }
 
   &:active {
+    background-color: ${({ $currentVersion }) =>
+      $currentVersion === "focus"
+        ? colorPalette.FocusPrimary
+        : colorPalette.DailyPrimary};
+    color: ${colorPalette.White};
     transform: scale(0.96);
   }
 `;
@@ -88,11 +93,13 @@ export const ChangeImg = styled.img.attrs<{ $isFocus?: boolean }>(
   object-fit: contain;
   transition: filter 0.2s ease;
 
-  &:hover {
-    filter: brightness(0) invert(1);
+  @media (hover: hover) and (pointer: fine) {
+    button:hover & {
+      filter: brightness(0) invert(1);
+    }
   }
 
-  button:hover & {
+  button:active & {
     filter: brightness(0) invert(1);
   }
 `;
