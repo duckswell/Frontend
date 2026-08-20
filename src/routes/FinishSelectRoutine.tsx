@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { courseApi, type RoutineTypeCode } from "../api/course";
-
 import { routineApi } from "../api/routine";
 
 import CareButton from "../components/CareButton";
@@ -29,13 +28,11 @@ interface FinishSelectRoutineLocationState {
 
 export default function FinishSelectRoutine() {
   const navigate = useNavigate();
-
   const location = useLocation();
 
   const state = location.state as FinishSelectRoutineLocationState | null;
 
   const courseId = state?.courseId;
-
   const routineTypeCode = state?.routineTypeCode;
 
   const routineTitle =
@@ -112,7 +109,9 @@ export default function FinishSelectRoutine() {
       return;
     }
 
-    if (sessionStorage.getItem(ingredientStorageKey)) {
+    const storedIngredients = sessionStorage.getItem(ingredientStorageKey);
+
+    if (storedIngredients) {
       return;
     }
 
@@ -145,12 +144,12 @@ export default function FinishSelectRoutine() {
 
         console.log("🔥 더보기로 전달할 전체 성분:", mappedIngredients);
 
-        setRoutineIngredients(mappedIngredients);
-
         sessionStorage.setItem(
           currentStorageKey,
           JSON.stringify(mappedIngredients)
         );
+
+        setRoutineIngredients(mappedIngredients);
       } catch (error) {
         if (isCancelled) {
           return;
@@ -182,7 +181,9 @@ export default function FinishSelectRoutine() {
       return;
     }
 
-    if (sessionStorage.getItem(productStorageKey)) {
+    const storedProducts = sessionStorage.getItem(productStorageKey);
+
+    if (storedProducts) {
       return;
     }
 
@@ -211,30 +212,26 @@ export default function FinishSelectRoutine() {
 
         const mappedProducts: Product[] = response.map((item) => ({
           id: item.product.id,
-
           brand: item.product.brand,
-
           name: item.product.name,
 
           ingredientName: item.ingredientName,
-
           categories: [item.ingredientName],
 
           category: item.product.category,
 
           imageUrl: item.product.imageUrl,
-
           linkUrl: item.product.linkUrl,
         }));
 
         console.log("🔥 FinishSelectRoutine 표시 제품:", mappedProducts);
 
-        setRecommendedProducts(mappedProducts);
-
         sessionStorage.setItem(
           currentStorageKey,
           JSON.stringify(mappedProducts)
         );
+
+        setRecommendedProducts(mappedProducts);
       } catch (error) {
         if (isCancelled) {
           return;
@@ -258,6 +255,19 @@ export default function FinishSelectRoutine() {
       isCancelled = true;
     };
   }, [routineTypeCode, productStorageKey]);
+
+  function handleSaveRecommendedProducts() {
+    if (!productStorageKey) {
+      return;
+    }
+
+    sessionStorage.setItem(
+      productStorageKey,
+      JSON.stringify(recommendedProducts)
+    );
+
+    console.log("🔥 더보기 이동 전 추천 제품 저장:", recommendedProducts);
+  }
 
   function handleMoveToHome() {
     navigate("/");
@@ -306,6 +316,7 @@ export default function FinishSelectRoutine() {
             products={recommendedProducts}
             moreProducts={recommendedProducts}
             moreIngredients={routineIngredients}
+            onMoreClick={handleSaveRecommendedProducts}
           />
         </S.ProductSection>
 

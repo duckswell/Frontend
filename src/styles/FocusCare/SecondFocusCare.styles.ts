@@ -14,11 +14,6 @@ export const Page = styled.div`
   color: ${colorPalette.Black};
 
   box-sizing: border-box;
-
-  @media (min-width: 768px) {
-    min-height: calc(100dvh - 64px);
-    margin-top: 64px;
-  }
 `;
 
 export const Main = styled.main`

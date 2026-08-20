@@ -18,12 +18,7 @@ export const Page = styled.div`
     visibility: hidden;
     pointer-events: none;
   }
-
-  @media (min-width: 768px) {
-    padding-top: 64px;
-  }
 `;
-
 export const Content = styled.main`
   display: flex;
   flex-direction: column;
