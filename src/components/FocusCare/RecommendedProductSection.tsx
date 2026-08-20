@@ -139,9 +139,7 @@ export default function RecommendedProductSection({
     window.open(linkUrl, "_blank", "noopener,noreferrer");
   }
 
-  function handlePointerDown(
-    event: ReactPointerEvent<HTMLDivElement>
-  ) {
+  function handlePointerDown(event: ReactPointerEvent<HTMLDivElement>) {
     /*
      * 마우스일 때만 직접 드래그 처리.
      *
@@ -181,9 +179,7 @@ export default function RecommendedProductSection({
     event.preventDefault();
   }
 
-  function handlePointerMove(
-    event: ReactPointerEvent<HTMLDivElement>
-  ) {
+  function handlePointerMove(event: ReactPointerEvent<HTMLDivElement>) {
     if (
       event.pointerType !== "mouse" ||
       draggingPointerIdRef.current !== event.pointerId
@@ -210,15 +206,12 @@ export default function RecommendedProductSection({
      * 마우스를 왼쪽으로 끌면
      * 내용은 오른쪽 방향으로 진행.
      */
-    container.scrollLeft =
-      dragStartScrollLeftRef.current - moveX;
+    container.scrollLeft = dragStartScrollLeftRef.current - moveX;
 
     event.preventDefault();
   }
 
-  function finishPointerDrag(
-    event: ReactPointerEvent<HTMLDivElement>
-  ) {
+  function finishPointerDrag(event: ReactPointerEvent<HTMLDivElement>) {
     if (
       event.pointerType !== "mouse" ||
       draggingPointerIdRef.current !== event.pointerId
@@ -245,9 +238,7 @@ export default function RecommendedProductSection({
     }, 0);
   }
 
-  function handlePointerCancel(
-    event: ReactPointerEvent<HTMLDivElement>
-  ) {
+  function handlePointerCancel(event: ReactPointerEvent<HTMLDivElement>) {
     if (draggingPointerIdRef.current !== event.pointerId) {
       return;
     }
@@ -264,17 +255,10 @@ export default function RecommendedProductSection({
       <S.Header>
         <S.Title>{title}</S.Title>
 
-        <S.MoreButton
-          type="button"
-          onClick={handleMoveToRecommend}
-        >
+        <S.MoreButton type="button" onClick={handleMoveToRecommend}>
           <S.MoreText>더보기</S.MoreText>
 
-          <S.MoreIcon
-            src="/assets/Goto.svg"
-            alt=""
-            aria-hidden="true"
-          />
+          <S.MoreIcon src="/assets/GotoGray.svg" alt="" aria-hidden="true" />
         </S.MoreButton>
       </S.Header>
 
@@ -294,9 +278,7 @@ export default function RecommendedProductSection({
             <S.ProductImagePlaceholder
               $imageUrl={product.imageUrl ?? undefined}
               role={product.imageUrl ? "img" : undefined}
-              aria-label={
-                product.imageUrl ? product.name : undefined
-              }
+              aria-label={product.imageUrl ? product.name : undefined}
             />
 
             <S.ProductInfo>
@@ -308,9 +290,7 @@ export default function RecommendedProductSection({
             <S.ProductLinkButton
               type="button"
               disabled={!product.linkUrl}
-              onClick={() =>
-                handleMoveToProduct(product.linkUrl)
-              }
+              onClick={() => handleMoveToProduct(product.linkUrl)}
             >
               제품 보러가기
             </S.ProductLinkButton>
