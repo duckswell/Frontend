@@ -4,6 +4,7 @@ import { demoApi } from "../../api/demo";
 
 interface HeaderProps {
   currentVersion: "focus" | "daily";
+  onRestartFocus?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({ currentVersion }) => {
