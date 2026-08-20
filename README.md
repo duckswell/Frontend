@@ -19,7 +19,7 @@
   <thead>
     <tr>
       <th>김예나</th>
-      <th>허윤</th>
+      <th>허윤아</th>
     </tr>
   </thead>
   <tbody>
