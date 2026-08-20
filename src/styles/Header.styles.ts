@@ -38,27 +38,61 @@ export const Logo = styled.div`
   }
 `;
 
-export const SwitchToFocusButton = styled.button`
+export const SwitchToFocusButton = styled.button<{
+  $currentVersion: "focus" | "daily";
+}>`
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 4px;
   padding: 6px 14px;
   border-radius: 999px;
-  border: 1px solid ${colorPalette.FocusPrimary};
-  background-color: ${colorPalette.White};
-  color: ${colorPalette.FocusPrimary};
+  border: 0.5px solid
+    ${({ $currentVersion }) =>
+      $currentVersion === "focus"
+        ? colorPalette.FocusPrimary
+        : colorPalette.DailyPrimary};
+  background-color: ${colorPalette.OffWhite};
+  color: ${({ $currentVersion }) =>
+    $currentVersion === "focus"
+      ? colorPalette.FocusPrimary
+      : colorPalette.DailyPrimary};
   ${applyTypography("Body2Bold")};
   cursor: pointer;
   outline: none;
   transition: all 0.2s ease;
 
-  &:hover {
-    background-color: ${colorPalette.FocusPrimary};
-    color: ${colorPalette.White};
+  @media (hover: hover) {
+    &:hover {
+      background-color: ${({ $currentVersion }) =>
+        $currentVersion === "focus"
+          ? colorPalette.FocusPrimary
+          : colorPalette.DailyPrimary};
+      color: ${colorPalette.White};
+    }
   }
 
   &:active {
     transform: scale(0.96);
+  }
+`;
+
+export const ChangeImg = styled.img.attrs<{ $isFocus?: boolean }>(
+  ({ $isFocus }) => ({
+    src: $isFocus ? "/assets/Change_focus.svg" : "/assets/Change_daily.svg",
+    alt: "전환 아이콘",
+  }),
+)<{ $isFocus?: boolean }>`
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  transition: filter 0.2s ease;
+
+  &:hover {
+    filter: brightness(0) invert(1);
+  }
+
+  button:hover & {
+    filter: brightness(0) invert(1);
   }
 `;
