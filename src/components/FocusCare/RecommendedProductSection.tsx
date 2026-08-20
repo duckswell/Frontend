@@ -33,6 +33,8 @@ interface RecommendedProductSectionProps {
   moreProducts?: Product[];
   moreIngredientNames?: string[];
   moreIngredients?: CareIngredient[];
+
+  onMoreClick?: () => void;
 }
 
 export default function RecommendedProductSection({
@@ -41,28 +43,26 @@ export default function RecommendedProductSection({
   moreProducts,
   moreIngredientNames,
   moreIngredients,
+  onMoreClick,
 }: RecommendedProductSectionProps) {
   const navigate = useNavigate();
 
   const productScrollRef = useRef<HTMLDivElement>(null);
 
   const dragStartXRef = useRef(0);
-
   const dragStartScrollLeftRef = useRef(0);
-
   const draggingPointerIdRef = useRef<number | null>(null);
-
   const hasDraggedRef = useRef(false);
 
   const [isDragging, setIsDragging] = useState(false);
 
   function handleMoveToRecommend() {
+    onMoreClick?.();
+
     navigate("/recommend?from=care", {
       state: {
         recommendedProducts: moreProducts ?? products,
-
         recommendedIngredientNames: moreIngredientNames,
-
         recommendedIngredients: moreIngredients,
       },
     });
@@ -111,11 +111,8 @@ export default function RecommendedProductSection({
     }
 
     draggingPointerIdRef.current = event.pointerId;
-
     dragStartXRef.current = event.clientX;
-
     dragStartScrollLeftRef.current = container.scrollLeft;
-
     hasDraggedRef.current = false;
 
     setIsDragging(true);
@@ -179,7 +176,6 @@ export default function RecommendedProductSection({
     }
 
     draggingPointerIdRef.current = null;
-
     hasDraggedRef.current = false;
 
     setIsDragging(false);
@@ -206,10 +202,8 @@ export default function RecommendedProductSection({
         onPointerCancel={handlePointerCancel}
         onDragStart={(event) => event.preventDefault()}
       >
-        {products.map((product, index) => (
-          <S.ProductCard
-            key={`${product.id}-${product.ingredientId ?? "none"}-${index}`}
-          >
+        {products.map((product) => (
+          <S.ProductCard key={product.id}>
             <S.ProductImagePlaceholder
               $imageUrl={product.imageUrl ?? undefined}
               role={product.imageUrl ? "img" : undefined}

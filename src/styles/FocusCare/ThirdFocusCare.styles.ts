@@ -14,11 +14,6 @@ export const Page = styled.div`
   color: ${colorPalette.Black};
 
   box-sizing: border-box;
-
-  @media (min-width: 768px) {
-    min-height: calc(100dvh - 64px);
-    margin-top: 64px;
-  }
 `;
 
 export const Main = styled.main`
@@ -54,7 +49,6 @@ export const RoutineIntro = styled.section`
 `;
 
 export const SectionTitle = styled.h2`
-
   display: flex;
   align-items: center;
 
@@ -72,7 +66,6 @@ export const SectionTitle = styled.h2`
 `;
 
 export const Description = styled.p`
-
   margin: 0;
 
   color: ${colorPalette.Black};
@@ -91,7 +84,6 @@ export const CardList = styled.div`
   gap: 16px;
 
   width: 100%;
-
 
   margin-top: 16px;
 

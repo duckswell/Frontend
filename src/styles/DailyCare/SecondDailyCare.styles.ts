@@ -14,12 +14,8 @@ export const Page = styled.div`
   color: ${colorPalette.Black};
 
   box-sizing: border-box;
-
-  @media (min-width: 768px) {
-    min-height: calc(100dvh - 64px);
-    margin-top: 64px;
-  }
 `;
+
 export const Main = styled.main`
   display: flex;
   flex-direction: column;
@@ -69,6 +65,7 @@ export const AnalysisTitle = styled.h2`
   ${typography.H3};
   color: ${colorPalette.Black};
 `;
+
 export const AnalysisImage = styled.img`
   width: 120px;
   height: 80px;
@@ -80,6 +77,7 @@ export const AnalysisImage = styled.img`
   object-fit: cover;
   display: block;
 `;
+
 export const DateBadge = styled.span`
   display: inline-flex;
   align-items: center;
