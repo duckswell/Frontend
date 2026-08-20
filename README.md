@@ -81,7 +81,8 @@
 <tr>
 <th align="center">Code Quality</th>
 <td align="left">
-<img src="https://skillicons.dev/icons?i=eslint,prettier" alt="ESLint, Prettier">
+<img src="https://img.shields.io/badge/ESLint-4B32C3?style=flat-square&logo=eslint&logoColor=white" height="28" alt="ESLint">
+<img src="https://img.shields.io/badge/Prettier-F7B93E?style=flat-square&logo=prettier&logoColor=black" height="28" alt="Prettier">
 </td>
 </tr>
 <tr>
