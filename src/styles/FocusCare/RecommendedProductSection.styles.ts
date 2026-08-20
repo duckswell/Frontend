@@ -73,19 +73,14 @@ export const ProductScroll = styled.div<ProductScrollProps>`
   overflow-x: auto;
   overflow-y: hidden;
 
-  /*
-   * 좌우 끝에서 페이지 전체가 끌리는 것 방지.
-   */
+
   overscroll-behavior-x: contain;
 
   scrollbar-width: none;
 
   -webkit-overflow-scrolling: touch;
 
-  /*
-   * 세로 페이지 이동은 허용.
-   * 모바일 기본 가로 스크롤도 기존 방식 유지.
-   */
+
   touch-action: pan-y;
 
   cursor: ${({ $isDragging }) => ($isDragging ? "grabbing" : "grab")};

@@ -25,9 +25,6 @@ export const Main = styled.main`
   display: flex;
   flex-direction: column;
 
-  /*
-   * 프로그레스바 아래 제목 영역까지 16px
-   */
   gap: 16px;
 
   width: 100%;
@@ -57,10 +54,7 @@ export const RoutineIntro = styled.section`
 `;
 
 export const SectionTitle = styled.h2`
-  /*
-   * 제목 영역 높이 40px
-   * 글자는 영역의 세로 중앙
-   */
+
   display: flex;
   align-items: center;
 
@@ -78,9 +72,7 @@ export const SectionTitle = styled.h2`
 `;
 
 export const Description = styled.p`
-  /*
-   * 제목 바로 아래에 붙음
-   */
+
   margin: 0;
 
   color: ${colorPalette.Black};
@@ -100,9 +92,7 @@ export const CardList = styled.div`
 
   width: 100%;
 
-  /*
-   * 설명 아래 첫 Step 카드까지 기존 16px 유지
-   */
+
   margin-top: 16px;
 
   box-sizing: border-box;

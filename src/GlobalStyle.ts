@@ -23,12 +23,12 @@ export const GlobalStyle = createGlobalStyle`
     user-select: auto;
     -webkit-user-select: auto;
   }
-  /* Firefox */
+  
 * {
   scrollbar-width: none;
 }
 
-/* Chrome, Safari, Edge */
+
 *::-webkit-scrollbar {
   display: none;
 }

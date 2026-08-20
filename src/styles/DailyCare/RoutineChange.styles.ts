@@ -27,12 +27,6 @@ export const Page = styled.div`
 
   padding-top: 76px;
 
-  /*
-   * 그라데이션 25px
-   * + 버튼 56px
-   * + 버튼 아래 16px
-   * + 마지막 콘텐츠 여유 16px
-   */
   padding-bottom: 113px;
 
   box-sizing: border-box;
@@ -142,7 +136,6 @@ export const BottomArea = styled.div`
   width: 100%;
   max-width: 402px;
 
-  /* 좌우 16px / 버튼 아래 16px */
   padding: 0 16px 16px;
 
   box-sizing: border-box;

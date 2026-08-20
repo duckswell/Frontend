@@ -51,12 +51,7 @@ export default function ThirdFocusCare() {
 
   const [isCompleting, setIsCompleting] = useState(false);
 
-  /*
-   * 현재 루틴에 실제로 적용된 성분 조회
-   *
-   * 이 데이터의 ingredientId / ingredientName은
-   * 추천 제품 API 응답과 매칭할 때 사용한다.
-   */
+ 
   useEffect(() => {
     if (!routine) {
       console.error("ThirdFocusCare에 전달된 routine이 없습니다.");
@@ -103,9 +98,7 @@ export default function ThirdFocusCare() {
     try {
       setIsCompleting(true);
 
-      /*
-       * 1. 현재 집중 코스 확인
-       */
+  
       const currentCourse = await courseApi.getCurrentCourse();
 
       if (!currentCourse) {
@@ -123,11 +116,7 @@ export default function ThirdFocusCare() {
         return;
       }
 
-      /*
-       * 2. 현재 집중 코스 시술 확인
-       *
-       * course 종료 전에 조회해야 한다.
-       */
+ 
       const currentProcedures = await procedureApi.getCurrentProcedures();
 
       if (!Array.isArray(currentProcedures) || currentProcedures.length === 0) {
@@ -144,21 +133,14 @@ export default function ThirdFocusCare() {
 
       console.log("🔥 현재 시술 일차:", procedureDay);
 
-      /*
-       * 3. 루틴 완료
-       */
+
       const completionData = await routineApi.completeRoutine(
         routine.routineId
       );
 
       console.log("🔥 오늘의 루틴 완료:", completionData);
 
-      /*
-       * 4. FinishRoutine에서 보여줄 추천 제품 조회
-       *
-       * GET
-       * /api/routines/{routineId}/recommended-products
-       */
+   
       let recommendedProducts: Product[] = [];
 
       try {
@@ -167,16 +149,7 @@ export default function ThirdFocusCare() {
 
         console.log("🔥 루틴 추천 제품 API 응답:", recommendedProductResponse);
 
-        /*
-         * recommended-products API에는 ingredientId가 없다.
-         *
-         * 따라서 /steps 응답과 ingredientName으로 매칭해서
-         * ingredientId를 붙인다.
-         *
-         * 이렇게 해야 FinishRoutine의 더보기 →
-         * RecommendProduct 이동 후
-         * 성분별 제품 API를 정상 호출할 수 있다.
-         */
+    
         recommendedProducts = recommendedProductResponse.map((item) => {
           const normalizedIngredientName = item.ingredientName.replace(
             /\s/g,
@@ -204,9 +177,6 @@ export default function ThirdFocusCare() {
 
             ingredientName: item.ingredientName,
 
-            /*
-             * 기존 페이지 호환
-             */
             categories: [item.ingredientName],
 
             category: item.product.category,
@@ -218,18 +188,11 @@ export default function ThirdFocusCare() {
 
         console.log("🔥 FinishRoutine 전달 추천 제품:", recommendedProducts);
       } catch (error) {
-        /*
-         * 추천 제품 조회 실패 때문에
-         * 루틴 완료 자체가 막히면 안 된다.
-         */
+    
         console.error("추천 제품 조회 실패 - 완료 흐름은 계속 진행:", error);
       }
 
-      /*
-       * 5. 시술 7일차 이상
-       *
-       * 집중 코스 종료
-       */
+ 
       if (procedureDay >= 7) {
         const endedCourse = await courseApi.endCourse(currentCourse.courseId);
 
@@ -244,12 +207,7 @@ export default function ThirdFocusCare() {
         return;
       }
 
-      /*
-       * 6. 시술 1~6일차
-       *
-       * 집중 코스 유지
-       * FinishRoutine으로 이동
-       */
+ 
       navigate("/care/finish_routine", {
         state: {
           courseId: currentCourse.courseId,
@@ -258,11 +216,7 @@ export default function ThirdFocusCare() {
 
           completionData,
 
-          /*
-           * 위의
-           * /api/routines/{routineId}/recommended-products
-           * 응답으로 만든 제품
-           */
+     
           recommendedProducts,
         },
       });
@@ -285,11 +239,7 @@ export default function ThirdFocusCare() {
     navigate("/safety");
   }
 
-  /*
-   * ThirdFocusCare 내부의 개별 추천제품 버튼
-   *
-   * 기존 동작 그대로 유지
-   */
+
   function handleMoveToRecommendedProduct(stepId: number) {
     const step = stepSummaries.find(
       (stepSummary) => stepSummary.stepId === stepId

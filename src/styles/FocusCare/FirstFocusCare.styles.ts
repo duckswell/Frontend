@@ -41,9 +41,6 @@ export const Content = styled.div`
   display: flex;
   flex-direction: column;
 
-  /*
-   * 각각의 큰 입력 섹션 사이 간격
-   */
   gap: 36px;
 
   width: 100%;

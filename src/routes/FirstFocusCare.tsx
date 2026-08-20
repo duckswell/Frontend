@@ -37,29 +37,12 @@ export default function FirstFocusCare() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  /*
-   * 진단 진행 모달
-   */
   const [isDiagnosisModalOpen, setIsDiagnosisModalOpen] = useState(false);
 
-  /*
-   * 실제 /api/diagnoses 요청이 끝났는지 여부
-   * true가 되는 순간 AnalysisLoading이 100%로 마무리된다.
-   */
   const [isDiagnosisComplete, setIsDiagnosisComplete] = useState(false);
 
-  /*
-   * First에서 받은 실제 AI 분석 결과
-   */
   const [diagnosis, setDiagnosis] = useState<DiagnosisResponse | null>(null);
 
-  /*
-   * Focus
-   *
-   * 피부 상태 최소 1개 필수
-   * 사진 필수
-   * photoId 필수
-   */
   const isNextEnabled =
     selectedConditions.length > 0 && skinImages.length > 0 && photoId !== null;
 
@@ -131,9 +114,6 @@ export default function FirstFocusCare() {
       return;
     }
 
-    /*
-     * 버튼을 누르자마자 모달부터 표시
-     */
     setIsSubmitting(true);
     setDiagnosis(null);
     setIsDiagnosisComplete(false);
@@ -170,34 +150,17 @@ export default function FirstFocusCare() {
       console.log("API symptoms:", symptoms);
       console.log("진단 요청:", diagnosisRequest);
 
-      /*
-       * 실제 AI 분석 API
-       *
-       * 이 요청이 진행되는 동안 모달의 퍼센트가 진행된다.
-       */
       const response = await diagnosisApi.createDiagnosis(diagnosisRequest);
 
       console.log("===== 집중 AI 진단 완료 =====");
       console.log("진단 결과:", response);
 
-      /*
-       * 결과 먼저 저장
-       */
       setDiagnosis(response);
 
-      /*
-       * 실제 API가 끝났다는 신호
-       *
-       * AnalysisLoading이 이 값을 감지하고
-       * 진행률을 100%까지 마무리한다.
-       */
       setIsDiagnosisComplete(true);
     } catch (error) {
       console.error("집중 코스 AI 진단 실패:", error);
 
-      /*
-       * 요청 실패 시 모달 종료
-       */
       setDiagnosis(null);
       setIsDiagnosisComplete(false);
       setIsDiagnosisModalOpen(false);
@@ -205,12 +168,6 @@ export default function FirstFocusCare() {
     }
   };
 
-  /*
-   * API가 끝났다고 즉시 페이지를 이동하지 않는다.
-   *
-   * AnalysisLoading이 실제로 100%까지 표시한 뒤
-   * onComplete가 실행되면 SecondFocusCare로 이동한다.
-   */
   const handleDiagnosisAnalysisComplete = () => {
     if (!diagnosis) {
       return;

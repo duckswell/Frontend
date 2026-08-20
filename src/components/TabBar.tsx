@@ -87,26 +87,14 @@ export const TabBar: React.FC<TabBarProps> = ({ activeTab, onTabChange }) => {
 
       console.log("케어 탭 - 현재 진행 중인 코스:", currentCourse);
 
-      /*
-       * 진행 중인 코스가 없는 경우
-       * 기본 Care 페이지로 이동
-       */
       if (!currentCourse) {
         navigate("/care");
         return;
       }
 
-      /*
-       * DAILY 코스를 진행 중이면
-       * DailyCare로 바로 이동
-       */
       if (currentCourse.courseType === "DAILY") {
         const storedDailyCourse = getStoredDailyCourse();
 
-        /*
-         * 저장된 코스와 현재 백엔드의 코스가 같으면
-         * routineTypeCode도 같이 전달한다.
-         */
         if (
           storedDailyCourse &&
           storedDailyCourse.courseId === currentCourse.courseId
@@ -121,11 +109,6 @@ export const TabBar: React.FC<TabBarProps> = ({ activeTab, onTabChange }) => {
           return;
         }
 
-        /*
-         * sessionStorage가 없는 경우에도
-         * DailyCare 자체에서 현재 코스 조회 및
-         * label fallback을 처리하므로 이동은 가능하다.
-         */
         navigate("/care/daily_care", {
           state: {
             courseId: currentCourse.courseId,
@@ -135,19 +118,10 @@ export const TabBar: React.FC<TabBarProps> = ({ activeTab, onTabChange }) => {
         return;
       }
 
-      /*
-       * FOCUS 코스 진행 중이거나
-       * 그 외의 경우에는 기존 Care 페이지
-       */
       navigate("/care");
     } catch (error) {
       console.error("케어 탭 현재 코스 확인 실패:", error);
 
-      /*
-       * API 확인에 실패해도 사용자가
-       * 케어 탭에 진입하지 못하는 일은 없도록
-       * 기본 Care 페이지로 이동
-       */
       navigate("/care");
     } finally {
       setIsCheckingCareCourse(false);
@@ -157,10 +131,6 @@ export const TabBar: React.FC<TabBarProps> = ({ activeTab, onTabChange }) => {
   const handleTabClick = async (tab: (typeof tabs)[number]) => {
     onTabChange?.(tab.id);
 
-    /*
-     * 케어 탭만 현재 진행 중인 코스를 확인해서
-     * 목적지를 결정한다.
-     */
     if (tab.id === "care") {
       await handleCareTabClick();
       return;

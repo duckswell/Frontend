@@ -460,11 +460,6 @@ export default function RecommendProduct() {
     };
   }, [selectedProductCategory]);
 
-  /*
-   * ==========================
-   * 성분 조회
-   * ==========================
-   */
   useEffect(() => {
     let isCancelled = false;
 
@@ -642,11 +637,7 @@ export default function RecommendProduct() {
     requestedIngredientName,
   ]);
 
-  /*
-   * ==========================
-   * 제품 조회
-   * ==========================
-   */
+
   useEffect(() => {
     if (selectedIngredientId === null) {
       return;
@@ -693,11 +684,7 @@ export default function RecommendProduct() {
     };
   }, [selectedIngredientId, selectedProductCategory]);
 
-  /*
-   * ==========================
-   * 카드 유틸
-   * ==========================
-   */
+
   function getIngredientCards() {
     const container = ingredientScrollRef.current;
 
@@ -836,9 +823,6 @@ export default function RecommendProduct() {
     );
   }
 
-  /*
-   * 최초 중앙정렬
-   */
   useEffect(() => {
     const container = ingredientScrollRef.current;
 
@@ -897,11 +881,7 @@ export default function RecommendProduct() {
     };
   }, [fromCare, ingredients, selectedIngredientId, displayedIngredients]);
 
-  /*
-   * ==========================
-   * 드래그
-   * ==========================
-   */
+
   function handleIngredientPointerDown(
     event: ReactPointerEvent<HTMLDivElement>
   ) {
@@ -993,9 +973,7 @@ export default function RecommendProduct() {
       return;
     }
 
-    /*
-     * 이 값이 클수록 덜 예민함.
-     */
+
     const DRAG_THRESHOLD = 90;
 
     let targetIndex = startIndex;
@@ -1081,30 +1059,18 @@ export default function RecommendProduct() {
 
       console.log("🔥 제품 추천 페이지 현재 진행 코스:", currentCourse);
 
-      /*
-       * 현재 데일리 코스를 진행 중인 경우
-       * → 오늘의 데일리 루틴 시작 페이지
-       */
+
       if (currentCourse?.courseType === "DAILY") {
         navigate("/care/daily_care");
 
         return;
       }
 
-      /*
-       * 집중 케어 중이거나
-       * 현재 진행 중인 데일리 코스가 없는 경우
-       * → Care 진입 페이지
-       */
+
       navigate("/care");
     } catch (error) {
       console.error("현재 진행 코스 조회 실패:", error);
 
-      /*
-       * 코스 조회에 실패한 경우
-       * 잘못해서 데일리 루틴으로 보내지 않도록
-       * 기본 Care 페이지로 이동.
-       */
       navigate("/care");
     }
   }

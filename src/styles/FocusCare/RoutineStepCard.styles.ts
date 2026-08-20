@@ -76,9 +76,7 @@ export const InfoList = styled.div`
   display: flex;
   flex-direction: column;
 
-  /*
-   * 제품 / 방법 / 대체성분 줄 사이 8px
-   */
+
   gap: 8px;
 
   margin-top: 16px;
@@ -107,10 +105,7 @@ export const InfoContent = styled.div`
   display: flex;
   align-items: flex-start;
 
-  /*
-   * 제품/방법 같은 굵은 글자와
-   * 오른쪽 설명 사이 12px
-   */
+
   gap: 12px;
 
   min-width: 0;

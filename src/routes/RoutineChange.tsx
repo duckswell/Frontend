@@ -129,7 +129,7 @@ export default function RoutineChange() {
         if (course.courseType !== "DAILY") {
           console.error(
             "루틴 변경 페이지인데 현재 코스가 DAILY가 아닙니다.",
-            course,
+            course
           );
 
           setCurrentCourse(null);
@@ -152,7 +152,7 @@ export default function RoutineChange() {
         if (!routineTypeCode) {
           console.error(
             "현재 데일리 루틴 타입을 판단하지 못했습니다.",
-            course.label,
+            course.label
           );
 
           setCurrentRoutineTypeCode(null);
@@ -184,7 +184,7 @@ export default function RoutineChange() {
   }, [state?.routineTypeCode]);
 
   const currentRoutine = ROUTINES.find(
-    (routine) => routine.routineTypeCode === currentRoutineTypeCode,
+    (routine) => routine.routineTypeCode === currentRoutineTypeCode
   );
 
   const handleSelectRoutine = (routineTypeCode: RoutineTypeCode) => {
@@ -211,15 +211,10 @@ export default function RoutineChange() {
         routineTypeCode,
       });
     } catch (error) {
-      /*
-       * 기존 course end 직후 DB 반영 타이밍 때문에
-       * CO003이 순간적으로 발생할 가능성에 대비해서
-       * 잠깐 기다린 뒤 한 번만 재시도한다.
-       */
       if (axios.isAxiosError(error) && error.response?.status === 409) {
         console.warn(
           "새 DAILY 코스 시작 409 발생 - 잠시 후 재시도합니다.",
-          error.response?.data,
+          error.response?.data
         );
 
         await wait(300);
@@ -252,10 +247,6 @@ export default function RoutineChange() {
       return;
     }
 
-    /*
-     * 현재 루틴 그대로 선택한 경우에는
-     * API 호출 없이 DailyCare로 복귀
-     */
     if (selectedRoutineTypeCode === currentRoutineTypeCode) {
       console.log("현재 루틴과 동일 - DailyCare로 이동");
 
@@ -264,7 +255,7 @@ export default function RoutineChange() {
         JSON.stringify({
           courseId: currentCourse.courseId,
           routineTypeCode: currentRoutineTypeCode,
-        }),
+        })
       );
 
       navigate("/care/daily_care", {
@@ -289,32 +280,23 @@ export default function RoutineChange() {
 
       console.log("새 routineTypeCode:", selectedRoutineTypeCode);
 
-      /*
-       * 1. 기존 데일리 코스 종료
-       */
       const endedCourse = await courseApi.endCourse(currentCourse.courseId);
 
       console.log("기존 데일리 코스 종료 성공:", endedCourse);
 
-      /*
-       * 2. 새 데일리 코스 시작
-       */
       const newCourse = await startNewDailyCourse(selectedRoutineTypeCode);
       sessionStorage.setItem(
         "currentDailyCourse",
         JSON.stringify({
           courseId: newCourse.id,
           routineTypeCode: selectedRoutineTypeCode,
-        }),
+        })
       );
       console.log("새 데일리 코스 시작 성공:", newCourse);
 
       const newRoutineTypeCode =
         newCourse.routineTypeCode ?? selectedRoutineTypeCode;
 
-      /*
-       * 3. 새 코스 정보로 DailyCare 이동
-       */
       console.log("DailyCare 이동:", {
         courseId: newCourse.id,
         routineTypeCode: newRoutineTypeCode,

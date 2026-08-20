@@ -43,12 +43,6 @@ export default function FirstDaliyCare() {
 
   const [diagnosis, setDiagnosis] = useState<DiagnosisResponse | null>(null);
 
-  /*
-   * Daily
-   *
-   * 피부 상태 최소 1개 필수
-   * 사진은 선택사항
-   */
   const isNextEnabled = selectedConditions.length > 0;
 
   const handleToggleCondition = (condition: string) => {
@@ -145,11 +139,6 @@ export default function FirstDaliyCare() {
         symptoms,
         symptomNote: additionalSymptom.trim() || undefined,
 
-        /*
-         * 사진은 선택사항.
-         * 사진을 업로드했다면 photoId 전달,
-         * 업로드하지 않았다면 undefined 전달.
-         */
         photoId: photoId ?? undefined,
       };
 
@@ -187,11 +176,6 @@ export default function FirstDaliyCare() {
         diagnosis,
         selectedConditions,
         routineTypeCode: state?.routineTypeCode,
-
-        /*
-         * 사진이 있으면 File 전달.
-         * 없으면 undefined 전달.
-         */
         skinImage: skinImages[0],
       },
     });

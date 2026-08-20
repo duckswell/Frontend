@@ -11,9 +11,6 @@ export const Section = styled.section`
   display: flex;
   flex-direction: column;
 
-  /*
-   * 질문/설명 영역과 실제 입력 UI 사이
-   */
   gap: 16px;
 
   width: 100%;
@@ -23,9 +20,6 @@ export const TextArea = styled.div`
   display: flex;
   flex-direction: column;
 
-  /*
-   * 질문과 설명은 별도의 큰 gap 없이 바로 이어짐
-   */
   gap: 0;
 
   width: 100%;
@@ -101,10 +95,6 @@ export const ConditionButton = styled.button<{
 
   cursor: pointer;
 `;
-
-/* =========================
-   이미지 미리보기
-========================= */
 
 export const ImagePreviewList = styled.div`
   display: flex;
@@ -254,10 +244,6 @@ export const Notice = styled.p`
 
   word-break: keep-all;
 `;
-
-/* =========================
-   사진 등록 완료
-========================= */
 
 export const CheckIcon = styled.img`
   flex-shrink: 0;
