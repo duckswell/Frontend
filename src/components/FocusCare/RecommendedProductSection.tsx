@@ -1,3 +1,9 @@
+import {
+  useRef,
+  useState,
+  type PointerEvent as ReactPointerEvent,
+} from "react";
+
 import { useNavigate } from "react-router-dom";
 
 import type { ProductCategory } from "../../api/product";
@@ -81,6 +87,18 @@ export default function RecommendedProductSection({
 }: RecommendedProductSectionProps) {
   const navigate = useNavigate();
 
+  const productScrollRef = useRef<HTMLDivElement>(null);
+
+  const dragStartXRef = useRef(0);
+
+  const dragStartScrollLeftRef = useRef(0);
+
+  const draggingPointerIdRef = useRef<number | null>(null);
+
+  const hasDraggedRef = useRef(false);
+
+  const [isDragging, setIsDragging] = useState(false);
+
   function handleMoveToRecommend() {
     navigate("/recommend?from=care", {
       state: {
@@ -106,6 +124,14 @@ export default function RecommendedProductSection({
   }
 
   function handleMoveToProduct(linkUrl?: string | null) {
+    /*
+     * 제품 목록을 드래그하고 놓았을 때
+     * 버튼 클릭으로 잘못 인식되는 것 방지.
+     */
+    if (hasDraggedRef.current) {
+      return;
+    }
+
     if (!linkUrl) {
       return;
     }
@@ -113,19 +139,154 @@ export default function RecommendedProductSection({
     window.open(linkUrl, "_blank", "noopener,noreferrer");
   }
 
+  function handlePointerDown(
+    event: ReactPointerEvent<HTMLDivElement>
+  ) {
+    /*
+     * 마우스일 때만 직접 드래그 처리.
+     *
+     * 모바일 터치 / 트랙패드는
+     * 기존 브라우저 스크롤을 그대로 사용.
+     */
+    if (event.pointerType !== "mouse") {
+      return;
+    }
+
+    const container = productScrollRef.current;
+
+    if (!container) {
+      return;
+    }
+
+    /*
+     * 스크롤할 제품이 없는 경우
+     * 드래그 처리하지 않음.
+     */
+    if (container.scrollWidth <= container.clientWidth) {
+      return;
+    }
+
+    draggingPointerIdRef.current = event.pointerId;
+
+    dragStartXRef.current = event.clientX;
+
+    dragStartScrollLeftRef.current = container.scrollLeft;
+
+    hasDraggedRef.current = false;
+
+    setIsDragging(true);
+
+    container.setPointerCapture(event.pointerId);
+
+    event.preventDefault();
+  }
+
+  function handlePointerMove(
+    event: ReactPointerEvent<HTMLDivElement>
+  ) {
+    if (
+      event.pointerType !== "mouse" ||
+      draggingPointerIdRef.current !== event.pointerId
+    ) {
+      return;
+    }
+
+    const container = productScrollRef.current;
+
+    if (!container) {
+      return;
+    }
+
+    const moveX = event.clientX - dragStartXRef.current;
+
+    /*
+     * 클릭과 실제 드래그 구분.
+     */
+    if (Math.abs(moveX) >= 5) {
+      hasDraggedRef.current = true;
+    }
+
+    /*
+     * 마우스를 왼쪽으로 끌면
+     * 내용은 오른쪽 방향으로 진행.
+     */
+    container.scrollLeft =
+      dragStartScrollLeftRef.current - moveX;
+
+    event.preventDefault();
+  }
+
+  function finishPointerDrag(
+    event: ReactPointerEvent<HTMLDivElement>
+  ) {
+    if (
+      event.pointerType !== "mouse" ||
+      draggingPointerIdRef.current !== event.pointerId
+    ) {
+      return;
+    }
+
+    const container = productScrollRef.current;
+
+    if (container?.hasPointerCapture(event.pointerId)) {
+      container.releasePointerCapture(event.pointerId);
+    }
+
+    draggingPointerIdRef.current = null;
+
+    setIsDragging(false);
+
+    /*
+     * pointerUp 뒤 click 이벤트까지 처리된 다음
+     * drag 여부 초기화.
+     */
+    window.setTimeout(() => {
+      hasDraggedRef.current = false;
+    }, 0);
+  }
+
+  function handlePointerCancel(
+    event: ReactPointerEvent<HTMLDivElement>
+  ) {
+    if (draggingPointerIdRef.current !== event.pointerId) {
+      return;
+    }
+
+    draggingPointerIdRef.current = null;
+
+    hasDraggedRef.current = false;
+
+    setIsDragging(false);
+  }
+
   return (
     <S.Section>
       <S.Header>
         <S.Title>{title}</S.Title>
 
-        <S.MoreButton type="button" onClick={handleMoveToRecommend}>
+        <S.MoreButton
+          type="button"
+          onClick={handleMoveToRecommend}
+        >
           <S.MoreText>더보기</S.MoreText>
 
-          <S.MoreIcon src="/assets/Goto.svg" alt="" aria-hidden="true" />
+          <S.MoreIcon
+            src="/assets/Goto.svg"
+            alt=""
+            aria-hidden="true"
+          />
         </S.MoreButton>
       </S.Header>
 
-      <S.ProductScroll $isDragging={false}>
+      <S.ProductScroll
+        ref={productScrollRef}
+        $isDragging={isDragging}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={finishPointerDrag}
+        onPointerCancel={handlePointerCancel}
+        onDragStart={(event) => event.preventDefault()}
+      >
         {products.map((product, index) => (
           <S.ProductCard
             key={`${product.id}-${product.ingredientId ?? "none"}-${index}`}
@@ -133,7 +294,9 @@ export default function RecommendedProductSection({
             <S.ProductImagePlaceholder
               $imageUrl={product.imageUrl ?? undefined}
               role={product.imageUrl ? "img" : undefined}
-              aria-label={product.imageUrl ? product.name : undefined}
+              aria-label={
+                product.imageUrl ? product.name : undefined
+              }
             />
 
             <S.ProductInfo>
@@ -145,7 +308,9 @@ export default function RecommendedProductSection({
             <S.ProductLinkButton
               type="button"
               disabled={!product.linkUrl}
-              onClick={() => handleMoveToProduct(product.linkUrl)}
+              onClick={() =>
+                handleMoveToProduct(product.linkUrl)
+              }
             >
               제품 보러가기
             </S.ProductLinkButton>
