@@ -816,10 +816,10 @@ export default function RecommendProduct() {
     ingredientMoveTimerRef.current = window.setTimeout(
       () => {
         normalizeInfinitePosition(safeIndex);
-
+    
         ingredientMoveTimerRef.current = null;
       },
-      behavior === "smooth" ? 320 : 20
+      behavior === "smooth" ? 450 : 20
     );
   }
 
@@ -944,7 +944,6 @@ export default function RecommendProduct() {
 
     event.preventDefault();
   }
-
   function finishIngredientDrag(event: ReactPointerEvent<HTMLDivElement>) {
     if (
       event.pointerType !== "mouse" ||
@@ -952,40 +951,36 @@ export default function RecommendProduct() {
     ) {
       return;
     }
-
+  
     const container = ingredientScrollRef.current;
-
+  
     if (container?.hasPointerCapture(event.pointerId)) {
       container.releasePointerCapture(event.pointerId);
     }
-
+  
     const startIndex = dragStartCardIndexRef.current;
-
     const dragDistance = event.clientX - dragStartXRef.current;
-
+  
     draggingPointerIdRef.current = null;
-
     dragStartCardIndexRef.current = null;
-
+  
     setIsDraggingIngredient(false);
-
+  
     if (startIndex === null) {
       return;
     }
-
-
-    const DRAG_THRESHOLD = 90;
-
-    let targetIndex = startIndex;
-
-    if (dragDistance <= -DRAG_THRESHOLD) {
-      targetIndex = startIndex + 1;
+  
+    const DRAG_THRESHOLD = 30;
+  
+    if (Math.abs(dragDistance) < DRAG_THRESHOLD) {
+      moveToIngredientCard(startIndex);
+  
+      return;
     }
-
-    if (dragDistance >= DRAG_THRESHOLD) {
-      targetIndex = startIndex - 1;
-    }
-
+  
+    const targetIndex =
+      dragDistance < 0 ? startIndex + 1 : startIndex - 1;
+  
     moveToIngredientCard(targetIndex);
   }
 

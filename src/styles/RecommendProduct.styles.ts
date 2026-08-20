@@ -118,7 +118,7 @@ export const IngredientScroll = styled.div<IngredientScrollProps>`
   margin-top: 16px;
   padding: 0 60px;
 
-  overflow-x: hidden;
+  overflow-x: auto;
   overflow-y: hidden;
 
   overscroll-behavior-x: contain;
