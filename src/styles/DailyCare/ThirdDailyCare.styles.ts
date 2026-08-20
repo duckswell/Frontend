@@ -25,9 +25,6 @@ export const Main = styled.main`
   display: flex;
   flex-direction: column;
 
-  /*
-   * 프로그레스바 아래 제목까지 16px
-   */
   gap: 16px;
 
   width: 100%;
@@ -57,10 +54,6 @@ export const RoutineIntro = styled.section`
 `;
 
 export const SectionTitle = styled.h2`
-  /*
-   * 제목 영역 40px
-   * 세로 가운데
-   */
   display: flex;
   align-items: center;
 
@@ -78,9 +71,6 @@ export const SectionTitle = styled.h2`
 `;
 
 export const Description = styled.p`
-  /*
-   * 제목 바로 아래
-   */
   margin: 0;
 
   color: ${colorPalette.Black};

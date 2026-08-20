@@ -65,10 +65,6 @@ export const FullScreenSection = styled.section`
   animation: ${fadeIn} 0.35s ease;
 `;
 
-/* =========================
-   1. 축하 / 점 화면
-========================= */
-
 export const CompletionArea = styled.div`
   position: relative;
 
@@ -178,10 +174,6 @@ export const IndicatorDot = styled.span<{
   }
 `;
 
-/* =========================
-   2. 피부 고민
-========================= */
-
 export const ConcernContent = styled.div`
   display: flex;
   flex-direction: column;
@@ -290,9 +282,6 @@ export const SecondaryConcernChip = styled.div`
 
   white-space: nowrap;
 `;
-/* =========================
-   3. 루틴 선택
-========================= */
 
 export const RoutineScreen = styled.section`
   box-sizing: border-box;

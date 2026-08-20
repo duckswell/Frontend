@@ -62,10 +62,6 @@ export default function Care() {
           return;
         }
 
-        /*
-         * 집중 코스가 아닐 경우
-         * 회복 단계 요약을 조회하지 않는다.
-         */
         if (course.courseType !== "FOCUS") {
           setRecoverySummary("");
           return;
@@ -137,20 +133,10 @@ export default function Care() {
     try {
       setIsStartingRoutine(true);
 
-      /*
-       * 버튼을 누르는 순간
-       * 현재 진행 중인 코스를 다시 조회한다.
-       */
       const latestCourse = await courseApi.getCurrentCourse();
 
       console.log("루틴 시작 시 최신 코스:", latestCourse);
 
-      /*
-       * 기존 집중 코스가 있을 때만
-       * 오늘의 집중 루틴으로 이동한다.
-       *
-       * Care.tsx에서는 FOCUS 코스를 새로 생성하지 않는다.
-       */
       if (latestCourse?.courseType === "FOCUS") {
         console.log("기존 집중 코스로 루틴 시작:", latestCourse.courseId);
 
@@ -163,9 +149,6 @@ export default function Care() {
         return;
       }
 
-      /*
-       * DAILY 코스가 진행 중인 경우
-       */
       if (latestCourse?.courseType === "DAILY") {
         console.error(
           "현재 데일리 코스가 진행 중입니다. 집중 루틴을 시작할 수 없습니다.",
@@ -175,12 +158,6 @@ export default function Care() {
         return;
       }
 
-      /*
-       * 진행 중인 코스가 없는 경우
-       *
-       * 여기서는 새로운 FOCUS 코스를 생성하지 않는다.
-       * 집중 코스 생성은 시술 등록 페이지가 담당한다.
-       */
       console.error(
         "진행 중인 집중 코스가 없습니다. 시술 등록 후 집중 코스를 시작해야 합니다."
       );

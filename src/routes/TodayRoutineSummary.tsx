@@ -22,22 +22,8 @@ interface TodayRoutineSummaryLocationState {
 
   completionData: RoutineCompletionData;
 
-  /*
-   * ThirdDailyCare에서 전달받은
-   * 완료 페이지 섹션 추천 제품.
-   */
   recommendedProducts?: Product[];
 
-  /*
-   * ThirdDailyCare의 /steps 기준
-   * 현재 데일리 루틴의 전체 성분.
-   *
-   * 예:
-   * 수분충전
-   * → 히알루론산
-   * → 세라마이드
-   * → 판테놀
-   */
   routineIngredients?: CareIngredient[];
 }
 
@@ -57,46 +43,11 @@ export default function TodayRoutineSummary() {
 
   const routineId = state?.routineId;
 
-  /*
-   * ==================================
-   * 루틴 전체 성분
-   * ==================================
-   *
-   * 중요:
-   *
-   * TodayRoutineSummary에서
-   * 추천 성분 API를 다시 호출하지 않는다.
-   *
-   * ThirdDailyCare가 /steps를 조회해서
-   * 넘겨준 실제 루틴 전체 성분을 그대로 사용한다.
-   *
-   * 따라서 오늘 추천 제품이
-   * 히알루론산 / 세라마이드만 있더라도
-   *
-   * 수분충전 루틴 전체 성분이
-   * 히알루론산 / 세라마이드 / 판테놀이라면
-   *
-   * 더보기에서는 세 성분 모두 표시된다.
-   */
   const routineIngredients: CareIngredient[] = state?.routineIngredients ?? [];
 
-  /*
-   * 같은 완료 페이지에서
-   * 제품추천 페이지로 갔다가 돌아왔을 때
-   * 추천 제품이 다시 랜덤 변경되지 않도록
-   * routineId 기준으로 캐시한다.
-   */
   const storageKey =
     routineId != null ? `routine-recommended-products-${routineId}` : null;
 
-  /*
-   * ==================================
-   * 화면에 표시할 추천 제품
-   * ==================================
-   *
-   * ThirdDailyCare에서 이미 저장한
-   * sessionStorage 값이 있으면 우선 사용한다.
-   */
   const [recommendedProducts, setRecommendedProducts] = useState<Product[]>(
     () => {
       if (!storageKey) {
@@ -180,10 +131,6 @@ export default function TodayRoutineSummary() {
 
         setRecommendedProducts(mappedProducts);
 
-        /*
-         * 제품 추천 페이지 갔다가
-         * 뒤로 돌아와도 같은 제품 유지.
-         */
         sessionStorage.setItem(
           currentStorageKey,
           JSON.stringify(mappedProducts)
@@ -242,25 +189,8 @@ export default function TodayRoutineSummary() {
         <S.ProductSection>
           <RecommendedProductSection
             title={`${routineTitle} 루틴 추천 제품`}
-            /*
-             * TodayRoutineSummary 화면에
-             * 실제로 표시할 추천 제품.
-             */
             products={recommendedProducts}
-            /*
-             * 기존 공용 컴포넌트 호환.
-             */
             moreProducts={recommendedProducts}
-            /*
-             * 핵심.
-             *
-             * ThirdDailyCare의 /steps 기준
-             * 실제 루틴 전체 성분을 전달한다.
-             *
-             * 추천 제품에 포함되지 않은 성분도
-             * RecommendProduct의 성분카드에는
-             * 반드시 표시된다.
-             */
             moreIngredients={routineIngredients}
           />
         </S.ProductSection>

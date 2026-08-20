@@ -90,7 +90,6 @@ export const Category = styled.span`
   border: 0.5px solid rgba(255, 255, 255, 0.38);
   border-radius: 9999px;
 
-  /* 더 투명하게 */
   background-color: rgba(255, 255, 255, 0.28);
 
   color: ${colorPalette.Black};
@@ -149,7 +148,6 @@ export const IngredientInfo = styled.div`
   border: 0.5px solid rgba(255, 255, 255, 0.32);
   border-radius: 12px;
 
-  /* 기존 60%보다 조금 더 투명하게 */
   background-color: rgba(255, 255, 255, 0.46);
 
   backdrop-filter: blur(2.5px);

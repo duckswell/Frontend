@@ -65,12 +65,7 @@ export default function ThirdDailyCare() {
 
   const [isCompleting, setIsCompleting] = useState(false);
 
-  /*
-   * 현재 실제 루틴의 step 정보 조회.
-   *
-   * 여기서 ingredientId +
-   * ingredientName을 확보한다.
-   */
+
   useEffect(() => {
     if (!routine) {
       return;
@@ -115,20 +110,14 @@ export default function ThirdDailyCare() {
     try {
       setIsCompleting(true);
 
-      /*
-       * 1.
-       * 오늘 루틴 완료
-       */
+  
       const completionData = await routineApi.completeRoutine(
         routine.routineId
       );
 
       console.log("🔥 데일리 루틴 완료 응답:", completionData);
 
-      /*
-       * 완료 시점에도 step 데이터가
-       * 확실하게 존재하도록 보정.
-       */
+    
       let resolvedStepSummaries = stepSummaries;
 
       if (resolvedStepSummaries.length === 0) {
@@ -146,19 +135,7 @@ export default function ThirdDailyCare() {
         }
       }
 
-      /*
-       * =====================================
-       * 2.
-       * 오늘 루틴의 모든 실제 성분 추출
-       * =====================================
-       *
-       * 추천 제품 API 결과가 아니라
-       * /steps를 기준으로 한다.
-       *
-       * 따라서 해당 성분의 추천 제품이
-       * Finish 화면에 없더라도
-       * 더보기 성분카드에는 들어간다.
-       */
+     
       const ingredientMap = new Map<number, CareIngredient>();
 
       resolvedStepSummaries.forEach((step) => {
@@ -180,12 +157,7 @@ export default function ThirdDailyCare() {
 
       console.log("🔥 오늘 데일리 루틴 전체 성분:", routineIngredients);
 
-      /*
-       * =====================================
-       * 3.
-       * TodayRoutineSummary 섹션 제품 조회
-       * =====================================
-       */
+     
       let recommendedProducts: Product[] = [];
 
       try {
@@ -233,11 +205,7 @@ export default function ThirdDailyCare() {
           recommendedProducts
         );
 
-        /*
-         * 추천 제품 페이지 갔다가
-         * 뒤로 돌아왔을 때 제품이 변경되지 않도록
-         * 최초 결과 저장.
-         */
+     
         sessionStorage.setItem(
           `routine-recommended-products-${routine.routineId}`,
           JSON.stringify(recommendedProducts)
@@ -249,10 +217,7 @@ export default function ThirdDailyCare() {
         );
       }
 
-      /*
-       * 4.
-       * TodayRoutineSummary 이동
-       */
+     
       navigate("/care/today_routine_summary", {
         state: {
           routineId: routine.routineId,
@@ -263,12 +228,7 @@ export default function ThirdDailyCare() {
 
           recommendedProducts,
 
-          /*
-           * 핵심.
-           *
-           * /steps 기준
-           * 실제 루틴 전체 성분.
-           */
+       
           routineIngredients,
         },
       });

@@ -118,10 +118,6 @@ export const IngredientScroll = styled.div<IngredientScrollProps>`
   margin-top: 16px;
   padding: 0 60px;
 
-  /*
-   * 브라우저 자체 가로 스크롤을 막고
-   * TSX의 pointer drag 로직만 사용.
-   */
   overflow-x: hidden;
   overflow-y: hidden;
 
@@ -150,9 +146,7 @@ export const IngredientCardWrapper = styled.div`
   flex: 0 0 282px;
 `;
 
-/* =========================
-   루틴 없음 - 성분 카드
-========================= */
+
 
 export const EmptyIngredientCardArea = styled.div`
   display: flex;
@@ -289,9 +283,7 @@ export const EmptyIngredientDescription = styled.p`
   line-height: 1.4;
 `;
 
-/* =========================
-   제품 영역
-========================= */
+
 
 export const ProductSection = styled.section`
   box-sizing: border-box;
@@ -374,9 +366,7 @@ export const ProductGrid = styled.div`
   margin-top: 16px;
 `;
 
-/* =========================
-   제품 없음
-========================= */
+
 
 export const EmptyProductArea = styled.div`
   box-sizing: border-box;
@@ -420,9 +410,6 @@ export const EmptyProductDescription = styled.p`
   text-align: center;
 `;
 
-/* =========================
-   루틴 없음
-========================= */
 
 export const NoRoutineArea = styled.div`
   box-sizing: border-box;
@@ -480,9 +467,6 @@ export const StartRoutineButton = styled.button`
   cursor: pointer;
 `;
 
-/* =========================
-   맨 위 버튼
-========================= */
 
 export const ScrollTopButton = styled.button<PageProps>`
   position: fixed;

@@ -77,12 +77,6 @@ export interface SymptomSummaryResponse {
   recommendedRoutineTypeName: string | null;
 }
 
-/*
- * 데일리 루틴 타입에 고정 매핑된 성분.
- *
- * GET
- * /api/courses/routine-types/{routineTypeCode}/ingredients
- */
 export interface RoutineTypeIngredient {
   ingredientId: number;
   ingredientName: string;
@@ -155,18 +149,6 @@ export const courseApi = {
     return response.data.data;
   },
 
-  /*
-   * ==================================================
-   * 데일리 루틴 타입 전체 성분 조회
-   *
-   * 예:
-   * CLEAR_UP
-   * → 나이아신아마이드 + 비타민C
-   *
-   * 오늘의 실제 routine이 아직 생성되지 않아도
-   * 조회할 수 있다.
-   * ==================================================
-   */
   getRoutineTypeIngredients: async (
     routineTypeCode: RoutineTypeCode
   ): Promise<RoutineTypeIngredient[]> => {

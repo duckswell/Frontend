@@ -113,10 +113,6 @@ export const CourseSection = styled.section`
   flex-direction: column;
 
   width: 100%;
-
-  /*
-   * 상단 카드와 제목 사이 36px
-   */
   margin-top: 36px;
 `;
 
@@ -195,10 +191,6 @@ export const StepTitle = styled.h3`
 export const StepDescription = styled.p`
   ${typography.Body1};
 
-  /*
-   * 피부 상태 확인 등의 제목과
-   * 설명 사이 간격 9px
-   */
   margin: 9px 0 0;
 
   color: ${colorPalette.Black};
@@ -212,9 +204,6 @@ export const WarningCard = styled.section`
 
   width: 100%;
 
-  /*
-   * Step 카드 아래 정확히 36px
-   */
   margin-top: 36px;
   padding: 20px 16px 16px;
 

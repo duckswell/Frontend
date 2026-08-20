@@ -42,9 +42,6 @@ export default function SecondFocusCare() {
 
       const rect = analysisCardRef.current.getBoundingClientRect();
 
-      /*
-       * 분석 카드 아래 20px
-       */
       setSheetTopOffset(rect.bottom + 20);
     };
 

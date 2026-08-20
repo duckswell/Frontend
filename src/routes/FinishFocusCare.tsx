@@ -123,7 +123,7 @@ export default function FinishFocusCare() {
     useState<SymptomSummaryResponse | null>(null);
 
   const [selectedRoutine, setSelectedRoutine] = useState<RoutineId | null>(
-    null,
+    null
   );
 
   const [isStartingDailyCourse, setIsStartingDailyCourse] = useState(false);
@@ -141,7 +141,7 @@ export default function FinishFocusCare() {
       .filter((concern): concern is SkinConcern => Boolean(concern)) ?? [];
 
   const secondaryConcerns = SKIN_CONCERNS.filter(
-    (concern) => !primaryConcerns.includes(concern),
+    (concern) => !primaryConcerns.includes(concern)
   );
 
   const secondaryConcernRows = (() => {
@@ -181,11 +181,6 @@ export default function FinishFocusCare() {
 
   const isRoutineSelected = selectedRoutine !== null;
 
-  /*
-   * ==========================
-   * 7일 증상 요약 조회
-   * ==========================
-   */
   useEffect(() => {
     if (courseId === undefined) {
       console.error("증상 요약 조회에 필요한 courseId가 없습니다.");
@@ -222,14 +217,6 @@ export default function FinishFocusCare() {
     fetchSymptomSummary();
   }, [courseId]);
 
-  /*
-   * ==========================
-   * confetti 종료
-   *
-   * intro
-   * → indicator 자동 전환
-   * ==========================
-   */
   function handleConfettiComplete() {
     if (currentStep !== "intro") {
       return;
@@ -239,16 +226,7 @@ export default function FinishFocusCare() {
     setCurrentStep("indicator");
   }
 
-  /*
-   * ==========================
-   * 다음 화면
-   * ==========================
-   */
   function handleMoveToNextStep() {
-    /*
-     * intro는 사용자 입력으로 넘기지 않음.
-     * confetti 종료 후 자동으로 indicator 이동.
-     */
     if (currentStep === "intro") {
       return;
     }
@@ -261,10 +239,6 @@ export default function FinishFocusCare() {
 
     const nextStep = PAGE_STEPS[currentIndex + 1];
 
-    /*
-     * 사용자가 indicator를 직접 넘긴 경우
-     * 자동 타이머 중지
-     */
     if (currentStep === "indicator" && nextStep === "concern") {
       setShouldAutoAdvanceIndicator(false);
     }
@@ -272,11 +246,6 @@ export default function FinishFocusCare() {
     setCurrentStep(nextStep);
   }
 
-  /*
-   * ==========================
-   * 이전 화면
-   * ==========================
-   */
   function handleMoveToPreviousStep() {
     const currentIndex = PAGE_STEPS.indexOf(currentStep);
 
@@ -293,11 +262,6 @@ export default function FinishFocusCare() {
     setCurrentStep(previousStep);
   }
 
-  /*
-   * ==========================
-   * 모바일 스와이프
-   * ==========================
-   */
   function handleTouchStart(event: React.TouchEvent<HTMLDivElement>) {
     touchStartY.current = event.touches[0].clientY;
   }
@@ -321,27 +285,17 @@ export default function FinishFocusCare() {
     touchStartY.current = null;
   }
 
-  /*
-   * ==========================
-   * 루틴 선택
-   * ==========================
-   */
   function handleSelectRoutine(routineId: RoutineId) {
     setSelectedRoutine(routineId);
   }
 
-  /*
-   * ==========================
-   * 데일리 코스 시작
-   * ==========================
-   */
   async function handleStartDailyCourse() {
     if (!selectedRoutine || isStartingDailyCourse) {
       return;
     }
 
     const selectedRoutineOption = ROUTINE_OPTIONS.find(
-      (routine) => routine.id === selectedRoutine,
+      (routine) => routine.id === selectedRoutine
     );
 
     if (!selectedRoutineOption) {
@@ -366,7 +320,7 @@ export default function FinishFocusCare() {
         JSON.stringify({
           courseId: course.id,
           routineTypeCode,
-        }),
+        })
       );
 
       navigate("/care/finish_select_routine", {
@@ -394,11 +348,6 @@ export default function FinishFocusCare() {
     }
   }
 
-  /*
-   * ==========================
-   * 키보드
-   * ==========================
-   */
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Enter" || event.key === " ") {
@@ -426,11 +375,6 @@ export default function FinishFocusCare() {
     };
   }, [currentStep]);
 
-  /*
-   * ==========================
-   * 마우스 휠
-   * ==========================
-   */
   useEffect(() => {
     function handleWheel(event: WheelEvent) {
       if (event.ctrlKey || event.metaKey) {
@@ -441,10 +385,6 @@ export default function FinishFocusCare() {
         return;
       }
 
-      /*
-       * 루틴 화면에서는 내부 스크롤 허용.
-       * 최상단에서 위로 휠 했을 때만 이전 화면 이동.
-       */
       if (currentStep === "routine") {
         const routineScreen = routineScreenRef.current;
 
@@ -497,14 +437,6 @@ export default function FinishFocusCare() {
     };
   }, [currentStep]);
 
-  /*
-   * ==========================
-   * indicator
-   *
-   * 점점점이 나온 후
-   * 자동으로 concern 화면 이동
-   * ==========================
-   */
   useEffect(() => {
     if (currentStep !== "indicator" || !shouldAutoAdvanceIndicator) {
       return;
@@ -563,8 +495,8 @@ export default function FinishFocusCare() {
               {primaryConcerns.length >= 2
                 ? `데일리 코스에서 ${primaryConcerns[0]}와 ${primaryConcerns[1]}를 좀 더 케어해볼까요?`
                 : primaryConcerns.length === 1
-                  ? `데일리 코스에서 ${primaryConcerns[0]}를 좀 더 케어해볼까요?`
-                  : "최근 피부 기록을 바탕으로 데일리 케어를 시작해볼까요?"}
+                ? `데일리 코스에서 ${primaryConcerns[0]}를 좀 더 케어해볼까요?`
+                : "최근 피부 기록을 바탕으로 데일리 케어를 시작해볼까요?"}
             </S.SectionDescription>
 
             <S.ConcernArea>

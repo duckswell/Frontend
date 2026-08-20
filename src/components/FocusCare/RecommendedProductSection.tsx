@@ -14,32 +14,14 @@ export interface Product {
   id: number;
   brand: string;
   name: string;
-
-  /*
-   * RecommendProduct에서
-   * Care 추천 성분 카드 생성에 사용
-   */
   ingredientId?: number;
   ingredientName?: string;
-
-  /*
-   * 기존 코드 호환
-   */
   categories?: string[];
-
-  /*
-   * 제품 카테고리
-   */
   category?: ProductCategory;
-
   imageUrl?: string | null;
   linkUrl?: string | null;
 }
 
-/*
- * 실제 ingredientId를 이미 알고 있는
- * 루틴 성분 데이터.
- */
 export interface CareIngredient {
   id: number;
   name: string;
@@ -47,27 +29,9 @@ export interface CareIngredient {
 
 interface RecommendedProductSectionProps {
   title?: string;
-
-  /*
-   * 현재 섹션에 표시할 제품
-   */
   products?: Product[];
-
-  /*
-   * 더보기 클릭 시
-   * RecommendProduct로 넘길 제품 데이터.
-   */
   moreProducts?: Product[];
-
-  /*
-   * 기존 호환용.
-   */
   moreIngredientNames?: string[];
-
-  /*
-   * 실제 ingredientId + ingredientName을
-   * 이미 알고 있는 경우.
-   */
   moreIngredients?: CareIngredient[];
 }
 
@@ -104,15 +68,7 @@ export default function RecommendedProductSection({
     });
   }
 
-  /*
-   * ==========================
-   * 외부 제품 페이지 이동
-   * ==========================
-   */
   function handleMoveToProduct(linkUrl?: string | null) {
-    /*
-     * 실제 드래그 직후에는 클릭 처리하지 않음.
-     */
     if (hasDraggedRef.current) {
       return;
     }
@@ -123,13 +79,6 @@ export default function RecommendedProductSection({
       return;
     }
 
-    /*
-     * 백엔드가
-     *
-     * www.example.com
-     *
-     * 형태로 내려줘도 외부 링크로 열리게 보정.
-     */
     const normalizedUrl =
       linkUrl.startsWith("http://") || linkUrl.startsWith("https://")
         ? linkUrl
@@ -140,30 +89,13 @@ export default function RecommendedProductSection({
     window.open(normalizedUrl, "_blank", "noopener,noreferrer");
   }
 
-  /*
-   * ==========================
-   * 제품 목록 마우스 드래그
-   * ==========================
-   */
   function handlePointerDown(event: ReactPointerEvent<HTMLDivElement>) {
-    /*
-     * 버튼에서 시작된 pointer 이벤트라면
-     * 제품 목록 드래그를 시작하지 않는다.
-     *
-     * 핵심 수정 부분.
-     */
     const target = event.target as HTMLElement;
 
     if (target.closest("button, a")) {
       return;
     }
 
-    /*
-     * 마우스일 때만 직접 드래그 처리.
-     *
-     * 모바일 터치 / 트랙패드는
-     * 브라우저 기본 스크롤 사용.
-     */
     if (event.pointerType !== "mouse") {
       return;
     }
@@ -174,10 +106,6 @@ export default function RecommendedProductSection({
       return;
     }
 
-    /*
-     * 스크롤할 제품이 없다면
-     * 드래그 처리하지 않는다.
-     */
     if (container.scrollWidth <= container.clientWidth) {
       return;
     }
@@ -213,17 +141,10 @@ export default function RecommendedProductSection({
 
     const moveX = event.clientX - dragStartXRef.current;
 
-    /*
-     * 클릭과 드래그 구분.
-     */
     if (Math.abs(moveX) >= 5) {
       hasDraggedRef.current = true;
     }
 
-    /*
-     * 마우스를 왼쪽으로 끌면
-     * 제품 목록이 오른쪽으로 이동.
-     */
     container.scrollLeft = dragStartScrollLeftRef.current - moveX;
 
     event.preventDefault();
@@ -247,10 +168,6 @@ export default function RecommendedProductSection({
 
     setIsDragging(false);
 
-    /*
-     * pointerUp 뒤 click 처리까지 끝난 후
-     * 드래그 여부 초기화.
-     */
     window.setTimeout(() => {
       hasDraggedRef.current = false;
     }, 0);
@@ -308,11 +225,6 @@ export default function RecommendedProductSection({
             <S.ProductLinkButton
               type="button"
               disabled={!product.linkUrl}
-              /*
-               * 부모 ProductScroll의
-               * 드래그 시작 이벤트까지
-               * 전달되지 않도록 한 번 더 차단.
-               */
               onPointerDown={(event) => {
                 event.stopPropagation();
               }}

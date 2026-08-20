@@ -43,47 +43,20 @@ export default function FinishSelectRoutine() {
 
   const routineImage = state?.routineImage ?? "/assets/Daily_cooldown.png";
 
-  /*
-   * FinishFocusCare에서 전달받은 루틴 태그.
-   *
-   * 이 값은 현재 루틴 카드 안에서
-   * 성분 이름을 보여주는 용도로만 사용한다.
-   *
-   * 더보기의 성분카드 데이터는
-   * 더 이상 이 문자열 배열을 사용하지 않는다.
-   */
   const routineCategories = state?.routineCategories ?? [];
 
   const routineDisplayName = routineTitle.replace(" 루틴", "");
 
-  /*
-   * ==================================================
-   * 추천 제품 sessionStorage
-   * ==================================================
-   */
   const productStorageKey =
     courseId !== undefined && routineTypeCode !== undefined
       ? `finish-select-routine-products-${courseId}-${routineTypeCode}`
       : null;
 
-  /*
-   * ==================================================
-   * 루틴 전체 성분 sessionStorage
-   *
-   * 새 API에서 받은
-   * ingredientId + ingredientName을 저장한다.
-   * ==================================================
-   */
   const ingredientStorageKey =
     courseId !== undefined && routineTypeCode !== undefined
       ? `finish-select-routine-ingredients-${courseId}-${routineTypeCode}`
       : null;
 
-  /*
-   * ==================================================
-   * 추천 제품
-   * ==================================================
-   */
   const [recommendedProducts, setRecommendedProducts] = useState<Product[]>(
     () => {
       if (!productStorageKey) {
@@ -108,13 +81,6 @@ export default function FinishSelectRoutine() {
     }
   );
 
-  /*
-   * ==================================================
-   * 선택한 데일리 루틴의 전체 성분
-   *
-   * RecommendProduct의 성분카드에 사용.
-   * ==================================================
-   */
   const [routineIngredients, setRoutineIngredients] = useState<
     CareIngredient[]
   >(() => {
@@ -139,32 +105,6 @@ export default function FinishSelectRoutine() {
     }
   });
 
-  /*
-   * ==================================================
-   * 데일리 루틴 전체 성분 조회
-   *
-   * GET
-   * /api/courses/routine-types/{routineTypeCode}/ingredients
-   *
-   * 예:
-   *
-   * CLEAR_UP
-   * →
-   * [
-   *   {
-   *     ingredientId: 3,
-   *     ingredientName: "나이아신아마이드"
-   *   },
-   *   {
-   *     ingredientId: 5,
-   *     ingredientName: "비타민C"
-   *   }
-   * ]
-   *
-   * 이 값 전체를 더보기에서
-   * RecommendProduct에 전달한다.
-   * ==================================================
-   */
   useEffect(() => {
     if (routineTypeCode === undefined || ingredientStorageKey === null) {
       console.error("루틴 성분 조회에 필요한 routineTypeCode가 없습니다.");
@@ -172,11 +112,6 @@ export default function FinishSelectRoutine() {
       return;
     }
 
-    /*
-     * 이미 받아온 성분이 있다면
-     * 제품 페이지 갔다가 돌아왔을 때
-     * 다시 호출하지 않는다.
-     */
     if (sessionStorage.getItem(ingredientStorageKey)) {
       return;
     }
@@ -201,10 +136,6 @@ export default function FinishSelectRoutine() {
 
         console.log("🔥 데일리 루틴 전체 성분 API 응답:", response);
 
-        /*
-         * RecommendedProductSection이 사용하는
-         * CareIngredient 형태로 변환.
-         */
         const mappedIngredients: CareIngredient[] = response.map(
           (ingredient) => ({
             id: ingredient.ingredientId,
@@ -244,19 +175,6 @@ export default function FinishSelectRoutine() {
     };
   }, [routineTypeCode, ingredientStorageKey]);
 
-  /*
-   * ==================================================
-   * FinishSelectRoutine 추천 제품 조회
-   *
-   * GET
-   * /api/courses/routine-types/{routineTypeCode}/recommended-products
-   *
-   * 이 API는 아래에 보여주는
-   * "이 제품들과 함께하면 좋아요" 영역 전용.
-   *
-   * 성분카드용 API와 역할을 분리한다.
-   * ==================================================
-   */
   useEffect(() => {
     if (routineTypeCode === undefined || productStorageKey === null) {
       console.error("추천 제품 조회에 필요한 routineTypeCode가 없습니다.");
@@ -264,11 +182,6 @@ export default function FinishSelectRoutine() {
       return;
     }
 
-    /*
-     * 이전에 같은 완료 페이지에서
-     * 이미 추천 제품을 조회했다면
-     * 다시 호출하지 않는다.
-     */
     if (sessionStorage.getItem(productStorageKey)) {
       return;
     }
@@ -390,24 +303,8 @@ export default function FinishSelectRoutine() {
         <S.ProductSection>
           <RecommendedProductSection
             title="이 제품들과 함께하면 좋아요"
-            /*
-             * FinishSelectRoutine 화면에
-             * 실제 표시할 제품.
-             */
             products={recommendedProducts}
-            /*
-             * 기존 더보기 제품 데이터.
-             */
             moreProducts={recommendedProducts}
-            /*
-             * 핵심.
-             *
-             * 새 API로 조회한
-             * 해당 데일리 루틴의 전체 성분.
-             *
-             * ingredientId +
-             * ingredientName이 들어 있다.
-             */
             moreIngredients={routineIngredients}
           />
         </S.ProductSection>
