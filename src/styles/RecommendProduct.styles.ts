@@ -118,7 +118,7 @@ export const IngredientScroll = styled.div<IngredientScrollProps>`
   margin-top: 16px;
   padding: 0 60px;
 
-  overflow-x: hidden;
+  overflow-x: auto;
   overflow-y: hidden;
 
   overscroll-behavior-x: contain;
@@ -145,8 +145,6 @@ export const IngredientScroll = styled.div<IngredientScrollProps>`
 export const IngredientCardWrapper = styled.div`
   flex: 0 0 282px;
 `;
-
-
 
 export const EmptyIngredientCardArea = styled.div`
   display: flex;
@@ -283,8 +281,6 @@ export const EmptyIngredientDescription = styled.p`
   line-height: 1.4;
 `;
 
-
-
 export const ProductSection = styled.section`
   box-sizing: border-box;
 
@@ -366,8 +362,6 @@ export const ProductGrid = styled.div`
   margin-top: 16px;
 `;
 
-
-
 export const EmptyProductArea = styled.div`
   box-sizing: border-box;
 
@@ -409,7 +403,6 @@ export const EmptyProductDescription = styled.p`
 
   text-align: center;
 `;
-
 
 export const NoRoutineArea = styled.div`
   box-sizing: border-box;
@@ -466,7 +459,6 @@ export const StartRoutineButton = styled.button`
 
   cursor: pointer;
 `;
-
 
 export const ScrollTopButton = styled.button<PageProps>`
   position: fixed;
