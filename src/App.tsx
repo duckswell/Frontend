@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { GlobalStyle } from "./GlobalStyle";
 import { ScrollToTop } from "./components/ScrollToTop";
+import Onboarding from "./routes/Onboarding";
 import Home from "./routes/Home";
 import Mypage from "./routes/Mypage";
 import CourseHistories from "./routes/CourseHistories";
@@ -21,13 +22,15 @@ import SecondDailyCare from "./routes/SecondDailyCare";
 import ThirdDailyCare from "./routes/ThirdDailyCare";
 import TodayRoutineSummary from "./routes/TodayRoutineSummary";
 import RecommendProduct from "./routes/RecommendProduct";
+
 function App() {
   return (
     <BrowserRouter>
       <ScrollToTop />
       <GlobalStyle />
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<Onboarding />} />
+        <Route path="/home" element={<Home />} />
         <Route path="/my" element={<Mypage />} />
         <Route path="/history" element={<CourseHistories />} />
         <Route path="/safety" element={<SafetyGuide />} />
