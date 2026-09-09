@@ -1,13 +1,5 @@
-import styled, { css } from "styled-components";
+import styled from "styled-components";
 import { colorPalette } from "../lib/colorPalette";
-import { typography } from "../lib/typography";
-
-const applyTypography = (type: keyof typeof typography) => css`
-  font-size: ${typography[type].fontSize};
-  font-weight: ${typography[type].fontWeight};
-  line-height: ${typography[type].lineHeight};
-  letter-spacing: ${typography[type].letterSpacing};
-`;
 
 export const Container = styled.header`
   position: fixed;
@@ -35,71 +27,5 @@ export const Logo = styled.div`
   img {
     height: 20px;
     width: auto;
-  }
-`;
-
-export const SwitchToFocusButton = styled.button<{
-  $currentVersion: "focus" | "daily";
-}>`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  padding: 6px 14px;
-  border-radius: 999px;
-  border: 0.5px solid
-    ${({ $currentVersion }) =>
-      $currentVersion === "focus"
-        ? colorPalette.FocusPrimary
-        : colorPalette.DailyPrimary};
-  background-color: ${colorPalette.OffWhite};
-  color: ${({ $currentVersion }) =>
-    $currentVersion === "focus"
-      ? colorPalette.FocusPrimary
-      : colorPalette.DailyPrimary};
-  ${applyTypography("Body2Bold")};
-  cursor: pointer;
-  outline: none;
-  transition: all 0.2s ease;
-
-  @media (hover: hover) and (pointer: fine) {
-    &:hover {
-      background-color: ${({ $currentVersion }) =>
-        $currentVersion === "focus"
-          ? colorPalette.FocusPrimary
-          : colorPalette.DailyPrimary};
-      color: ${colorPalette.White};
-    }
-  }
-
-  &:active {
-    background-color: ${({ $currentVersion }) =>
-      $currentVersion === "focus"
-        ? colorPalette.FocusPrimary
-        : colorPalette.DailyPrimary};
-    color: ${colorPalette.White};
-    transform: scale(0.96);
-  }
-`;
-
-export const ChangeImg = styled.img.attrs<{ $isFocus?: boolean }>(
-  ({ $isFocus }) => ({
-    src: $isFocus ? "/assets/Change_focus.svg" : "/assets/Change_daily.svg",
-    alt: "전환 아이콘",
-  }),
-)<{ $isFocus?: boolean }>`
-  width: 16px;
-  height: 16px;
-  object-fit: contain;
-  transition: filter 0.2s ease;
-
-  @media (hover: hover) and (pointer: fine) {
-    button:hover & {
-      filter: brightness(0) invert(1);
-    }
-  }
-
-  button:active & {
-    filter: brightness(0) invert(1);
   }
 `;
