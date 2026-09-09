@@ -1,7 +1,14 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import * as S from "../styles/Onboarding.styles";
 
 const Onboarding: React.FC = () => {
+  const navigate = useNavigate();
+
+  const handleGuestStart = () => {
+    navigate("/home", { replace: true });
+  };
+
   return (
     <S.Container>
       <S.ContentArea>
@@ -19,7 +26,9 @@ const Onboarding: React.FC = () => {
       </S.ContentArea>
 
       <S.BottomArea>
-        <S.GuestButton type="button">게스트로 시작하기</S.GuestButton>
+        <S.GuestButton type="button" onClick={handleGuestStart}>
+          게스트로 시작하기
+        </S.GuestButton>
       </S.BottomArea>
     </S.Container>
   );
