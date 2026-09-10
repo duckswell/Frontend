@@ -303,7 +303,9 @@ export default function RecommendProduct() {
   const ingredientMoveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
     null
   );
-
+  const ingredientScrollEndTimerRef = useRef<ReturnType<
+    typeof setTimeout
+  > | null>(null);
   const [isDraggingIngredient, setIsDraggingIngredient] = useState(false);
 
   const fromCare = searchParams.get("from") === "care";
@@ -637,7 +639,6 @@ export default function RecommendProduct() {
     requestedIngredientName,
   ]);
 
-
   useEffect(() => {
     if (selectedIngredientId === null) {
       return;
@@ -683,7 +684,6 @@ export default function RecommendProduct() {
       isCancelled = true;
     };
   }, [selectedIngredientId, selectedProductCategory]);
-
 
   function getIngredientCards() {
     const container = ingredientScrollRef.current;
@@ -816,7 +816,7 @@ export default function RecommendProduct() {
     ingredientMoveTimerRef.current = window.setTimeout(
       () => {
         normalizeInfinitePosition(safeIndex);
-    
+
         ingredientMoveTimerRef.current = null;
       },
       behavior === "smooth" ? 450 : 20
@@ -881,11 +881,10 @@ export default function RecommendProduct() {
     };
   }, [fromCare, ingredients, selectedIngredientId, displayedIngredients]);
 
-
   function handleIngredientPointerDown(
     event: ReactPointerEvent<HTMLDivElement>
   ) {
-    if (ingredients.length <= 1 || event.pointerType !== "mouse") {
+    if (ingredients.length <= 1) {
       return;
     }
 
@@ -897,8 +896,12 @@ export default function RecommendProduct() {
 
     if (ingredientMoveTimerRef.current) {
       window.clearTimeout(ingredientMoveTimerRef.current);
-
       ingredientMoveTimerRef.current = null;
+    }
+
+    if (ingredientScrollEndTimerRef.current) {
+      window.clearTimeout(ingredientScrollEndTimerRef.current);
+      ingredientScrollEndTimerRef.current = null;
     }
 
     const currentIndex = currentCardIndexRef.current;
@@ -908,27 +911,19 @@ export default function RecommendProduct() {
     }
 
     draggingPointerIdRef.current = event.pointerId;
-
     dragStartCardIndexRef.current = currentIndex;
-
     dragStartXRef.current = event.clientX;
-
     dragStartScrollLeftRef.current = container.scrollLeft;
 
     setIsDraggingIngredient(true);
 
     container.setPointerCapture(event.pointerId);
-
-    event.preventDefault();
   }
 
   function handleIngredientPointerMove(
     event: ReactPointerEvent<HTMLDivElement>
   ) {
-    if (
-      event.pointerType !== "mouse" ||
-      draggingPointerIdRef.current !== event.pointerId
-    ) {
+    if (draggingPointerIdRef.current !== event.pointerId) {
       return;
     }
 
@@ -941,47 +936,95 @@ export default function RecommendProduct() {
     const dragDistance = event.clientX - dragStartXRef.current;
 
     container.scrollLeft = dragStartScrollLeftRef.current - dragDistance;
-
-    event.preventDefault();
   }
   function finishIngredientDrag(event: ReactPointerEvent<HTMLDivElement>) {
-    if (
-      event.pointerType !== "mouse" ||
-      draggingPointerIdRef.current !== event.pointerId
-    ) {
+    if (draggingPointerIdRef.current !== event.pointerId) {
       return;
     }
-  
+
     const container = ingredientScrollRef.current;
-  
+
     if (container?.hasPointerCapture(event.pointerId)) {
       container.releasePointerCapture(event.pointerId);
     }
-  
+
     const startIndex = dragStartCardIndexRef.current;
     const dragDistance = event.clientX - dragStartXRef.current;
-  
+
     draggingPointerIdRef.current = null;
     dragStartCardIndexRef.current = null;
-  
+
     setIsDraggingIngredient(false);
-  
+
     if (startIndex === null) {
       return;
     }
-  
+
     const DRAG_THRESHOLD = 30;
-  
+
     if (Math.abs(dragDistance) < DRAG_THRESHOLD) {
       moveToIngredientCard(startIndex);
-  
       return;
     }
-  
-    const targetIndex =
-      dragDistance < 0 ? startIndex + 1 : startIndex - 1;
-  
+
+    /*
+     * 드래그 속도나 거리에 상관없이
+     * 시작 카드에서 한 장만 이동
+     */
+    const targetIndex = dragDistance < 0 ? startIndex + 1 : startIndex - 1;
+
     moveToIngredientCard(targetIndex);
+  }
+
+  function handleIngredientNativeScroll() {
+    const container = ingredientScrollRef.current;
+
+    if (
+      !container ||
+      draggingPointerIdRef.current !== null ||
+      ingredientMoveTimerRef.current !== null
+    ) {
+      return;
+    }
+
+    if (ingredientScrollEndTimerRef.current) {
+      window.clearTimeout(ingredientScrollEndTimerRef.current);
+    }
+
+    ingredientScrollEndTimerRef.current = window.setTimeout(() => {
+      const cards = getIngredientCards();
+
+      if (cards.length === 0) {
+        return;
+      }
+
+      const containerRect = container.getBoundingClientRect();
+      const containerCenter = containerRect.left + containerRect.width / 2;
+
+      let closestIndex = 0;
+      let closestDistance = Number.POSITIVE_INFINITY;
+
+      cards.forEach((card, index) => {
+        const cardRect = card.getBoundingClientRect();
+        const cardCenter = cardRect.left + cardRect.width / 2;
+        const distance = Math.abs(cardCenter - containerCenter);
+
+        if (distance < closestDistance) {
+          closestDistance = distance;
+          closestIndex = index;
+        }
+      });
+
+      const closestCard = cards[closestIndex];
+
+      if (!closestCard) {
+        return;
+      }
+
+      moveToIngredientCard(closestIndex);
+
+      ingredientScrollEndTimerRef.current = null;
+    }, 150);
   }
 
   function handleIngredientPointerCancel(
@@ -1008,6 +1051,10 @@ export default function RecommendProduct() {
     return () => {
       if (ingredientMoveTimerRef.current) {
         window.clearTimeout(ingredientMoveTimerRef.current);
+      }
+
+      if (ingredientScrollEndTimerRef.current) {
+        window.clearTimeout(ingredientScrollEndTimerRef.current);
       }
     };
   }, []);
@@ -1054,13 +1101,11 @@ export default function RecommendProduct() {
 
       console.log("🔥 제품 추천 페이지 현재 진행 코스:", currentCourse);
 
-
       if (currentCourse?.courseType === "DAILY") {
         navigate("/care/daily_care");
 
         return;
       }
-
 
       navigate("/care");
     } catch (error) {
@@ -1129,6 +1174,7 @@ export default function RecommendProduct() {
               ref={ingredientScrollRef}
               $isDragging={isDraggingIngredient}
               $isScrollable={ingredients.length > 1}
+              onScroll={handleIngredientNativeScroll}
               onPointerDown={handleIngredientPointerDown}
               onPointerMove={handleIngredientPointerMove}
               onPointerUp={finishIngredientDrag}

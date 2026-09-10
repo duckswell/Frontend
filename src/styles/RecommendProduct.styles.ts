@@ -116,10 +116,20 @@ export const IngredientScroll = styled.div<IngredientScrollProps>`
   width: 100%;
 
   margin-top: 16px;
-  padding: 0 60px;
+
+  /*
+   * 화면 너비가 달라도 첫 번째·마지막 카드까지
+   * 정확히 중앙에 올 수 있도록 여백 계산
+   */
+  padding-inline: calc((100% - 282px) / 2);
 
   overflow-x: auto;
   overflow-y: hidden;
+
+  scroll-snap-type: ${({ $isDragging }) =>
+    $isDragging ? "none" : "x mandatory"};
+
+  scroll-padding-inline: calc((100% - 282px) / 2);
 
   overscroll-behavior-x: contain;
 
@@ -134,7 +144,6 @@ export const IngredientScroll = styled.div<IngredientScrollProps>`
   }};
 
   user-select: none;
-
   scrollbar-width: none;
 
   &::-webkit-scrollbar {
@@ -144,6 +153,9 @@ export const IngredientScroll = styled.div<IngredientScrollProps>`
 
 export const IngredientCardWrapper = styled.div`
   flex: 0 0 282px;
+
+  scroll-snap-align: center;
+  scroll-snap-stop: always;
 `;
 
 export const EmptyIngredientCardArea = styled.div`
