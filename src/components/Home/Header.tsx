@@ -21,8 +21,8 @@ export const Header: React.FC<HeaderProps> = ({ currentVersion }) => {
 
       window.location.href = "/";
     } catch (error) {
-      console.error("심사용 데모 데이터 리셋 실패:", error);
-      alert("심사용 데이터 리셋에 실패했습니다. 잠시 후 다시 시도해주세요.");
+      console.error("데모 데이터 리셋 실패:", error);
+      alert("데이터 리셋에 실패했습니다. 잠시 후 다시 시도해주세요.");
     } finally {
       setIsResetting(false);
     }
@@ -41,7 +41,7 @@ export const Header: React.FC<HeaderProps> = ({ currentVersion }) => {
         disabled={isResetting}
       >
         <S.ChangeImg $isFocus={currentVersion === "focus"} />
-        {isResetting ? "리셋 중..." : "심사용 리셋"}
+        {isResetting ? "리셋 중..." : "리셋"}
       </S.SwitchToFocusButton>
     </S.Container>
   );

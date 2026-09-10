@@ -32,7 +32,7 @@ export const TabBar: React.FC<TabBarProps> = ({ activeTab, onTabChange }) => {
     {
       id: "home",
       label: "홈",
-      path: "/",
+      path: "/home",
       activeIcon: "/assets/Home_active.svg",
       inactiveIcon: "/assets/Home.svg",
     },
