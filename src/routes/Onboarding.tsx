@@ -1,33 +1,53 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import * as S from "../styles/Onboarding.styles";
+import { authApi } from "../api/auth";
 
 const Onboarding: React.FC = () => {
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const handleGuestStart = () => {
-    navigate("/home", { replace: true });
+  const handleGuestStart = async () => {
+    if (isLoading) return;
+
+    try {
+      setIsLoading(true);
+      const data = await authApi.loginGuest();
+
+      localStorage.setItem("guestToken", data.guestToken);
+      localStorage.setItem("memberId", String(data.memberId));
+      localStorage.setItem("nickname", data.nickname);
+
+      navigate("/home", { replace: true });
+    } catch (error) {
+      console.error("게스트 로그인 실패:", error);
+      alert("로그인 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <S.Container>
-      <S.ContentArea>
-        <S.Logo>
-          <img src="/icons.svg" alt="HALE 로고" />
-        </S.Logo>
-        <S.TextGroup>
-          <S.Title>HALE에 오신 것을 환영해요</S.Title>
-          <S.Description>
-            시술 후 달라지는 피부를 위한
-            <br />
-            AI 맞춤 회복 케어 루틴을 시작해보세요.
-          </S.Description>
-        </S.TextGroup>
-      </S.ContentArea>
+      <S.BgLeft src="/assets/OnboardingLeft.svg" alt="" />
+      <S.BgRight src="/assets/OnboardingRight.svg" alt="" />
+
+      <S.CenterContent>
+        <S.Subtitle>
+          시술 후 회복에서 시작해,
+          <br />
+          건강한 피부 관리가 일상이 될 때까지
+        </S.Subtitle>
+        <S.BrandLogoImg src="/icons.svg" alt="HALE" />
+      </S.CenterContent>
 
       <S.BottomArea>
-        <S.GuestButton type="button" onClick={handleGuestStart}>
-          게스트로 시작하기
+        <S.GuestButton
+          type="button"
+          onClick={handleGuestStart}
+          disabled={isLoading}
+        >
+          {isLoading ? "시작하는 중..." : "게스트로 시작하기"}
         </S.GuestButton>
       </S.BottomArea>
     </S.Container>

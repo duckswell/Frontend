@@ -10,6 +10,7 @@ const applyTypography = (type: keyof typeof typography) => css`
 `;
 
 export const Container = styled.div`
+  position: relative;
   width: 100%;
   max-width: 402px;
   min-height: 100vh;
@@ -18,59 +19,74 @@ export const Container = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 80px 24px 48px;
+  padding: 0 20px;
   box-sizing: border-box;
+  overflow: hidden;
 `;
 
-export const ContentArea = styled.div`
+export const BgLeft = styled.img`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 70%;
+  max-width: 280px;
+  pointer-events: none;
+  z-index: 1;
+`;
+
+export const BgRight = styled.img`
+  position: absolute;
+  bottom: 25px;
+  right: 0;
+  width: 70%;
+  max-width: 280px;
+  pointer-events: none;
+  z-index: 1;
+`;
+
+export const CenterContent = styled.div`
+  position: relative;
+  z-index: 2;
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   text-align: center;
-  margin-top: 80px;
+  gap: 30px;
+  margin-bottom: 0px;
 `;
 
-export const Logo = styled.div`
-  margin-bottom: 28px;
-
-  img {
-    height: 48px;
-    width: auto;
-  }
-`;
-
-export const TextGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-`;
-
-export const Title = styled.h1`
+export const Subtitle = styled.p`
   margin: 0;
   color: ${colorPalette.Black};
-  ${applyTypography("H2")};
+  ${applyTypography("Body1")};
   word-break: keep-all;
 `;
 
-export const Description = styled.p`
-  margin: 0;
-  color: ${colorPalette.grey400};
-  ${applyTypography("Body2")};
-  word-break: keep-all;
+export const BrandLogoImg = styled.img`
+  width: 232px;
+  max-width: 60%;
+  height: auto;
+  object-fit: contain;
 `;
 
 export const BottomArea = styled.div`
+  position: relative;
+  z-index: 2;
   width: 100%;
+  margin-bottom: 30px;
 `;
 
 export const GuestButton = styled.button`
   width: 100%;
-  height: 52px;
-  border-radius: 14px;
+  height: 54px;
+  border-radius: 12px;
   border: none;
   background-color: ${colorPalette.FocusPrimary};
-  color: ${colorPalette.White};
-  ${applyTypography("Body1Bold")};
+  color: ${colorPalette.OffWhite};
+  ${applyTypography("H3")};
+  font-size: 16px;
   cursor: pointer;
   outline: none;
   transition:
@@ -80,7 +96,7 @@ export const GuestButton = styled.button`
 
   @media (hover: hover) and (pointer: fine) {
     &:hover {
-      opacity: 0.9;
+      opacity: 0.92;
     }
   }
 
