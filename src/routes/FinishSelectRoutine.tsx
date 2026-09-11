@@ -75,7 +75,7 @@ export default function FinishSelectRoutine() {
 
         return [];
       }
-    }
+    },
   );
 
   const [routineIngredients, setRoutineIngredients] = useState<
@@ -126,7 +126,7 @@ export default function FinishSelectRoutine() {
         console.log("🔥 데일리 루틴 전체 성분 요청:", currentRoutineTypeCode);
 
         const response = await courseApi.getRoutineTypeIngredients(
-          currentRoutineTypeCode
+          currentRoutineTypeCode,
         );
 
         if (isCancelled) {
@@ -139,14 +139,14 @@ export default function FinishSelectRoutine() {
           (ingredient) => ({
             id: ingredient.ingredientId,
             name: ingredient.ingredientName,
-          })
+          }),
         );
 
         console.log("🔥 더보기로 전달할 전체 성분:", mappedIngredients);
 
         sessionStorage.setItem(
           currentStorageKey,
-          JSON.stringify(mappedIngredients)
+          JSON.stringify(mappedIngredients),
         );
 
         setRoutineIngredients(mappedIngredients);
@@ -197,11 +197,11 @@ export default function FinishSelectRoutine() {
       try {
         console.log(
           "🔥 데일리 루틴 타입 추천 제품 요청:",
-          currentRoutineTypeCode
+          currentRoutineTypeCode,
         );
 
         const response = await routineApi.getRecommendedProductsByRoutineType(
-          currentRoutineTypeCode
+          currentRoutineTypeCode,
         );
 
         if (isCancelled) {
@@ -228,7 +228,7 @@ export default function FinishSelectRoutine() {
 
         sessionStorage.setItem(
           currentStorageKey,
-          JSON.stringify(mappedProducts)
+          JSON.stringify(mappedProducts),
         );
 
         setRecommendedProducts(mappedProducts);
@@ -263,14 +263,14 @@ export default function FinishSelectRoutine() {
 
     sessionStorage.setItem(
       productStorageKey,
-      JSON.stringify(recommendedProducts)
+      JSON.stringify(recommendedProducts),
     );
 
     console.log("🔥 더보기 이동 전 추천 제품 저장:", recommendedProducts);
   }
 
   function handleMoveToHome() {
-    navigate("/");
+    navigate("/home");
   }
 
   return (

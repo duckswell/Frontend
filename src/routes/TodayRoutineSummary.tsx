@@ -69,7 +69,7 @@ export default function TodayRoutineSummary() {
 
         return state?.recommendedProducts ?? [];
       }
-    }
+    },
   );
 
   const routineTitle = state?.routineTypeCode
@@ -99,9 +99,8 @@ export default function TodayRoutineSummary() {
 
     async function fetchRecommendedProducts() {
       try {
-        const response = await routineApi.getRecommendedProducts(
-          currentRoutineId
-        );
+        const response =
+          await routineApi.getRecommendedProducts(currentRoutineId);
 
         if (isCancelled) {
           return;
@@ -133,7 +132,7 @@ export default function TodayRoutineSummary() {
 
         sessionStorage.setItem(
           currentStorageKey,
-          JSON.stringify(mappedProducts)
+          JSON.stringify(mappedProducts),
         );
       } catch (error) {
         if (isCancelled) {
@@ -160,7 +159,7 @@ export default function TodayRoutineSummary() {
   }, [routineId, storageKey]);
 
   function handleMoveToHome() {
-    navigate("/");
+    navigate("/home");
   }
 
   return (

@@ -56,7 +56,7 @@ export default function FinishRoutine() {
 
         return [];
       }
-    }
+    },
   );
 
   useEffect(() => {
@@ -81,9 +81,8 @@ export default function FinishRoutine() {
       try {
         console.log("🔥 집중 루틴 추천 제품 요청:", currentRoutineId);
 
-        const response = await routineApi.getRecommendedProducts(
-          currentRoutineId
-        );
+        const response =
+          await routineApi.getRecommendedProducts(currentRoutineId);
 
         if (isCancelled) {
           return;
@@ -113,7 +112,7 @@ export default function FinishRoutine() {
 
         sessionStorage.setItem(
           currentStorageKey,
-          JSON.stringify(mappedProducts)
+          JSON.stringify(mappedProducts),
         );
       } catch (error) {
         if (isCancelled) {
@@ -140,7 +139,7 @@ export default function FinishRoutine() {
   }, [routineId, storageKey]);
 
   function handleMoveToHome() {
-    navigate("/");
+    navigate("/home");
   }
 
   function handleMoveToDaily() {

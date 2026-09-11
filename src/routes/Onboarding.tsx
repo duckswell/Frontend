@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import * as S from "../styles/Onboarding.styles";
 import { authApi } from "../api/auth";
@@ -6,6 +6,13 @@ import { authApi } from "../api/auth";
 const Onboarding: React.FC = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const hasToken = Boolean(localStorage.getItem("guestToken"));
+
+  useEffect(() => {
+    if (hasToken) {
+      navigate("/home", { replace: true });
+    }
+  }, [hasToken, navigate]);
 
   const handleGuestStart = async () => {
     if (isLoading) return;
@@ -26,6 +33,10 @@ const Onboarding: React.FC = () => {
       setIsLoading(false);
     }
   };
+
+  if (hasToken) {
+    return null;
+  }
 
   return (
     <S.Container>
