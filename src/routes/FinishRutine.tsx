@@ -140,7 +140,7 @@ export default function FinishRoutine() {
   }, [routineId, storageKey]);
 
   function handleMoveToHome() {
-    navigate("/");
+    navigate("/home");
   }
 
   function handleMoveToDaily() {

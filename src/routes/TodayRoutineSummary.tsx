@@ -160,7 +160,7 @@ export default function TodayRoutineSummary() {
   }, [routineId, storageKey]);
 
   function handleMoveToHome() {
-    navigate("/");
+    navigate("/home");
   }
 
   return (

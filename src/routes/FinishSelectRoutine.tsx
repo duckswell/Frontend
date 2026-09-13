@@ -270,7 +270,7 @@ export default function FinishSelectRoutine() {
   }
 
   function handleMoveToHome() {
-    navigate("/");
+    navigate("/home");
   }
 
   return (
