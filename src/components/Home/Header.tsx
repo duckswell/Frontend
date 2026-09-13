@@ -19,7 +19,7 @@ export const Header: React.FC<HeaderProps> = ({ currentVersion }) => {
 
       sessionStorage.removeItem("currentDailyCourse");
 
-      window.location.href = "/";
+      window.location.href = "/home";
     } catch (error) {
       console.error("데모 데이터 리셋 실패:", error);
       alert("데이터 리셋에 실패했습니다. 잠시 후 다시 시도해주세요.");
