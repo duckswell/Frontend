@@ -1,12 +1,21 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
-import { courseApi, type RoutineTypeCode } from "../api/course";
+// [백엔드 연동 주석처리] 아카이빙을 위해 API 대신 목 데이터 사용
+// import { courseApi, type RoutineTypeCode } from "../api/course";
+import { type RoutineTypeCode } from "../api/course";
 import {
-  diagnosisApi,
+  // diagnosisApi,
   SYMPTOM_CODE_MAP,
+  type DiagnosisRequest,
   type DiagnosisResponse,
 } from "../api/diagnosis";
+import {
+  createMockDailyDiagnosis,
+  getMockCurrentDailyCourse,
+  resolveMockRoutineTypeCode,
+} from "../mocks/dailyCare";
+import { mockDelay } from "../mocks/focusCare";
 
 import { NavBar } from "../components/NavBar";
 import CareButton from "../components/CareButton";
@@ -21,7 +30,8 @@ interface FirstDailyCareLocationState {
   routineTypeCode?: RoutineTypeCode;
 }
 
-type DiagnosisRequest = Parameters<typeof diagnosisApi.createDiagnosis>[0];
+// [백엔드 연동 주석처리] diagnosisApi import 제거로 api/diagnosis의 DiagnosisRequest 타입을 직접 사용
+// type DiagnosisRequest = Parameters<typeof diagnosisApi.createDiagnosis>[0];
 
 const NO_CONDITION = "해당없음";
 
@@ -83,7 +93,11 @@ export default function FirstDaliyCare() {
     }
 
     try {
-      const currentCourse = await courseApi.getCurrentCourse();
+      // [백엔드 연동 주석처리] 현재 코스 조회 대신 목 데일리 코스 사용
+      // const currentCourse = await courseApi.getCurrentCourse();
+      const currentCourse = getMockCurrentDailyCourse(
+        resolveMockRoutineTypeCode(state?.routineTypeCode)
+      );
 
       if (!currentCourse) {
         console.error("현재 진행 중인 코스가 없습니다.");
@@ -147,7 +161,13 @@ export default function FirstDaliyCare() {
       console.log("API symptoms:", symptoms);
       console.log("진단 요청:", diagnosisRequest);
 
-      const response = await diagnosisApi.createDiagnosis(diagnosisRequest);
+      // [백엔드 연동 주석처리] AI 진단 API 대신 선택한 고민으로 만든 목 진단 결과 사용
+      // const response = await diagnosisApi.createDiagnosis(diagnosisRequest);
+      await mockDelay();
+      const response = createMockDailyDiagnosis(
+        selectedConditions,
+        state?.routineTypeCode
+      );
 
       console.log("===== 데일리 AI 진단 완료 =====");
       console.log("진단 결과:", response);

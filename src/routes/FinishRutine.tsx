@@ -2,7 +2,10 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
-import { routineApi, type RoutineCompletionData } from "../api/routine";
+// [백엔드 연동 주석처리] 아카이빙을 위해 추천 제품 API 대신 목 데이터 사용
+// import { routineApi, type RoutineCompletionData } from "../api/routine";
+import { type RoutineCompletionData } from "../api/routine";
+import { MOCK_RECOMMENDED_PRODUCTS } from "../mocks/focusCare";
 
 import CareButton from "../components/CareButton";
 import FocusConfetti from "../components/FocusCare/FocusConfetti";
@@ -81,8 +84,10 @@ export default function FinishRoutine() {
       try {
         console.log("🔥 집중 루틴 추천 제품 요청:", currentRoutineId);
 
-        const response =
-          await routineApi.getRecommendedProducts(currentRoutineId);
+        // [백엔드 연동 주석처리] 루틴 추천 제품 API 대신 목 추천 제품 사용
+        // const response =
+        //   await routineApi.getRecommendedProducts(currentRoutineId);
+        const response = MOCK_RECOMMENDED_PRODUCTS;
 
         if (isCancelled) {
           return;

@@ -2,8 +2,14 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
-import { courseApi, type RoutineTypeCode } from "../api/course";
-import { routineApi } from "../api/routine";
+// [백엔드 연동 주석처리] 아카이빙을 위해 API 대신 목 데이터 사용
+// import { courseApi, type RoutineTypeCode } from "../api/course";
+// import { routineApi } from "../api/routine";
+import { type RoutineTypeCode } from "../api/course";
+import {
+  getMockDailyRecommendedProducts,
+  getMockRoutineTypeIngredients,
+} from "../mocks/dailyCare";
 
 import CareButton from "../components/CareButton";
 import FocusConfetti from "../components/FocusCare/FocusConfetti";
@@ -125,8 +131,12 @@ export default function FinishSelectRoutine() {
       try {
         console.log("🔥 데일리 루틴 전체 성분 요청:", currentRoutineTypeCode);
 
-        const response = await courseApi.getRoutineTypeIngredients(
-          currentRoutineTypeCode,
+        // [백엔드 연동 주석처리] 루틴 성분 API 대신 기획 문서의 루틴별 성분 사용
+        // const response = await courseApi.getRoutineTypeIngredients(
+        //   currentRoutineTypeCode,
+        // );
+        const response = await Promise.resolve(
+          getMockRoutineTypeIngredients(currentRoutineTypeCode),
         );
 
         if (isCancelled) {
@@ -200,8 +210,12 @@ export default function FinishSelectRoutine() {
           currentRoutineTypeCode,
         );
 
-        const response = await routineApi.getRecommendedProductsByRoutineType(
-          currentRoutineTypeCode,
+        // [백엔드 연동 주석처리] 루틴 타입별 추천 제품 API 대신 루틴 성분별 목 제품 사용
+        // const response = await routineApi.getRecommendedProductsByRoutineType(
+        //   currentRoutineTypeCode,
+        // );
+        const response = await Promise.resolve(
+          getMockDailyRecommendedProducts(currentRoutineTypeCode),
         );
 
         if (isCancelled) {

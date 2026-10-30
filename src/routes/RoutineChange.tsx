@@ -2,11 +2,18 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
+// [백엔드 연동 주석처리] 아카이빙을 위해 API 대신 목 데이터 사용
 import {
-  courseApi,
+  // courseApi,
   type CurrentCourseResponse,
   type RoutineTypeCode,
 } from "../api/course";
+import {
+  DEFAULT_ROUTINE_TYPE_CODE,
+  createMockDailyCourse,
+  getMockCurrentDailyCourse,
+} from "../mocks/dailyCare";
+import { mockDelay } from "../mocks/focusCare";
 
 import { NavBar } from "../components/NavBar";
 import { RoutineCard } from "../components/DailycoursePreview/RoutineCard";
@@ -112,7 +119,14 @@ export default function RoutineChange() {
       try {
         setIsLoadingCourse(true);
 
-        const course = await courseApi.getCurrentCourse();
+        // [백엔드 연동 주석처리] 현재 코스 조회 대신 목 데일리 코스 사용
+        // const course = await courseApi.getCurrentCourse();
+        await mockDelay(300);
+        const course = getMockCurrentDailyCourse(
+          state?.routineTypeCode ??
+            getStoredDailyCourse()?.routineTypeCode ??
+            DEFAULT_ROUTINE_TYPE_CODE
+        );
 
         if (!course) {
           console.error("현재 진행 중인 코스가 없습니다.");
@@ -147,7 +161,9 @@ export default function RoutineChange() {
           state?.routineTypeCode ??
           (stored?.courseId === course.courseId
             ? stored.routineTypeCode
-            : null);
+            : null) ??
+          // [백엔드 연동 주석처리] 저장된 루틴 정보가 없으면 기획 기본값(수분충전) 사용
+          DEFAULT_ROUTINE_TYPE_CODE;
 
         if (!routineTypeCode) {
           console.error(
@@ -206,10 +222,12 @@ export default function RoutineChange() {
 
   async function startNewDailyCourse(routineTypeCode: RoutineTypeCode) {
     try {
-      return await courseApi.startCourse({
-        courseType: "DAILY",
-        routineTypeCode,
-      });
+      // [백엔드 연동 주석처리] 데일리 코스 시작 API 대신 목 코스 사용
+      // return await courseApi.startCourse({
+      //   courseType: "DAILY",
+      //   routineTypeCode,
+      // });
+      return await Promise.resolve(createMockDailyCourse(routineTypeCode));
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.status === 409) {
         console.warn(
@@ -219,10 +237,12 @@ export default function RoutineChange() {
 
         await wait(300);
 
-        return await courseApi.startCourse({
-          courseType: "DAILY",
-          routineTypeCode,
-        });
+        // [백엔드 연동 주석처리] 재시도도 목 코스 사용
+        // return await courseApi.startCourse({
+        //   courseType: "DAILY",
+        //   routineTypeCode,
+        // });
+        return createMockDailyCourse(routineTypeCode);
       }
 
       throw error;
@@ -280,7 +300,10 @@ export default function RoutineChange() {
 
       console.log("새 routineTypeCode:", selectedRoutineTypeCode);
 
-      const endedCourse = await courseApi.endCourse(currentCourse.courseId);
+      // [백엔드 연동 주석처리] 기존 코스 종료 API 대신 종료된 것으로 처리
+      // const endedCourse = await courseApi.endCourse(currentCourse.courseId);
+      await mockDelay(300);
+      const endedCourse = { id: currentCourse.courseId, status: "COMPLETED" };
 
       console.log("기존 데일리 코스 종료 성공:", endedCourse);
 

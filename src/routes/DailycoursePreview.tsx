@@ -2,7 +2,13 @@ import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import * as S from "../styles/DailycoursePreview.styles";
 import { NavBar } from "../components/NavBar";
-import { courseApi } from "../api/course";
+// [백엔드 연동 주석처리] 아카이빙을 위해 API 대신 목 데이터 사용
+// import { courseApi } from "../api/course";
+import type { StartCourseRequest } from "../api/course";
+import {
+  createMockDailyCourse,
+  getMockCurrentCourse,
+} from "../mocks/dailyCare";
 import { isAxiosError } from "axios";
 
 const ROUTINE_CODE_MAP: Record<
@@ -28,7 +34,9 @@ const REVERSE_ROUTINE_ID_MAP: Record<string, string> = {
   수분충전: "moisture",
 };
 
-type StartDailyCoursePayload = Parameters<typeof courseApi.startCourse>[0] & {
+// [백엔드 연동 주석처리] courseApi import 제거로 StartCourseRequest 타입을 직접 사용
+// type StartDailyCoursePayload = Parameters<typeof courseApi.startCourse>[0] & {
+type StartDailyCoursePayload = StartCourseRequest & {
   routineTypeCode: "COOLDOWN" | "CLEAR_UP" | "SEBUM_CONTROL" | "HYDRATION";
 };
 
@@ -103,7 +111,9 @@ const DailycoursePreview: React.FC = () => {
 
     const fetchCurrentCourse = async () => {
       try {
-        const current = await courseApi.getCurrentCourse();
+        // [백엔드 연동 주석처리] 현재 코스 조회 대신 목 코스 사용
+        // const current = await courseApi.getCurrentCourse();
+        const current = await Promise.resolve(getMockCurrentCourse());
         if (!isMounted || !current) return;
 
         if (current.courseType === "DAILY" && current.label) {
@@ -148,38 +158,52 @@ const DailycoursePreview: React.FC = () => {
     };
 
     try {
-      const current = await courseApi.getCurrentCourse().catch(() => null);
+      // [백엔드 연동 주석처리] 기존 코스 종료 후 새 데일리 코스 시작 API 대신,
+      // 목 데일리 코스를 브라우저에 저장해 진행 중인 코스로 사용
+      // const current = await courseApi.getCurrentCourse().catch(() => null);
+      //
+      // const currentCourseId =
+      //   current?.courseId ?? (current as unknown as { id?: number })?.id;
+      //
+      // if (currentCourseId !== undefined && currentCourseId !== null) {
+      //   await courseApi.endCourse(currentCourseId);
+      // }
+      //
+      // await courseApi.startCourse(payload);
+      const newCourse = await Promise.resolve(
+        createMockDailyCourse(payload.routineTypeCode),
+      );
 
-      const currentCourseId =
-        current?.courseId ?? (current as unknown as { id?: number })?.id;
-
-      if (currentCourseId !== undefined && currentCourseId !== null) {
-        await courseApi.endCourse(currentCourseId);
-      }
-
-      await courseApi.startCourse(payload);
+      sessionStorage.setItem(
+        "currentDailyCourse",
+        JSON.stringify({
+          courseId: newCourse.id,
+          routineTypeCode: payload.routineTypeCode,
+        }),
+      );
 
       navigate("/home");
     } catch (error) {
       console.error("데일리 코스 전환 실패:", error);
 
-      if (isAxiosError(error) && error.response?.status === 409) {
-        try {
-          const fallbackCurrent = await courseApi.getCurrentCourse();
-          const fallbackId =
-            fallbackCurrent?.courseId ??
-            (fallbackCurrent as unknown as { id?: number })?.id;
-
-          if (fallbackId) {
-            await courseApi.endCourse(fallbackId);
-            await courseApi.startCourse(payload);
-            navigate("/home");
-            return;
-          }
-        } catch (retryError) {
-          console.error("재시도 실패:", retryError);
-        }
-      }
+      // [백엔드 연동 주석처리] 409 충돌 시 코스 종료 후 재시도 (목 데이터에서는 발생하지 않음)
+      // if (isAxiosError(error) && error.response?.status === 409) {
+      //   try {
+      //     const fallbackCurrent = await courseApi.getCurrentCourse();
+      //     const fallbackId =
+      //       fallbackCurrent?.courseId ??
+      //       (fallbackCurrent as unknown as { id?: number })?.id;
+      //
+      //     if (fallbackId) {
+      //       await courseApi.endCourse(fallbackId);
+      //       await courseApi.startCourse(payload);
+      //       navigate("/home");
+      //       return;
+      //     }
+      //   } catch (retryError) {
+      //     console.error("재시도 실패:", retryError);
+      //   }
+      // }
 
       if (isAxiosError(error)) {
         alert(

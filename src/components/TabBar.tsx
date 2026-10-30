@@ -1,7 +1,10 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { courseApi, type RoutineTypeCode } from "../api/course";
+// [백엔드 연동 주석처리] 아카이빙을 위해 API 대신 목 데이터 사용
+// import { courseApi, type RoutineTypeCode } from "../api/course";
+import { type RoutineTypeCode } from "../api/course";
+import { getMockCurrentCourse } from "../mocks/dailyCare";
 
 import * as S from "../styles/TabBar.styles";
 
@@ -83,7 +86,9 @@ export const TabBar: React.FC<TabBarProps> = ({ activeTab, onTabChange }) => {
     try {
       setIsCheckingCareCourse(true);
 
-      const currentCourse = await courseApi.getCurrentCourse();
+      // [백엔드 연동 주석처리] 현재 코스 조회 대신 목 코스 사용
+      // const currentCourse = await courseApi.getCurrentCourse();
+      const currentCourse = await Promise.resolve(getMockCurrentCourse());
 
       console.log("케어 탭 - 현재 진행 중인 코스:", currentCourse);
 

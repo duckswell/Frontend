@@ -1,11 +1,17 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
+// [백엔드 연동 주석처리] 아카이빙을 위해 API 대신 목 데이터 사용
 import {
-  courseApi,
+  // courseApi,
   type CurrentCourseResponse,
   type RoutineTypeCode,
 } from "../api/course";
+import {
+  DEFAULT_ROUTINE_TYPE_CODE,
+  getMockCurrentDailyCourse,
+} from "../mocks/dailyCare";
+import { mockDelay } from "../mocks/focusCare";
 
 import { NavBar } from "../components/NavBar";
 import { TabBar } from "../components/TabBar";
@@ -143,7 +149,15 @@ export default function DailyCare() {
       try {
         setIsLoadingCourse(true);
 
-        const course = await courseApi.getCurrentCourse();
+        // [백엔드 연동 주석처리] 현재 코스 조회 대신 목 데일리 코스 사용
+        // (루틴 정보가 없으면 기획 기본값인 수분충전 루틴)
+        // const course = await courseApi.getCurrentCourse();
+        await mockDelay(300);
+        const course = getMockCurrentDailyCourse(
+          state?.routineTypeCode ??
+            getStoredDailyCourse()?.routineTypeCode ??
+            DEFAULT_ROUTINE_TYPE_CODE
+        );
 
         if (!course) {
           console.error("현재 진행 중인 코스가 없습니다.");

@@ -1,15 +1,24 @@
-import { useEffect, useState } from "react";
+// [백엔드 연동 주석처리] API 조회용 useEffect를 주석처리하면서 import에서 제외
+// import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { NavBar } from "../components/NavBar";
 import { TabBar } from "../components/TabBar";
 import CareButton from "../components/CareButton";
 
-import { api } from "../lib/api";
-import { courseApi } from "../api/course";
+// [백엔드 연동 주석처리] 아카이빙을 위해 API 대신 목 데이터 사용
+// import { api } from "../lib/api";
+// import { courseApi } from "../api/course";
+import {
+  MOCK_FOCUS_COURSE,
+  MOCK_RECOVERY_DAY_TEXT,
+  MOCK_RECOVERY_SUMMARY,
+} from "../mocks/focusCare";
 
 import * as S from "../styles/FocusCare/Care.styles";
 
+/* [백엔드 연동 주석처리] 회복 배너 API 응답 타입
 interface RecoveryBannerMetric {
   current: number;
   previous: number;
@@ -22,6 +31,7 @@ interface RecoveryBannerResponse {
   blemish: RecoveryBannerMetric;
   summaryMessage: string;
 }
+*/
 
 const COURSE_STEPS = [
   {
@@ -45,11 +55,15 @@ const COURSE_STEPS = [
 export default function Care() {
   const navigate = useNavigate();
 
-  const [recoveryDayText, setRecoveryDayText] = useState("");
-  const [recoverySummary, setRecoverySummary] = useState("");
+  // [백엔드 연동 주석처리] 회복 배너·회복 단계 요약 API 대신 목 데이터로 초기화
+  // const [recoveryDayText, setRecoveryDayText] = useState("");
+  // const [recoverySummary, setRecoverySummary] = useState("");
+  const [recoveryDayText]= useState(MOCK_RECOVERY_DAY_TEXT);
+  const [recoverySummary] = useState(MOCK_RECOVERY_SUMMARY);
 
   const [isStartingRoutine, setIsStartingRoutine] = useState(false);
 
+  /* [백엔드 연동 주석처리] 현재 코스·회복 요약·회복 배너 조회
   useEffect(() => {
     const fetchCurrentCourse = async () => {
       try {
@@ -120,6 +134,7 @@ export default function Care() {
 
     fetchRecoveryBanner();
   }, []);
+  */
 
   const handleOpenConsultationGuide = () => {
     navigate("/safety");
@@ -133,7 +148,9 @@ export default function Care() {
     try {
       setIsStartingRoutine(true);
 
-      const latestCourse = await courseApi.getCurrentCourse();
+      // [백엔드 연동 주석처리] 현재 코스 조회 대신 목 집중 코스 사용
+      // const latestCourse = await courseApi.getCurrentCourse();
+      const latestCourse = MOCK_FOCUS_COURSE;
 
       console.log("루틴 시작 시 최신 코스:", latestCourse);
 
