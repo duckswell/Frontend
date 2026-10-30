@@ -4,15 +4,25 @@ import { useNavigate } from "react-router-dom";
 import { TabBar, type TabType } from "../components/TabBar";
 import { AITodos } from "../components/Home/AITodos";
 import { Header } from "../components/Home/Header";
-import { courseApi, type CurrentCourseResponse } from "../api/course";
-import { procedureApi, type ProcedureItem } from "../api/procedure";
+// [백엔드 연동 주석처리] 아카이빙을 위해 API 대신 목 데이터 사용
+// import { courseApi, type CurrentCourseResponse } from "../api/course";
+// import { procedureApi, type ProcedureItem } from "../api/procedure";
+import { type CurrentCourseResponse } from "../api/course";
+import { type ProcedureItem } from "../api/procedure";
 import {
-  dashboardApi,
+  // dashboardApi,
   type WeatherBannerData,
   type RecoveryBannerData,
   type ChecklistItem,
   type WeatherFactor,
 } from "../api/dashboard";
+import { getMockCurrentCourse } from "../mocks/dailyCare";
+import {
+  MOCK_CURRENT_PROCEDURES,
+  MOCK_RECOVERY_BANNER,
+  getMockChecklist,
+  getMockWeatherBanner,
+} from "../mocks/home";
 
 const formatDDay = (dateStr?: string): string | null => {
   if (!dateStr) return null;
@@ -74,7 +84,9 @@ const Home: React.FC = () => {
 
     const checkCurrentCourse = async () => {
       try {
-        const course = await courseApi.getCurrentCourse();
+        // [백엔드 연동 주석처리] 현재 코스 조회 대신 목 코스 사용 (데일리 코스를 시작했으면 데일리, 아니면 집중)
+        // const course = await courseApi.getCurrentCourse();
+        const course = await Promise.resolve(getMockCurrentCourse());
         if (!isMounted) return;
 
         if (course) {
@@ -106,9 +118,14 @@ const Home: React.FC = () => {
     const loadDashboardData = async () => {
       try {
         if (isFocus) {
+          // [백엔드 연동 주석처리] 회복 배너·현재 시술 API 대신 목 데이터 사용
+          // const [recoveryRes, procRes] = await Promise.allSettled([
+          //   dashboardApi.getRecoveryBanner(),
+          //   procedureApi.getCurrentProcedures(),
+          // ]);
           const [recoveryRes, procRes] = await Promise.allSettled([
-            dashboardApi.getRecoveryBanner(),
-            procedureApi.getCurrentProcedures(),
+            Promise.resolve(MOCK_RECOVERY_BANNER),
+            Promise.resolve(MOCK_CURRENT_PROCEDURES),
           ]);
 
           if (isMounted) {
@@ -123,11 +140,15 @@ const Home: React.FC = () => {
             }
           }
         } else {
-          const weatherRes = await dashboardApi.getWeatherBanner();
+          // [백엔드 연동 주석처리] 날씨 배너 API 대신 기획 기준표로 계산한 목 날씨 사용
+          // const weatherRes = await dashboardApi.getWeatherBanner();
+          const weatherRes = await Promise.resolve(getMockWeatherBanner());
           if (isMounted && weatherRes) setWeatherData(weatherRes);
         }
 
-        const checklistRes = await dashboardApi.getChecklist();
+        // [백엔드 연동 주석처리] 체크리스트 API 대신 목 체크리스트 사용
+        // const checklistRes = await dashboardApi.getChecklist();
+        const checklistRes = await Promise.resolve(getMockChecklist(isFocus));
         if (isMounted && checklistRes && checklistRes.length > 0) {
           setTodos(checklistRes);
         }
@@ -135,32 +156,33 @@ const Home: React.FC = () => {
         console.error("대시보드 데이터 조회 실패:", error);
       }
 
-      if (navigator.geolocation && !isFocus) {
-        navigator.geolocation.getCurrentPosition(
-          async (position) => {
-            const coords = {
-              lat: position.coords.latitude,
-              lon: position.coords.longitude,
-            };
-            try {
-              const [weatherRes, checklistRes] = await Promise.all([
-                dashboardApi.getWeatherBanner(coords),
-                dashboardApi.getChecklist(coords),
-              ]);
-              if (isMounted && weatherRes) setWeatherData(weatherRes);
-              if (isMounted && checklistRes && checklistRes.length > 0) {
-                setTodos(checklistRes);
-              }
-            } catch (error) {
-              console.error("위치 기반 대시보드 데이터 조회 실패:", error);
-            }
-          },
-          (err) => {
-            console.warn("위치 정보 미제공 (기본 좌표 사용):", err.message);
-          },
-          { timeout: 5000 },
-        );
-      }
+      // [백엔드 연동 주석처리] 위치 기반 날씨·체크리스트 API 재조회 (목 데이터는 위치와 무관해 위치 권한도 요청하지 않음)
+      // if (navigator.geolocation && !isFocus) {
+      //   navigator.geolocation.getCurrentPosition(
+      //     async (position) => {
+      //       const coords = {
+      //         lat: position.coords.latitude,
+      //         lon: position.coords.longitude,
+      //       };
+      //       try {
+      //         const [weatherRes, checklistRes] = await Promise.all([
+      //           dashboardApi.getWeatherBanner(coords),
+      //           dashboardApi.getChecklist(coords),
+      //         ]);
+      //         if (isMounted && weatherRes) setWeatherData(weatherRes);
+      //         if (isMounted && checklistRes && checklistRes.length > 0) {
+      //           setTodos(checklistRes);
+      //         }
+      //       } catch (error) {
+      //         console.error("위치 기반 대시보드 데이터 조회 실패:", error);
+      //       }
+      //     },
+      //     (err) => {
+      //       console.warn("위치 정보 미제공 (기본 좌표 사용):", err.message);
+      //     },
+      //     { timeout: 5000 },
+      //   );
+      // }
     };
 
     loadDashboardData();
@@ -172,8 +194,11 @@ const Home: React.FC = () => {
 
   const handleRestartFocus = async () => {
     try {
-      await courseApi.restartFocusCourse();
-      const updatedProcedures = await procedureApi.getCurrentProcedures();
+      // [백엔드 연동 주석처리] 집중 코스 재시작 API 대신 저장된 데일리 코스를 지워 집중 코스로 전환
+      // await courseApi.restartFocusCourse();
+      // const updatedProcedures = await procedureApi.getCurrentProcedures();
+      sessionStorage.removeItem("currentDailyCourse");
+      const updatedProcedures = await Promise.resolve(MOCK_CURRENT_PROCEDURES);
       if (Array.isArray(updatedProcedures)) {
         setCurrentProcedures(updatedProcedures);
       }
@@ -184,28 +209,29 @@ const Home: React.FC = () => {
     }
   };
 
-  const handleToggleTodo = async (id: number) => {
+  const handleToggleTodo = (id: number) => {
     setTodos((prev) =>
       prev.map((todo) =>
         todo.id === id ? { ...todo, checked: !todo.checked } : todo,
       ),
     );
 
-    try {
-      const updatedItem = await dashboardApi.toggleChecklistItem(id);
-      if (updatedItem) {
-        setTodos((prev) =>
-          prev.map((todo) => (todo.id === id ? updatedItem : todo)),
-        );
-      }
-    } catch (error) {
-      console.error("체크리스트 토글 요청 실패:", error);
-      setTodos((prev) =>
-        prev.map((todo) =>
-          todo.id === id ? { ...todo, checked: !todo.checked } : todo,
-        ),
-      );
-    }
+    // [백엔드 연동 주석처리] 체크리스트 토글 API (화면의 체크 상태만 바꿈)
+    // try {
+    //   const updatedItem = await dashboardApi.toggleChecklistItem(id);
+    //   if (updatedItem) {
+    //     setTodos((prev) =>
+    //       prev.map((todo) => (todo.id === id ? updatedItem : todo)),
+    //     );
+    //   }
+    // } catch (error) {
+    //   console.error("체크리스트 토글 요청 실패:", error);
+    //   setTodos((prev) =>
+    //     prev.map((todo) =>
+    //       todo.id === id ? { ...todo, checked: !todo.checked } : todo,
+    //     ),
+    //   );
+    // }
   };
 
   const totalTodos = todos.length;

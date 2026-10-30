@@ -2,12 +2,14 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
-import type { Product } from "../components/FocusCare/RecommendedProductSection";
+// [아카이빙] FinishRoutine용 추천 제품 처리를 주석처리하면서 사용하지 않음
+// import type { Product } from "../components/FocusCare/RecommendedProductSection";
 
-import { courseApi } from "../api/course";
-import { procedureApi } from "../api/procedure";
+// [백엔드 연동 주석처리] 아카이빙을 위해 API 대신 목 데이터 사용
+// import { courseApi } from "../api/course";
+// import { procedureApi } from "../api/procedure";
 import {
-  routineApi,
+  // routineApi,
   type RoutineDifficultyResponse,
   type RoutineStepSummary,
 } from "../api/routine";
@@ -19,10 +21,20 @@ import RoutineStepCard from "../components/FocusCare/RoutineStepCard";
 
 import * as S from "../styles/FocusCare/ThirdFocusCare.styles";
 
+import {
+  // MOCK_COMPLETION_DATA,
+  MOCK_FOCUS_COURSE,
+  // MOCK_RECOMMENDED_PRODUCTS,
+  getMockRoutineStepSummaries,
+  mockDelay,
+} from "../mocks/focusCare";
+// import { getMockIngredient } from "../mocks/products";
+
 interface ThirdFocusCareLocationState {
   routine: RoutineDifficultyResponse;
 }
 
+/* [백엔드 연동 주석처리] 시술 일차 계산은 시술 조회 API 결과에만 쓰여 함께 주석처리
 function calculateProcedureDay(procedureDate: string): number {
   const [year, month, day] = procedureDate.split("-").map(Number);
 
@@ -38,6 +50,7 @@ function calculateProcedureDay(procedureDate: string): number {
 
   return Math.max(diffDays + 1, 1);
 }
+*/
 
 export default function ThirdFocusCare() {
   const navigate = useNavigate();
@@ -47,7 +60,11 @@ export default function ThirdFocusCare() {
 
   const routine = state?.routine ?? null;
 
-  const [stepSummaries, setStepSummaries] = useState<RoutineStepSummary[]>([]);
+  // [백엔드 연동 주석처리] 루틴 스텝 조회 API 대신 목 루틴에서 스텝 요약 생성
+  // const [stepSummaries, setStepSummaries] = useState<RoutineStepSummary[]>([]);
+  const [stepSummaries] = useState<RoutineStepSummary[]>(() =>
+    routine ? getMockRoutineStepSummaries(routine) : []
+  );
 
   const [isCompleting, setIsCompleting] = useState(false);
 
@@ -59,6 +76,8 @@ export default function ThirdFocusCare() {
       return;
     }
 
+    // [백엔드 연동 주석처리] 루틴 스텝 조회 API (목 데이터는 위 useState에서 초기화)
+    /*
     let isCancelled = false;
 
     async function fetchRoutineSteps() {
@@ -88,6 +107,7 @@ export default function ThirdFocusCare() {
     return () => {
       isCancelled = true;
     };
+    */
   }, [routine]);
 
   async function handleCompleteFocusCareRoutine() {
@@ -99,7 +119,9 @@ export default function ThirdFocusCare() {
       setIsCompleting(true);
 
   
-      const currentCourse = await courseApi.getCurrentCourse();
+      // [백엔드 연동 주석처리] 현재 코스 조회 대신 목 집중 코스 사용
+      // const currentCourse = await courseApi.getCurrentCourse();
+      const currentCourse = MOCK_FOCUS_COURSE;
 
       if (!currentCourse) {
         console.error("현재 진행 중인 코스가 없습니다.");
@@ -117,6 +139,7 @@ export default function ThirdFocusCare() {
       }
 
  
+      /* [백엔드 연동 주석처리] 시술 조회 API로 시술 일차 계산 (7일차 이상이면 코스 종료 처리에 사용)
       const currentProcedures = await procedureApi.getCurrentProcedures();
 
       if (!Array.isArray(currentProcedures) || currentProcedures.length === 0) {
@@ -132,11 +155,26 @@ export default function ThirdFocusCare() {
       );
 
       console.log("🔥 현재 시술 일차:", procedureDay);
+      */
 
 
-      const completionData = await routineApi.completeRoutine(
-        routine.routineId
-      );
+      // [아카이빙] 체험용으로 루틴을 완료하면 항상 집중 코스 완료(FinishFocusCare)로 이동
+      // 원래 흐름: 시술 7일차 미만이면 오늘의 루틴 완료(FinishRoutine), 7일차 이상이면 코스 종료 후 FinishFocusCare
+      await mockDelay(500);
+
+      navigate("/care/finish_focus_care", {
+        state: {
+          courseId: currentCourse.courseId,
+        },
+      });
+
+      /* [아카이빙] FinishRoutine으로 넘기던 루틴 완료·추천 제품 처리 (FinishFocusCare로 바로 이동하면서 사용하지 않음)
+      // [백엔드 연동 주석처리] 루틴 완료 API 대신 목 완료 데이터 사용
+      // const completionData = await routineApi.completeRoutine(
+      //   routine.routineId
+      // );
+      await mockDelay(500);
+      const completionData = MOCK_COMPLETION_DATA;
 
       console.log("🔥 오늘의 루틴 완료:", completionData);
 
@@ -144,8 +182,10 @@ export default function ThirdFocusCare() {
       let recommendedProducts: Product[] = [];
 
       try {
-        const recommendedProductResponse =
-          await routineApi.getRecommendedProducts(routine.routineId);
+        // [백엔드 연동 주석처리] 루틴 추천 제품 API 대신 목 추천 제품 사용
+        // const recommendedProductResponse =
+        //   await routineApi.getRecommendedProducts(routine.routineId);
+        const recommendedProductResponse = MOCK_RECOMMENDED_PRODUCTS;
 
         console.log("🔥 루틴 추천 제품 API 응답:", recommendedProductResponse);
 
@@ -173,7 +213,11 @@ export default function ThirdFocusCare() {
             brand: item.product.brand,
             name: item.product.name,
 
-            ingredientId: matchedStep?.ingredientId ?? undefined,
+            // [백엔드 연동 주석처리] 루틴 단계에 없는 성분도 추천 제품 페이지에서 보이도록 목 성분 id로 보완
+            // ingredientId: matchedStep?.ingredientId ?? undefined,
+            ingredientId:
+              matchedStep?.ingredientId ??
+              getMockIngredient(item.ingredientName)?.id,
 
             ingredientName: item.ingredientName,
 
@@ -193,6 +237,7 @@ export default function ThirdFocusCare() {
       }
 
  
+      /* [백엔드 연동 주석처리] 시술 7일차 이상이면 코스 종료 API 호출 후 집중 코스 완료 페이지로 이동
       if (procedureDay >= 7) {
         const endedCourse = await courseApi.endCourse(currentCourse.courseId);
 
@@ -206,8 +251,8 @@ export default function ThirdFocusCare() {
 
         return;
       }
+      * /
 
- 
       navigate("/care/finish_routine", {
         state: {
           courseId: currentCourse.courseId,
@@ -220,6 +265,7 @@ export default function ThirdFocusCare() {
           recommendedProducts,
         },
       });
+      */
     } catch (error) {
       console.error("루틴 완료 처리 실패:", error);
 

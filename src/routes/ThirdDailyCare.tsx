@@ -1,10 +1,13 @@
-import { useEffect, useState } from "react";
+// [백엔드 연동 주석처리] 스텝 조회용 useEffect를 주석처리하면서 import에서 제외
+// import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import type { RoutineTypeCode } from "../api/course";
 
+// [백엔드 연동 주석처리] 아카이빙을 위해 API 대신 목 데이터 사용
 import {
-  routineApi,
+  // routineApi,
   type RoutineDifficultyResponse,
   type RoutineStepSummary,
 } from "../api/routine";
@@ -20,6 +23,12 @@ import type {
 } from "../components/FocusCare/RecommendedProductSection";
 
 import * as S from "../styles/DailyCare/ThirdDailyCare.styles";
+
+import {
+  createMockDailyCompletion,
+  getMockDailyRecommendedProducts,
+} from "../mocks/dailyCare";
+import { getMockRoutineStepSummaries, mockDelay } from "../mocks/focusCare";
 
 interface ThirdDailyCareLocationState {
   routine: RoutineDifficultyResponse;
@@ -61,11 +70,16 @@ export default function ThirdDailyCare() {
 
   const routineTypeCode = state?.routineTypeCode;
 
-  const [stepSummaries, setStepSummaries] = useState<RoutineStepSummary[]>([]);
+  // [백엔드 연동 주석처리] 루틴 스텝 조회 API 대신 목 루틴에서 스텝 요약 생성
+  // const [stepSummaries, setStepSummaries] = useState<RoutineStepSummary[]>([]);
+  const [stepSummaries] = useState<RoutineStepSummary[]>(() =>
+    routine ? getMockRoutineStepSummaries(routine) : []
+  );
 
   const [isCompleting, setIsCompleting] = useState(false);
 
 
+  /* [백엔드 연동 주석처리] 루틴 스텝 조회 API (목 데이터는 위 useState에서 초기화)
   useEffect(() => {
     if (!routine) {
       return;
@@ -101,6 +115,7 @@ export default function ThirdDailyCare() {
       isCancelled = true;
     };
   }, [routine]);
+  */
 
   async function handleCompleteDailyCareRoutine() {
     if (!routine || isCompleting) {
@@ -111,9 +126,12 @@ export default function ThirdDailyCare() {
       setIsCompleting(true);
 
   
-      const completionData = await routineApi.completeRoutine(
-        routine.routineId
-      );
+      // [백엔드 연동 주석처리] 루틴 완료 API 대신 목 완료 데이터 사용
+      // const completionData = await routineApi.completeRoutine(
+      //   routine.routineId
+      // );
+      await mockDelay(500);
+      const completionData = createMockDailyCompletion(routineTypeCode);
 
       console.log("🔥 데일리 루틴 완료 응답:", completionData);
 
@@ -122,9 +140,11 @@ export default function ThirdDailyCare() {
 
       if (resolvedStepSummaries.length === 0) {
         try {
-          resolvedStepSummaries = await routineApi.getRoutineSteps(
-            routine.routineId
-          );
+          // [백엔드 연동 주석처리] 스텝 재조회 API 대신 목 스텝 요약 사용
+          // resolvedStepSummaries = await routineApi.getRoutineSteps(
+          //   routine.routineId
+          // );
+          resolvedStepSummaries = getMockRoutineStepSummaries(routine);
 
           console.log(
             "🔥 완료 시점 데일리 steps 재조회:",
@@ -161,9 +181,11 @@ export default function ThirdDailyCare() {
       let recommendedProducts: Product[] = [];
 
       try {
-        const productData = await routineApi.getRecommendedProducts(
-          routine.routineId
-        );
+        // [백엔드 연동 주석처리] 루틴 추천 제품 API 대신 루틴 성분별 목 제품 사용
+        // const productData = await routineApi.getRecommendedProducts(
+        //   routine.routineId
+        // );
+        const productData = getMockDailyRecommendedProducts(routineTypeCode);
 
         console.log("🔥 데일리 추천 제품 응답:", productData);
 

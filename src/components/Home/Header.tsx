@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import * as S from "../../styles/Header.styles";
-import { demoApi } from "../../api/demo";
+// [백엔드 연동 주석처리] 아카이빙을 위해 데모 리셋 API 대신 브라우저에 저장된 진행 상태만 초기화
+// import { demoApi } from "../../api/demo";
 
 interface HeaderProps {
   currentVersion: "focus" | "daily";
@@ -15,7 +16,8 @@ export const Header: React.FC<HeaderProps> = ({ currentVersion }) => {
 
     try {
       setIsResetting(true);
-      await demoApi.resetDemoData();
+      // await demoApi.resetDemoData();
+      await Promise.resolve();
 
       sessionStorage.removeItem("currentDailyCourse");
 

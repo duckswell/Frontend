@@ -2,11 +2,16 @@ import axios from "axios";
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
+// [백엔드 연동 주석처리] 아카이빙을 위해 API 대신 목 데이터 사용
 import {
-  courseApi,
+  // courseApi,
   type RoutineTypeCode,
   type SymptomSummaryResponse,
 } from "../api/course";
+import {
+  MOCK_SYMPTOM_SUMMARY,
+  createMockDailyCourse,
+} from "../mocks/dailyCare";
 
 import CareButton from "../components/CareButton";
 import { RoutineCard } from "../components/DailycoursePreview/RoutineCard";
@@ -191,7 +196,10 @@ export default function FinishFocusCare() {
 
     async function fetchSymptomSummary() {
       try {
-        const summary = await courseApi.getSymptomSummary(targetCourseId);
+        // [백엔드 연동 주석처리] 7일 증상 요약 API 대신 목 요약 사용
+        // const summary = await courseApi.getSymptomSummary(targetCourseId);
+        console.log("증상 요약 대상 courseId:", targetCourseId);
+        const summary = await Promise.resolve(MOCK_SYMPTOM_SUMMARY);
 
         console.log("7일 증상 요약 조회 성공:", summary);
 
@@ -308,10 +316,14 @@ export default function FinishFocusCare() {
 
       const routineTypeCode = ROUTINE_TYPE_CODE_MAP[selectedRoutine];
 
-      const course = await courseApi.startCourse({
-        courseType: "DAILY",
-        routineTypeCode,
-      });
+      // [백엔드 연동 주석처리] 데일리 코스 시작 API 대신 목 코스 사용
+      // const course = await courseApi.startCourse({
+      //   courseType: "DAILY",
+      //   routineTypeCode,
+      // });
+      const course = await Promise.resolve(
+        createMockDailyCourse(routineTypeCode)
+      );
 
       console.log("데일리 코스 시작 성공:", course);
 

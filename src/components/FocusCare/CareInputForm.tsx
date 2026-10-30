@@ -2,7 +2,9 @@ import { useRef, useState } from "react";
 
 import AnalysisLoading from "./AnalysisLoading";
 import ImageUploadErrorModal from "./ImageUploadErrorModal";
-import { diagnosisApi } from "../../api/diagnosis";
+// [백엔드 연동 주석처리] 아카이빙을 위해 사진 품질 확인 API 대신 목 데이터 사용
+// import { diagnosisApi } from "../../api/diagnosis";
+import { MOCK_PHOTO_ID, mockDelay } from "../../mocks/focusCare";
 
 import * as S from "../../styles/FocusCare/CareInputForm.styles";
 import * as ModalS from "../../styles/FocusCare/ImageAnalysisModal.styles";
@@ -91,7 +93,10 @@ export default function CareInputForm({
       console.log("===== 사진 품질 확인 시작 =====");
       console.log("파일:", selectedFile);
 
-      const result = await diagnosisApi.checkPhoto(selectedFile);
+      // [백엔드 연동 주석처리] 사진 품질 확인 API 대신 항상 통과하는 목 결과 사용
+      // const result = await diagnosisApi.checkPhoto(selectedFile);
+      await mockDelay();
+      const result = { photoId: MOCK_PHOTO_ID };
 
       console.log("사진 품질 확인 성공:", result);
 

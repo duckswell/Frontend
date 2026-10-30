@@ -9,9 +9,10 @@ import {
 } from "react";
 
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
-import { courseApi } from "../api/course";
+// [백엔드 연동 주석처리] 아카이빙을 위해 API 대신 목 데이터 사용
+// import { courseApi } from "../api/course";
 import {
-  productApi,
+  // productApi,
   type ProductCategory,
   type RecommendedIngredient,
   type RecommendedProduct,
@@ -28,6 +29,15 @@ import type {
 } from "../components/FocusCare/RecommendedProductSection";
 
 import * as S from "../styles/RecommendProduct.styles";
+
+import {
+  getMockRecommendedIngredients,
+  getStoredMockDailyCourse,
+} from "../mocks/dailyCare";
+import {
+  MOCK_INGREDIENTS,
+  getMockProductsByIngredient,
+} from "../mocks/products";
 
 const PRODUCT_CATEGORIES = [
   {
@@ -503,8 +513,10 @@ export default function RecommendProduct() {
         Array.isArray(careRecommendedIngredientNames)
       ) {
         try {
-          const availableIngredients =
-            await productApi.getRecommendedIngredients();
+          // [백엔드 연동 주석처리] 성분 이름 매칭용 전체 성분 목록을 목 데이터로 대체
+          // const availableIngredients =
+          //   await productApi.getRecommendedIngredients();
+          const availableIngredients = await Promise.resolve(MOCK_INGREDIENTS);
 
           if (isCancelled) {
             return;
@@ -591,7 +603,11 @@ export default function RecommendProduct() {
       }
 
       try {
-        const response = await productApi.getRecommendedIngredients();
+        // [백엔드 연동 주석처리] 추천 성분 API 대신 현재 코스 기준 목 성분 사용
+        // const response = await productApi.getRecommendedIngredients();
+        const response = await Promise.resolve(
+          getMockRecommendedIngredients()
+        );
 
         if (isCancelled) {
           return;
@@ -652,11 +668,18 @@ export default function RecommendProduct() {
 
     async function fetchProducts() {
       try {
-        const response: RecommendedProduct[] =
-          await productApi.getRecommendedProducts(
+        // [백엔드 연동 주석처리] 추천 제품 API 대신 목 제품 데이터에서 성분·카테고리로 필터링
+        // const response: RecommendedProduct[] =
+        //   await productApi.getRecommendedProducts(
+        //     ingredientId,
+        //     selectedProductCategory ?? undefined
+        //   );
+        const response: RecommendedProduct[] = await Promise.resolve(
+          getMockProductsByIngredient(
             ingredientId,
             selectedProductCategory ?? undefined
-          );
+          )
+        );
 
         if (isCancelled) {
           return;
@@ -1097,11 +1120,16 @@ export default function RecommendProduct() {
 
   async function handleStartRoutine() {
     try {
-      const currentCourse = await courseApi.getCurrentCourse();
+      // [백엔드 연동 주석처리] 현재 코스 조회 대신 저장된 데일리 코스 여부로 판단
+      // const currentCourse = await courseApi.getCurrentCourse();
+      const currentDailyCourse = await Promise.resolve(
+        getStoredMockDailyCourse()
+      );
 
-      console.log("🔥 제품 추천 페이지 현재 진행 코스:", currentCourse);
+      console.log("🔥 제품 추천 페이지 현재 데일리 코스:", currentDailyCourse);
 
-      if (currentCourse?.courseType === "DAILY") {
+      // if (currentCourse?.courseType === "DAILY") {
+      if (currentDailyCourse) {
         navigate("/care/daily_care");
 
         return;

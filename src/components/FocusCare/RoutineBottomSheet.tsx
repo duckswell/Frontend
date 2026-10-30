@@ -4,7 +4,10 @@ import { useNavigate } from "react-router-dom";
 
 import type { RoutineTypeCode } from "../../api/course";
 import type { Difficulty, DifficultyOption } from "../../api/diagnosis";
-import { routineApi } from "../../api/routine";
+// [백엔드 연동 주석처리] 아카이빙을 위해 난이도 선택 API 대신 목 데이터 사용
+// import { routineApi } from "../../api/routine";
+import { getMockDailyRoutine } from "../../mocks/dailyCare";
+import { MOCK_ROUTINES, mockDelay } from "../../mocks/focusCare";
 
 import CareButton from "../CareButton";
 import RoutineOptionCard from "./RoutineOptionCard";
@@ -158,10 +161,16 @@ export default function RoutineBottomSheet({
       console.log("routineId:", routineId);
       console.log("selectedRoutine:", selectedRoutine);
 
-      const routine = await routineApi.selectDifficulty(
-        routineId,
-        selectedRoutine
-      );
+      // [백엔드 연동 주석처리] 난이도 선택 API 대신 선택한 난이도의 목 루틴 사용
+      // const routine = await routineApi.selectDifficulty(
+      //   routineId,
+      //   selectedRoutine
+      // );
+      await mockDelay(500);
+      const routine =
+        variant === "daily"
+          ? getMockDailyRoutine(routineTypeCode, selectedRoutine)
+          : MOCK_ROUTINES[selectedRoutine];
 
       console.log("루틴 난이도 선택 성공:", routine);
 
@@ -244,7 +253,9 @@ export default function RoutineBottomSheet({
               disabled={!isRoutineSelected || isSubmitting}
               onClick={handleMoveToNextCare}
             >
-              {variant === "daily" ? "루틴 시작하기" : "선택한 루틴 시작하기"}
+              {/* 디자인 시안에 맞춰 집중·데일리 모두 "루틴 시작하기"로 통일 */}
+              {/* {variant === "daily" ? "루틴 시작하기" : "선택한 루틴 시작하기"} */}
+              루틴 시작하기
             </CareButton>
           </S.ButtonArea>
         </S.ScrollArea>

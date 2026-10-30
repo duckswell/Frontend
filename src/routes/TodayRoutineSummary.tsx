@@ -4,7 +4,10 @@ import { useLocation, useNavigate } from "react-router-dom";
 
 import type { RoutineTypeCode } from "../api/course";
 
-import { routineApi, type RoutineCompletionData } from "../api/routine";
+// [백엔드 연동 주석처리] 아카이빙을 위해 추천 제품 API 대신 목 데이터 사용
+// import { routineApi, type RoutineCompletionData } from "../api/routine";
+import { type RoutineCompletionData } from "../api/routine";
+import { getMockDailyRecommendedProducts } from "../mocks/dailyCare";
 
 import CareButton from "../components/CareButton";
 import FocusConfetti from "../components/FocusCare/FocusConfetti";
@@ -42,6 +45,9 @@ export default function TodayRoutineSummary() {
   const state = location.state as TodayRoutineSummaryLocationState | null;
 
   const routineId = state?.routineId;
+
+  // [백엔드 연동 주석처리] 목 추천 제품을 루틴 타입으로 찾기 위해 사용
+  const routineTypeCode = state?.routineTypeCode;
 
   const routineIngredients: CareIngredient[] = state?.routineIngredients ?? [];
 
@@ -99,8 +105,13 @@ export default function TodayRoutineSummary() {
 
     async function fetchRecommendedProducts() {
       try {
-        const response =
-          await routineApi.getRecommendedProducts(currentRoutineId);
+        // [백엔드 연동 주석처리] 루틴 추천 제품 API 대신 루틴 성분별 목 제품 사용
+        // const response =
+        //   await routineApi.getRecommendedProducts(currentRoutineId);
+        console.log("🔥 추천 제품 대상 routineId:", currentRoutineId);
+        const response = await Promise.resolve(
+          getMockDailyRecommendedProducts(routineTypeCode)
+        );
 
         if (isCancelled) {
           return;
@@ -156,7 +167,9 @@ export default function TodayRoutineSummary() {
     return () => {
       isCancelled = true;
     };
-  }, [routineId, storageKey]);
+  // [백엔드 연동 주석처리] 목 추천 제품 조회에 쓰는 routineTypeCode를 의존성에 추가
+  // }, [routineId, storageKey]);
+  }, [routineId, storageKey, routineTypeCode]);
 
   function handleMoveToHome() {
     navigate("/home");
