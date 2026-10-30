@@ -1,9 +1,13 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import * as S from "../styles/NewProcedure.styles";
 import { NavBar } from "../components/NavBar";
-import { procedureApi } from "../api/procedure";
-import { courseApi } from "../api/course";
-import { isAxiosError } from "axios";
+// [백엔드 연동 주석처리] 아카이빙을 위해 API 대신 목/스토리지 데이터 사용
+// import { procedureApi } from "../api/procedure";
+// import { courseApi } from "../api/course";
+// import { isAxiosError } from "axios";
+import { type ProcedureItem } from "../api/procedure";
+import { MOCK_CURRENT_PROCEDURES } from "../mocks/home";
 
 interface ProcedureData {
   id: number;
@@ -59,6 +63,7 @@ const BODY_PARTS = ["얼굴 전체", "T존", "나비존", "턱", "볼"];
 const WEEKDAYS = ["월", "화", "수", "목", "금", "토", "일"];
 
 const NewProcedure: React.FC = () => {
+  const navigate = useNavigate();
   const [procedures, setProcedures] = useState<ProcedureData[]>([]);
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -98,48 +103,47 @@ const NewProcedure: React.FC = () => {
   useEffect(() => {
     let isMounted = true;
 
-    const loadInitialData = async () => {
+    const loadInitialData = () => {
       try {
-        const currentCourse = await courseApi
-          .getCurrentCourse()
-          .catch(() => null);
+        // [백엔드 연동 주석처리] API 대신 로컬스토리지 / 목 데이터 조회
+        // const currentCourse = await courseApi.getCurrentCourse().catch(() => null);
+        // const data = await procedureApi.getCurrentProcedures().catch(() => []);
+
+        const stored = localStorage.getItem("mock_procedures");
+        const data: ProcedureItem[] = stored
+          ? JSON.parse(stored)
+          : MOCK_CURRENT_PROCEDURES;
+
         if (!isMounted) return;
 
-        if (currentCourse && currentCourse.courseType === "FOCUS") {
-          const data = await procedureApi
-            .getCurrentProcedures()
-            .catch(() => []);
-          if (!isMounted) return;
+        if (data && data.length > 0) {
+          const sortedData = [...data].sort(
+            (a, b) => Number(a.id) - Number(b.id),
+          );
 
-          if (data && data.length > 0) {
-            const sortedData = [...data].sort(
-              (a, b) => Number(a.id) - Number(b.id),
-            );
+          const mappedList: ProcedureData[] = sortedData.map((item, idx) => {
+            const displayType =
+              REVERSE_PROCEDURE_MAP[item.procedureType] ||
+              item.procedureTypeName ||
+              item.procedureType;
 
-            const mappedList: ProcedureData[] = sortedData.map((item, idx) => {
-              const displayType =
-                REVERSE_PROCEDURE_MAP[item.procedureType] ||
-                item.procedureTypeName ||
-                item.procedureType;
-
-              return {
-                id: item.id,
-                isOpen: idx === sortedData.length - 1,
-                type: displayType,
-                date: item.procedureDate
-                  ? item.procedureDate.replace(/-/g, ".")
-                  : "",
-                currentCount: String(item.currentCount ?? ""),
-                totalCount: String(item.totalCount ?? ""),
-                selectedParts: (item.areas || []).map(
-                  (area) => REVERSE_BODY_PART_MAP[area] || area,
-                ),
-                isNew: false,
-              };
-            });
-            setProcedures(mappedList);
-            return;
-          }
+            return {
+              id: item.id,
+              isOpen: idx === sortedData.length - 1,
+              type: displayType,
+              date: item.procedureDate
+                ? item.procedureDate.replace(/-/g, ".")
+                : "",
+              currentCount: String(item.currentCount ?? ""),
+              totalCount: String(item.totalCount ?? ""),
+              selectedParts: (item.areas || []).map(
+                (area) => REVERSE_BODY_PART_MAP[area] || area,
+              ),
+              isNew: false,
+            };
+          });
+          setProcedures(mappedList);
+          return;
         }
 
         setProcedures([
@@ -251,31 +255,36 @@ const NewProcedure: React.FC = () => {
     const target = deleteTargetItem;
     setDeleteTargetItem(null);
 
-    if (target.isNew) {
-      setProcedures((prev) => {
-        const filtered = prev.filter((p) => p.id !== target.id);
-        if (filtered.length > 0) {
-          return filtered.map((item, idx) => ({
-            ...item,
-            isOpen: idx === filtered.length - 1,
-          }));
-        }
-        return filtered;
-      });
-      return;
-    }
+    // [백엔드 연동 주석처리] API 대신 로컬스토리지 반영
+    // try {
+    //   await procedureApi.deleteProcedure(target.id);
+    //   setRefreshKey((prev) => prev + 1);
+    // } catch (error) { ... }
 
-    try {
-      await procedureApi.deleteProcedure(target.id);
-      setRefreshKey((prev) => prev + 1);
-    } catch (error: unknown) {
-      console.error("시술 정보 삭제 실패:", error);
-      if (isAxiosError(error)) {
-        alert(error.response?.data?.message || "시술 삭제에 실패했습니다.");
-      } else {
-        alert("알 수 없는 오류가 발생했습니다.");
+    setProcedures((prev) => {
+      const filtered = prev.filter((p) => p.id !== target.id);
+      const remainingToStore: ProcedureItem[] = filtered.map((item) => ({
+        id: item.id,
+        procedureType: PROCEDURE_MAP[item.type] || item.type,
+        procedureTypeName: item.type,
+        procedureDate: item.date.replace(/\./g, "-"),
+        currentCount: Number(item.currentCount),
+        totalCount: Number(item.totalCount),
+        areas: item.selectedParts.map((part) => BODY_PART_MAP[part] || part),
+      }));
+
+      localStorage.setItem("mock_procedures", JSON.stringify(remainingToStore));
+
+      if (filtered.length > 0) {
+        return filtered.map((item, idx) => ({
+          ...item,
+          isOpen: idx === filtered.length - 1,
+        }));
       }
-    }
+      return filtered;
+    });
+
+    setRefreshKey((prev) => prev + 1);
   };
 
   const handlePrevMonth = () => {
@@ -301,79 +310,45 @@ const NewProcedure: React.FC = () => {
 
     setIsSubmitting(true);
 
-    const existingProcedures = procedures.filter((p) => !p.isNew);
-    const newProcedures = procedures.filter((p) => p.isNew);
-
     try {
-      if (newProcedures.length > 0) {
-        try {
-          const currentCourse = await courseApi
-            .getCurrentCourse()
-            .catch(() => null);
-          const currentCourseId =
-            currentCourse?.courseId ??
-            (currentCourse as unknown as { id?: number })?.id;
+      // [백엔드 연동 주석처리] 집중 코스 전환 및 시술 저장 API 호출 대신 스토리지 업데이트
+      // if (newProcedures.length > 0) {
+      //   await courseApi.startCourse({ courseType: "FOCUS" });
+      // }
+      // await Promise.all([
+      //   ...existingProcedures.map((p) => procedureApi.updateProcedure(p.id, ...)),
+      //   procedureApi.createProcedures(...),
+      // ]);
 
-          if (!currentCourse || currentCourse.courseType !== "FOCUS") {
-            if (currentCourseId) {
-              await courseApi.endCourse(currentCourseId);
-            }
-            await courseApi.startCourse({ courseType: "FOCUS" });
-          }
-        } catch (courseError) {
-          console.warn("집중 코스 전환 중 오류:", courseError);
-          await courseApi.restartFocusCourse().catch(() => {});
-        }
-      }
+      // 1. 데일리 코스 세션을 제거해 홈 진입 시 집중 코스(focus) 모드로 활성화되도록 설정
+      sessionStorage.removeItem("currentDailyCourse");
 
-      const promises: Promise<unknown>[] = [];
+      // 2. 입력된 전체 시술 목록을 로컬스토리지에 저장
+      const updatedListToStore: ProcedureItem[] = procedures.map((item) => ({
+        id: item.id,
+        procedureType: PROCEDURE_MAP[item.type] || item.type,
+        procedureTypeName: item.type,
+        procedureDate: item.date.replace(/\./g, "-"),
+        currentCount: Number(item.currentCount),
+        totalCount: Number(item.totalCount),
+        areas: item.selectedParts.map((part) => BODY_PART_MAP[part] || part),
+      }));
 
-      existingProcedures.forEach((item) => {
-        promises.push(
-          procedureApi.updateProcedure(item.id, {
-            procedureType: PROCEDURE_MAP[item.type] || item.type,
-            procedureDate: item.date.replace(/\./g, "-"),
-            currentCount: Number(item.currentCount),
-            totalCount: Number(item.totalCount),
-            areas: item.selectedParts.map(
-              (part) => BODY_PART_MAP[part] || part,
-            ),
-          }),
-        );
-      });
-
-      if (newProcedures.length > 0) {
-        promises.push(
-          procedureApi.createProcedures({
-            procedures: newProcedures.map((item) => ({
-              procedureType: PROCEDURE_MAP[item.type] || item.type,
-              procedureDate: item.date.replace(/\./g, "-"),
-              currentCount: Number(item.currentCount),
-              totalCount: Number(item.totalCount),
-              areas: item.selectedParts.map(
-                (part) => BODY_PART_MAP[part] || part,
-              ),
-            })),
-          }),
-        );
-      }
-
-      await Promise.all(promises);
+      localStorage.setItem(
+        "mock_procedures",
+        JSON.stringify(updatedListToStore),
+      );
 
       setIsSaved(true);
+
+      // 저장이 완료되면 홈 대시보드로 이동
       setTimeout(() => {
         setIsSaved(false);
-      }, 3000);
-
-      setRefreshKey((prev) => prev + 1);
-    } catch (error: unknown) {
+        navigate("/home", { replace: true });
+      }, 500);
+    } catch (error) {
       console.error("시술 정보 저장 실패:", error);
-
-      if (isAxiosError(error)) {
-        alert(error.response?.data?.message || "시술 저장에 실패했습니다.");
-      } else {
-        alert("알 수 없는 오류가 발생했습니다.");
-      }
+      alert("시술 저장 중 오류가 발생했습니다.");
     } finally {
       setIsSubmitting(false);
     }
