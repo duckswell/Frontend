@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import * as S from "../styles/CourseHistories.styles";
 import { Courses } from "../components/Mypage/Courses";
@@ -34,17 +34,8 @@ interface CourseViewItem {
   title: string;
 }
 
-// 목 지난 코스 완료 기록
-const MOCK_PAST_COURSES: ExtendedPastCourse[] = [
-  {
-    id: 101,
-    courseType: "FOCUS",
-    routineTypeCode: null,
-    routineTypeName: "진정·재생 집중 코스",
-    startedAt: "2026-08-10",
-    endedAt: "2026-08-16",
-    status: "COMPLETED",
-  },
+// 기본 완료 코스 목 데이터 목록
+const BASE_PAST_COURSES: ExtendedPastCourse[] = [
   {
     id: 102,
     courseType: "DAILY",
@@ -52,6 +43,15 @@ const MOCK_PAST_COURSES: ExtendedPastCourse[] = [
     routineTypeName: "수분 보충 루틴",
     startedAt: "2026-08-17",
     endedAt: "2026-08-25",
+    status: "COMPLETED",
+  },
+  {
+    id: 101,
+    courseType: "FOCUS",
+    routineTypeCode: null,
+    routineTypeName: "진정·재생 집중 코스",
+    startedAt: "2026-08-10",
+    endedAt: "2026-08-16",
     status: "COMPLETED",
   },
 ];
@@ -65,79 +65,107 @@ const CourseHistories: React.FC = () => {
   );
   const [pastCourses, setPastCourses] = useState<CourseViewItem[]>([]);
 
-  const fetchHistory = useCallback(async () => {
-    try {
-      setIsLoading(true);
+  useEffect(() => {
+    let isMounted = true;
 
-      // [백엔드 연동 주석처리] API 대신 목 데이터 매핑
-      // const [currentRes, historyRes] = await Promise.allSettled([
-      //   courseApi.getCurrentCourse(),
-      //   courseApi.getCourseHistory(),
-      // ]);
+    const fetchHistory = async () => {
+      try {
+        // [백엔드 연동 주석처리] API 대신 목 데이터 매핑
+        // const [currentRes, historyRes] = await Promise.allSettled([
+        //   courseApi.getCurrentCourse(),
+        //   courseApi.getCourseHistory(),
+        // ]);
 
-      const cur = getMockCurrentCourse() as ExtendedCurrentCourse | null;
+        const cur = getMockCurrentCourse() as ExtendedCurrentCourse | null;
 
-      if (cur) {
-        const routineName = cur.routineTypeName || cur.routineType || cur.label;
+        if (!isMounted) return;
 
-        setCurrentCourse({
-          id: cur.courseId ?? cur.id ?? 0,
-          iconSrc:
-            cur.courseType === "DAILY"
-              ? "/assets/Home_Daily.png"
-              : "/assets/Home_Focus.png",
-          description: routineName
-            ? cur.courseType === "DAILY"
-              ? `데일리 ${routineName} 루틴 진행 중`
-              : "집중 코스 진행 중"
-            : cur.courseType === "DAILY"
-              ? "데일리 코스 진행 중"
-              : "집중 코스 진행 중",
-          title: `연속 ${cur.streakDays ?? 0}일째`,
-        });
-      } else {
-        setCurrentCourse(null);
-      }
+        if (cur) {
+          const routineName =
+            cur.routineTypeName || cur.routineType || cur.label;
 
-      const list = MOCK_PAST_COURSES;
-      const completedList = list
-        .filter((c) => Boolean(c.endedAt))
-        .sort((a, b) => Number(b.id) - Number(a.id));
-
-      setPastCourses(
-        completedList.map((c) => {
-          const start = c.startedAt
-            ? `${c.startedAt.replace(/-/g, ".")} ~ `
-            : "";
-          const end = c.endedAt ? c.endedAt.replace(/-/g, ".") : "";
-          const routineName = c.routineTypeName || c.routineType || c.label;
-
-          return {
-            id: c.id,
+          setCurrentCourse({
+            id: cur.courseId ?? cur.id ?? 0,
             iconSrc:
-              c.courseType === "DAILY"
+              cur.courseType === "DAILY"
                 ? "/assets/Home_Daily.png"
                 : "/assets/Home_Focus.png",
-            description: `${start}${end}`,
-            title: routineName
-              ? `데일리 ${routineName} 루틴 완료`
-              : c.courseType === "DAILY"
-                ? "데일리 코스 완료"
-                : "집중 코스 완료",
-          };
-        }),
-      );
-    } catch (error) {
-      console.error("코스 기록 조회 실패:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+            description: routineName
+              ? cur.courseType === "DAILY"
+                ? `데일리 ${routineName} 루틴 진행 중`
+                : "집중 코스 진행 중"
+              : cur.courseType === "DAILY"
+                ? "데일리 코스 진행 중"
+                : "집중 코스 진행 중",
+            title: `연속 ${cur.streakDays ?? 0}일째`,
+          });
+        } else {
+          setCurrentCourse(null);
+        }
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+        // 데일리 코스 진행 중일 때, 직전에 마친 집중 코스를 지난 내역의 최상단에 동적 추가
+        let list = [...BASE_PAST_COURSES];
+
+        if (cur && cur.courseType === "DAILY") {
+          const hasRecentFocus = list.some((item) => item.id === 201);
+          if (!hasRecentFocus) {
+            const completedFocusItem: ExtendedPastCourse = {
+              id: 201,
+              courseType: "FOCUS",
+              routineTypeCode: null,
+              routineTypeName: "진정·재생 집중 코스",
+              startedAt: "2026-08-26",
+              endedAt: "2026-09-01",
+              status: "COMPLETED",
+            };
+            list = [completedFocusItem, ...list];
+          }
+        }
+
+        const completedList = list
+          .filter((c) => Boolean(c.endedAt))
+          .sort((a, b) => Number(b.id) - Number(a.id));
+
+        setPastCourses(
+          completedList.map((c) => {
+            const start = c.startedAt
+              ? `${c.startedAt.replace(/-/g, ".")} ~ `
+              : "";
+            const end = c.endedAt ? c.endedAt.replace(/-/g, ".") : "";
+            const routineName = c.routineTypeName || c.routineType || c.label;
+
+            return {
+              id: c.id,
+              iconSrc:
+                c.courseType === "DAILY"
+                  ? "/assets/Home_Daily.png"
+                  : "/assets/Home_Focus.png",
+              description: `${start}${end}`,
+              title: routineName
+                ? c.courseType === "DAILY"
+                  ? `데일리 ${routineName} 완료`
+                  : `${routineName} 완료`
+                : c.courseType === "DAILY"
+                  ? "데일리 코스 완료"
+                  : "집중 코스 완료",
+            };
+          }),
+        );
+      } catch (error) {
+        console.error("코스 기록 조회 실패:", error);
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
     fetchHistory();
-  }, [fetchHistory]);
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   return (
     <>
