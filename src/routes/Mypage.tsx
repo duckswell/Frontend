@@ -3,8 +3,13 @@ import { useNavigate } from "react-router-dom";
 import * as S from "../styles/Mypage.styles";
 import { PageName } from "../components/PageName";
 import { TabBar, type TabType } from "../components/TabBar";
-import { procedureApi, type ProcedureItem } from "../api/procedure";
-import { courseApi, type CurrentCourseResponse } from "../api/course";
+// [백엔드 연동 주석처리] 아카이빙을 위해 API 대신 목 데이터 사용
+// import { procedureApi, type ProcedureItem } from "../api/procedure";
+// import { courseApi, type CurrentCourseResponse } from "../api/course";
+import { type ProcedureItem } from "../api/procedure";
+import { type CurrentCourseResponse } from "../api/course";
+import { getMockCurrentCourse } from "../mocks/dailyCare";
+import { MOCK_CURRENT_PROCEDURES } from "../mocks/home";
 
 type ExtendedCurrentCourse = CurrentCourseResponse & {
   routineTypeName?: string;
@@ -35,17 +40,27 @@ const Mypage: React.FC = () => {
 
     const fetchMypageData = async () => {
       try {
-        const [procRes, courseRes] = await Promise.allSettled([
-          procedureApi.getCurrentProcedures(),
-          courseApi.getCurrentCourse(),
-        ]);
+        // [백엔드 연동 주석처리] API 대신 등록된 내역(로컬스토리지) 또는 목 데이터 조회
+        // const [procRes, courseRes] = await Promise.allSettled([
+        //   procedureApi.getCurrentProcedures(),
+        //   courseApi.getCurrentCourse(),
+        // ]);
+
+        // 로컬스토리지에 저장된 시술 내역이 있으면 우선 사용, 없으면 기본 목 데이터 사용
+        const storedProcedures = localStorage.getItem("mock_procedures");
+        const parsedProcedures: ProcedureItem[] = storedProcedures
+          ? JSON.parse(storedProcedures)
+          : MOCK_CURRENT_PROCEDURES;
+
+        // 현재 진행 중인 코스 목 데이터
+        const mockCourse = getMockCurrentCourse();
 
         if (isMounted) {
-          if (procRes.status === "fulfilled" && Array.isArray(procRes.value)) {
-            setProcedures(procRes.value);
+          if (Array.isArray(parsedProcedures)) {
+            setProcedures(parsedProcedures);
           }
-          if (courseRes.status === "fulfilled" && courseRes.value) {
-            setCurrentCourse(courseRes.value as ExtendedCurrentCourse);
+          if (mockCourse) {
+            setCurrentCourse(mockCourse as ExtendedCurrentCourse);
           }
         }
       } catch (error) {
