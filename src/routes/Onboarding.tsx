@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import * as S from "../styles/Onboarding.styles";
-import { authApi } from "../api/auth";
+// [백엔드 연동 주석처리] 프론트 단독 실행을 위해 API 호출 제거
+// import { authApi } from "../api/auth";
 
 const Onboarding: React.FC = () => {
   const navigate = useNavigate();
@@ -19,7 +20,13 @@ const Onboarding: React.FC = () => {
 
     try {
       setIsLoading(true);
-      const data = await authApi.loginGuest();
+      // [백엔드 연동 주석처리] 게스트 로그인 API 대신 목(mock) 데이터 사용
+      // const data = await authApi.loginGuest();
+      const data = {
+        guestToken: "mock-guest-token",
+        memberId: 1,
+        nickname: "게스트",
+      };
 
       localStorage.setItem("guestToken", data.guestToken);
       localStorage.setItem("memberId", String(data.memberId));
