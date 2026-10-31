@@ -121,7 +121,6 @@ export default function RoutineChange() {
 
         // [백엔드 연동 주석처리] 현재 코스 조회 대신 목 데일리 코스 사용
         // const course = await courseApi.getCurrentCourse();
-        await mockDelay(300);
         const course = getMockCurrentDailyCourse(
           state?.routineTypeCode ??
             getStoredDailyCourse()?.routineTypeCode ??

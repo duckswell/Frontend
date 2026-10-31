@@ -81,7 +81,7 @@ export const ProductScroll = styled.div<ProductScrollProps>`
   -webkit-overflow-scrolling: touch;
 
 
-  touch-action: pan-y;
+  touch-action: pan-x pan-y;
 
   cursor: ${({ $isDragging }) => ($isDragging ? "grabbing" : "grab")};
 

@@ -11,7 +11,6 @@ import {
   DEFAULT_ROUTINE_TYPE_CODE,
   getMockCurrentDailyCourse,
 } from "../mocks/dailyCare";
-import { mockDelay } from "../mocks/focusCare";
 
 import { NavBar } from "../components/NavBar";
 import { TabBar } from "../components/TabBar";
@@ -152,7 +151,6 @@ export default function DailyCare() {
         // [백엔드 연동 주석처리] 현재 코스 조회 대신 목 데일리 코스 사용
         // (루틴 정보가 없으면 기획 기본값인 수분충전 루틴)
         // const course = await courseApi.getCurrentCourse();
-        await mockDelay(300);
         const course = getMockCurrentDailyCourse(
           state?.routineTypeCode ??
             getStoredDailyCourse()?.routineTypeCode ??

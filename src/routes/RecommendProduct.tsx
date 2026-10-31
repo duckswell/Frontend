@@ -18,6 +18,8 @@ import {
   type RecommendedProduct,
 } from "../api/product";
 
+import { useMouseDragScroll } from "../hooks/useMouseDragScroll";
+
 import { NavBar } from "../components/NavBar";
 import ProductCard from "../components/ProductCard";
 import RecommendedIngredientCard from "../components/RecommendedIngredientCard";
@@ -317,6 +319,13 @@ export default function RecommendProduct() {
     typeof setTimeout
   > | null>(null);
   const [isDraggingIngredient, setIsDraggingIngredient] = useState(false);
+
+  const isTouchingIngredientRef = useRef(false);
+
+  const {
+    isDragging: isDraggingProductCategory,
+    dragScrollHandlers: productCategoryDragHandlers,
+  } = useMouseDragScroll(productCategoryScrollRef);
 
   const fromCare = searchParams.get("from") === "care";
 
@@ -907,7 +916,8 @@ export default function RecommendProduct() {
   function handleIngredientPointerDown(
     event: ReactPointerEvent<HTMLDivElement>
   ) {
-    if (ingredients.length <= 1) {
+    // 터치는 브라우저 기본 가로 스크롤에 맡기고 마우스만 직접 끌기로 처리
+    if (event.pointerType !== "mouse" || ingredients.length <= 1) {
       return;
     }
 
@@ -999,6 +1009,26 @@ export default function RecommendProduct() {
     moveToIngredientCard(targetIndex);
   }
 
+  function handleIngredientTouchStart() {
+    isTouchingIngredientRef.current = true;
+
+    if (ingredientMoveTimerRef.current) {
+      window.clearTimeout(ingredientMoveTimerRef.current);
+      ingredientMoveTimerRef.current = null;
+    }
+
+    if (ingredientScrollEndTimerRef.current) {
+      window.clearTimeout(ingredientScrollEndTimerRef.current);
+      ingredientScrollEndTimerRef.current = null;
+    }
+  }
+
+  function handleIngredientTouchEnd() {
+    isTouchingIngredientRef.current = false;
+
+    handleIngredientNativeScroll();
+  }
+
   function handleIngredientNativeScroll() {
     const container = ingredientScrollRef.current;
 
@@ -1015,6 +1045,11 @@ export default function RecommendProduct() {
     }
 
     ingredientScrollEndTimerRef.current = window.setTimeout(() => {
+      // 손가락이 닿아 있는 동안에는 카드를 옮기지 않고 손을 뗀 뒤 정렬
+      if (isTouchingIngredientRef.current) {
+        return;
+      }
+
       const cards = getIngredientCards();
 
       if (cards.length === 0) {
@@ -1203,6 +1238,9 @@ export default function RecommendProduct() {
               $isDragging={isDraggingIngredient}
               $isScrollable={ingredients.length > 1}
               onScroll={handleIngredientNativeScroll}
+              onTouchStart={handleIngredientTouchStart}
+              onTouchEnd={handleIngredientTouchEnd}
+              onTouchCancel={handleIngredientTouchEnd}
               onPointerDown={handleIngredientPointerDown}
               onPointerMove={handleIngredientPointerMove}
               onPointerUp={finishIngredientDrag}
@@ -1238,7 +1276,11 @@ export default function RecommendProduct() {
         </S.IngredientSection>
 
         <S.ProductSection>
-          <S.ProductCategoryScroll ref={productCategoryScrollRef}>
+          <S.ProductCategoryScroll
+            ref={productCategoryScrollRef}
+            $isDragging={isDraggingProductCategory}
+            {...productCategoryDragHandlers}
+          >
             {PRODUCT_CATEGORIES.map((category) => {
               const isSelected = selectedProductCategory === category.value;
 
