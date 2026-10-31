@@ -137,6 +137,7 @@ export default function FinishFocusCare() {
     useState(false);
 
   const touchStartY = useRef<number | null>(null);
+  const isTouchStartedAtTop = useRef(true);
   const isWheelLocked = useRef(false);
   const routineScreenRef = useRef<HTMLElement | null>(null);
 
@@ -272,6 +273,10 @@ export default function FinishFocusCare() {
 
   function handleTouchStart(event: React.TouchEvent<HTMLDivElement>) {
     touchStartY.current = event.touches[0].clientY;
+
+    // 루틴 목록이 맨 위가 아닐 때 시작한 아래로 쓸기는 목록 스크롤로만 처리한다
+    isTouchStartedAtTop.current =
+      (routineScreenRef.current?.scrollTop ?? 0) <= 0;
   }
 
   function handleTouchEnd(event: React.TouchEvent<HTMLDivElement>) {
@@ -286,7 +291,7 @@ export default function FinishFocusCare() {
       handleMoveToNextStep();
     }
 
-    if (swipeDistance <= -50) {
+    if (swipeDistance <= -50 && isTouchStartedAtTop.current) {
       handleMoveToPreviousStep();
     }
 
