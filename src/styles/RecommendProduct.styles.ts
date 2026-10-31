@@ -133,7 +133,7 @@ export const IngredientScroll = styled.div<IngredientScrollProps>`
 
   overscroll-behavior-x: contain;
 
-  touch-action: pan-y;
+  touch-action: pan-x pan-y;
 
   cursor: ${({ $isScrollable, $isDragging }) => {
     if (!$isScrollable) {
@@ -307,7 +307,7 @@ export const ProductSection = styled.section`
   padding: 0 16px;
 `;
 
-export const ProductCategoryScroll = styled.div`
+export const ProductCategoryScroll = styled.div<{ $isDragging: boolean }>`
   box-sizing: border-box;
 
   flex-shrink: 0;
@@ -320,6 +320,8 @@ export const ProductCategoryScroll = styled.div`
 
   margin-left: -16px;
   padding: 0 16px;
+
+  cursor: ${({ $isDragging }) => ($isDragging ? "grabbing" : "grab")};
 
   overflow-x: auto;
   overflow-y: hidden;

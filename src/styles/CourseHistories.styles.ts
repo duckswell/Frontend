@@ -109,8 +109,10 @@ export const InfoNoticeCard = styled.div`
     color: ${colorPalette.Black};
     cursor: pointer;
 
-    &:hover {
-      background-color: ${colorPalette.grey50};
+    @media (hover: hover) {
+      &:hover {
+        background-color: ${colorPalette.grey50};
+      }
     }
   }
 `;

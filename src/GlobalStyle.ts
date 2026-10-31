@@ -13,6 +13,7 @@ export const GlobalStyle = createGlobalStyle`
     user-select: none;
     -webkit-user-select: none;
     -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
   }
 
   body, input, button, textarea, select {

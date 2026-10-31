@@ -58,7 +58,13 @@ export const Button = styled.button<ButtonStyleProps>`
 
   transition: background-color 0.15s ease, color 0.15s ease;
 
-  &:hover:not(:disabled),
+  @media (hover: hover) {
+    &:hover:not(:disabled) {
+      background-color: ${({ $variant }) => getSelectedColor($variant)};
+      color: ${colorPalette.White};
+    }
+  }
+
   &:active:not(:disabled) {
     background-color: ${({ $variant }) => getSelectedColor($variant)};
     color: ${colorPalette.White};

@@ -1,12 +1,9 @@
-import {
-  useRef,
-  useState,
-  type PointerEvent as ReactPointerEvent,
-} from "react";
+import { useRef } from "react";
 
 import { useNavigate } from "react-router-dom";
 
 import type { ProductCategory } from "../../api/product";
+import { useMouseDragScroll } from "../../hooks/useMouseDragScroll";
 
 import * as S from "../../styles/FocusCare/RecommendedProductSection.styles";
 
@@ -49,12 +46,8 @@ export default function RecommendedProductSection({
 
   const productScrollRef = useRef<HTMLDivElement>(null);
 
-  const dragStartXRef = useRef(0);
-  const dragStartScrollLeftRef = useRef(0);
-  const draggingPointerIdRef = useRef<number | null>(null);
-  const hasDraggedRef = useRef(false);
-
-  const [isDragging, setIsDragging] = useState(false);
+  const { isDragging, dragScrollHandlers } =
+    useMouseDragScroll(productScrollRef);
 
   function handleMoveToRecommend() {
     onMoreClick?.();
@@ -69,10 +62,6 @@ export default function RecommendedProductSection({
   }
 
   function handleMoveToProduct(linkUrl?: string | null) {
-    if (hasDraggedRef.current) {
-      return;
-    }
-
     if (!linkUrl) {
       console.warn("제품 링크가 없습니다.");
 
@@ -87,98 +76,6 @@ export default function RecommendedProductSection({
     console.log("🔥 제품 외부 링크 이동:", normalizedUrl);
 
     window.open(normalizedUrl, "_blank", "noopener,noreferrer");
-  }
-
-  function handlePointerDown(event: ReactPointerEvent<HTMLDivElement>) {
-    const target = event.target as HTMLElement;
-
-    if (target.closest("button, a")) {
-      return;
-    }
-
-    if (event.pointerType !== "mouse") {
-      return;
-    }
-
-    const container = productScrollRef.current;
-
-    if (!container) {
-      return;
-    }
-
-    if (container.scrollWidth <= container.clientWidth) {
-      return;
-    }
-
-    draggingPointerIdRef.current = event.pointerId;
-    dragStartXRef.current = event.clientX;
-    dragStartScrollLeftRef.current = container.scrollLeft;
-    hasDraggedRef.current = false;
-
-    setIsDragging(true);
-
-    container.setPointerCapture(event.pointerId);
-
-    event.preventDefault();
-  }
-
-  function handlePointerMove(event: ReactPointerEvent<HTMLDivElement>) {
-    if (
-      event.pointerType !== "mouse" ||
-      draggingPointerIdRef.current !== event.pointerId
-    ) {
-      return;
-    }
-
-    const container = productScrollRef.current;
-
-    if (!container) {
-      return;
-    }
-
-    const moveX = event.clientX - dragStartXRef.current;
-
-    if (Math.abs(moveX) >= 5) {
-      hasDraggedRef.current = true;
-    }
-
-    container.scrollLeft = dragStartScrollLeftRef.current - moveX;
-
-    event.preventDefault();
-  }
-
-  function finishPointerDrag(event: ReactPointerEvent<HTMLDivElement>) {
-    if (
-      event.pointerType !== "mouse" ||
-      draggingPointerIdRef.current !== event.pointerId
-    ) {
-      return;
-    }
-
-    const container = productScrollRef.current;
-
-    if (container?.hasPointerCapture(event.pointerId)) {
-      container.releasePointerCapture(event.pointerId);
-    }
-
-    draggingPointerIdRef.current = null;
-
-    setIsDragging(false);
-
-    window.setTimeout(() => {
-      hasDraggedRef.current = false;
-    }, 0);
-  }
-
-  function handlePointerCancel(event: ReactPointerEvent<HTMLDivElement>) {
-    if (draggingPointerIdRef.current !== event.pointerId) {
-      return;
-    }
-
-    draggingPointerIdRef.current = null;
-    hasDraggedRef.current = false;
-
-    setIsDragging(false);
   }
 
   return (
@@ -196,11 +93,7 @@ export default function RecommendedProductSection({
       <S.ProductScroll
         ref={productScrollRef}
         $isDragging={isDragging}
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={finishPointerDrag}
-        onPointerCancel={handlePointerCancel}
-        onDragStart={(event) => event.preventDefault()}
+        {...dragScrollHandlers}
       >
         {products.map((product) => (
           <S.ProductCard key={product.id}>
@@ -219,9 +112,6 @@ export default function RecommendedProductSection({
             <S.ProductLinkButton
               type="button"
               disabled={!product.linkUrl}
-              onPointerDown={(event) => {
-                event.stopPropagation();
-              }}
               onClick={() => handleMoveToProduct(product.linkUrl)}
             >
               제품 보러가기
